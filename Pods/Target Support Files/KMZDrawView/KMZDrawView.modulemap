@@ -1,0 +1,6 @@
+framework module KMZDrawView {
+  umbrella header "KMZDrawView-umbrella.h"
+
+  export *
+  module * { export * }
+}

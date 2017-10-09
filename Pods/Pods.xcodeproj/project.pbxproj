@@ -1,0 +1,588 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0A8E25C1F3CB0E03CAD545B2DBF65AD9 /* KMZFrame.m in Sources */ = {isa = PBXBuildFile; fileRef = 691C390B1B5B243E2255F6F79DEBCD61 /* KMZFrame.m */; };
+		1239C94A0519EB6453A4BA00BCBCCE20 /* KMZDrawView.h in Headers */ = {isa = PBXBuildFile; fileRef = E173B742D7B156C8289F5E11F4A6CE78 /* KMZDrawView.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		1427B65A3D5AF537492D7E960D3B37B2 /* Pods-DGStream-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = D9EE2F0004F4EB1E6A76C7FBC7FB7378 /* Pods-DGStream-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		18A382C7AFBEF7A79B9D9996676342E5 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CBB3DE36805AF21409EC968A9691732F /* Foundation.framework */; };
+		7F8B3D8A04EEB23B7A727FBC210527D4 /* KMZFrame.h in Headers */ = {isa = PBXBuildFile; fileRef = 590E6462DD448F9CA125C8B764DDACEE /* KMZFrame.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		844283B318FF5C06E127E04A653014E0 /* KMZLine.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C17268D1BB07C13A8DCA1ACD5D3ECEE /* KMZLine.m */; };
+		972E88F572B4FBB1604ADBC03698CA54 /* KMZDrawView-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = ABA238C5F5254BAC726E6456EA798864 /* KMZDrawView-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		C341BF088099236673C36F1E142EEADF /* KMZLine.h in Headers */ = {isa = PBXBuildFile; fileRef = D38247D177C11C9CED0FA87E3CEC9273 /* KMZLine.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		D805C14CDE30C0A6D5F2E26BF9FCD707 /* KMZDrawView.m in Sources */ = {isa = PBXBuildFile; fileRef = F6936E25C549DC9844043A5C2A9F7DB1 /* KMZDrawView.m */; };
+		DBE8F1EC24F78EBB316C1A87AD603960 /* KMZDrawView-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 7593CCDD445D49DAFB4CC092CC437C2B /* KMZDrawView-dummy.m */; };
+		FAA406D28A1889D1CEC66B0478AD012C /* Pods-DGStream-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 5CDEF1AE0A06666F48E549B56B3708DC /* Pods-DGStream-dummy.m */; };
+		FFD4B07F31F26F626635DDC4EF8A5C2F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CBB3DE36805AF21409EC968A9691732F /* Foundation.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		20C81E91D106F151F43547287758DC38 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = D41D8CD98F00B204E9800998ECF8427E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BCA4B11F5DF36B799CADC14E6C195F15;
+			remoteInfo = KMZDrawView;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		076E159F56E3094C32583211964411FA /* Pods-DGStream-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-DGStream-acknowledgements.plist"; sourceTree = "<group>"; };
+		0B6B562277F5EC34ADA2CC87C1F05217 /* KMZDrawView-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "KMZDrawView-prefix.pch"; sourceTree = "<group>"; };
+		0CB3C1367825420E8FE1179C61027861 /* Pods-DGStream.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; path = "Pods-DGStream.modulemap"; sourceTree = "<group>"; };
+		0D8A58A223B8063D4139DD7476928653 /* Pods-DGStream-acknowledgements.markdown */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; path = "Pods-DGStream-acknowledgements.markdown"; sourceTree = "<group>"; };
+		10447E6069D0BC89F6EC0DAA697F5CBB /* Pods-DGStream.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-DGStream.debug.xcconfig"; sourceTree = "<group>"; };
+		2CC8A5745EF5B036E291C68C52EC4C9E /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		3C17268D1BB07C13A8DCA1ACD5D3ECEE /* KMZLine.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = KMZLine.m; path = KMZDrawView/KMZLine.m; sourceTree = "<group>"; };
+		3C6308449BD60D676A664D2018AC6B2C /* Pods_DGStream.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Pods_DGStream.framework; path = "Pods-DGStream.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
+		44B6C332FC0BB239216BFE4F612A8054 /* Pods-DGStream-resources.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-DGStream-resources.sh"; sourceTree = "<group>"; };
+		48C4252975BEE7330C9862D1B3814A10 /* QuickbloxWebRTC.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = QuickbloxWebRTC.framework; sourceTree = "<group>"; };
+		590E6462DD448F9CA125C8B764DDACEE /* KMZFrame.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = KMZFrame.h; path = KMZDrawView/KMZFrame.h; sourceTree = "<group>"; };
+		5CDEF1AE0A06666F48E549B56B3708DC /* Pods-DGStream-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-DGStream-dummy.m"; sourceTree = "<group>"; };
+		5DD0F0CE57BE3813C791EF61BA4069D5 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		691C390B1B5B243E2255F6F79DEBCD61 /* KMZFrame.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = KMZFrame.m; path = KMZDrawView/KMZFrame.m; sourceTree = "<group>"; };
+		7593CCDD445D49DAFB4CC092CC437C2B /* KMZDrawView-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "KMZDrawView-dummy.m"; sourceTree = "<group>"; };
+		7DFCE230D756024F0AA9F981ECEB43A1 /* Quickblox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Quickblox.framework; sourceTree = "<group>"; };
+		93A4A3777CF96A4AAC1D13BA6DCCEA73 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; lastKnownFileType = text; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		ABA238C5F5254BAC726E6456EA798864 /* KMZDrawView-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "KMZDrawView-umbrella.h"; sourceTree = "<group>"; };
+		C452766878D666423293C847A7516904 /* KMZDrawView.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = KMZDrawView.framework; path = KMZDrawView.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		C4E7723D5E4B7D82701DB5C8AF313A89 /* KMZDrawView.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; path = KMZDrawView.modulemap; sourceTree = "<group>"; };
+		CBB3DE36805AF21409EC968A9691732F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS10.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		CF7E6ACAE7FB8BCC3F2CEE334120C7E4 /* Pods-DGStream.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-DGStream.release.xcconfig"; sourceTree = "<group>"; };
+		D38247D177C11C9CED0FA87E3CEC9273 /* KMZLine.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = KMZLine.h; path = KMZDrawView/KMZLine.h; sourceTree = "<group>"; };
+		D9EE2F0004F4EB1E6A76C7FBC7FB7378 /* Pods-DGStream-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-DGStream-umbrella.h"; sourceTree = "<group>"; };
+		E00058848CB44DB168C533FC8C0A6B36 /* KMZDrawView.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = KMZDrawView.xcconfig; sourceTree = "<group>"; };
+		E173B742D7B156C8289F5E11F4A6CE78 /* KMZDrawView.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = KMZDrawView.h; path = KMZDrawView/KMZDrawView.h; sourceTree = "<group>"; };
+		F6936E25C549DC9844043A5C2A9F7DB1 /* KMZDrawView.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = KMZDrawView.m; path = KMZDrawView/KMZDrawView.m; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		385849C58D884FC0F825EC6E2331C4F7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				18A382C7AFBEF7A79B9D9996676342E5 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CB9E6C5224CD4A8957408438C66B922A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FFD4B07F31F26F626635DDC4EF8A5C2F /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		01FBDBB345FBFC74915FF2523342285A /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				609257173B4B122E850B5DDC57604916 /* KMZDrawView */,
+				4039F1CDFBF344F5AEF7FA614E02C2BB /* QuickBlox */,
+				DBDC94BBD205C677AF0AC7F77D9F6152 /* Quickblox-WebRTC */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
+		4039F1CDFBF344F5AEF7FA614E02C2BB /* QuickBlox */ = {
+			isa = PBXGroup;
+			children = (
+				7D3EA913F1FC83FAD4586E8FA3B07051 /* Frameworks */,
+			);
+			name = QuickBlox;
+			path = QuickBlox;
+			sourceTree = "<group>";
+		};
+		451C9D6F08E7F01892EEF78CE7725D50 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				C452766878D666423293C847A7516904 /* KMZDrawView.framework */,
+				3C6308449BD60D676A664D2018AC6B2C /* Pods_DGStream.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		609257173B4B122E850B5DDC57604916 /* KMZDrawView */ = {
+			isa = PBXGroup;
+			children = (
+				E173B742D7B156C8289F5E11F4A6CE78 /* KMZDrawView.h */,
+				F6936E25C549DC9844043A5C2A9F7DB1 /* KMZDrawView.m */,
+				590E6462DD448F9CA125C8B764DDACEE /* KMZFrame.h */,
+				691C390B1B5B243E2255F6F79DEBCD61 /* KMZFrame.m */,
+				D38247D177C11C9CED0FA87E3CEC9273 /* KMZLine.h */,
+				3C17268D1BB07C13A8DCA1ACD5D3ECEE /* KMZLine.m */,
+				97A4948DCB5C29743287F6F135965D80 /* Support Files */,
+			);
+			name = KMZDrawView;
+			path = KMZDrawView;
+			sourceTree = "<group>";
+		};
+		7531C8F8DE19F1AA3C8A7AC97A91DC29 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				CBB3DE36805AF21409EC968A9691732F /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
+		7D10E01A2E939EBB04E3C934C683EA22 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				48C4252975BEE7330C9862D1B3814A10 /* QuickbloxWebRTC.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		7D3EA913F1FC83FAD4586E8FA3B07051 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				7DFCE230D756024F0AA9F981ECEB43A1 /* Quickblox.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		7DB346D0F39D3F0E887471402A8071AB = {
+			isa = PBXGroup;
+			children = (
+				93A4A3777CF96A4AAC1D13BA6DCCEA73 /* Podfile */,
+				BC3CA7F9E30CC8F7E2DD044DD34432FC /* Frameworks */,
+				01FBDBB345FBFC74915FF2523342285A /* Pods */,
+				451C9D6F08E7F01892EEF78CE7725D50 /* Products */,
+				F49A0F1FF81F05BCBAEBCD0983333453 /* Targets Support Files */,
+			);
+			sourceTree = "<group>";
+		};
+		97A4948DCB5C29743287F6F135965D80 /* Support Files */ = {
+			isa = PBXGroup;
+			children = (
+				2CC8A5745EF5B036E291C68C52EC4C9E /* Info.plist */,
+				C4E7723D5E4B7D82701DB5C8AF313A89 /* KMZDrawView.modulemap */,
+				E00058848CB44DB168C533FC8C0A6B36 /* KMZDrawView.xcconfig */,
+				7593CCDD445D49DAFB4CC092CC437C2B /* KMZDrawView-dummy.m */,
+				0B6B562277F5EC34ADA2CC87C1F05217 /* KMZDrawView-prefix.pch */,
+				ABA238C5F5254BAC726E6456EA798864 /* KMZDrawView-umbrella.h */,
+			);
+			name = "Support Files";
+			path = "../Target Support Files/KMZDrawView";
+			sourceTree = "<group>";
+		};
+		BB79F10EE56E320A27AFEB713F1412E3 /* Pods-DGStream */ = {
+			isa = PBXGroup;
+			children = (
+				5DD0F0CE57BE3813C791EF61BA4069D5 /* Info.plist */,
+				0CB3C1367825420E8FE1179C61027861 /* Pods-DGStream.modulemap */,
+				0D8A58A223B8063D4139DD7476928653 /* Pods-DGStream-acknowledgements.markdown */,
+				076E159F56E3094C32583211964411FA /* Pods-DGStream-acknowledgements.plist */,
+				5CDEF1AE0A06666F48E549B56B3708DC /* Pods-DGStream-dummy.m */,
+				44B6C332FC0BB239216BFE4F612A8054 /* Pods-DGStream-resources.sh */,
+				D9EE2F0004F4EB1E6A76C7FBC7FB7378 /* Pods-DGStream-umbrella.h */,
+				10447E6069D0BC89F6EC0DAA697F5CBB /* Pods-DGStream.debug.xcconfig */,
+				CF7E6ACAE7FB8BCC3F2CEE334120C7E4 /* Pods-DGStream.release.xcconfig */,
+			);
+			name = "Pods-DGStream";
+			path = "Target Support Files/Pods-DGStream";
+			sourceTree = "<group>";
+		};
+		BC3CA7F9E30CC8F7E2DD044DD34432FC /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				7531C8F8DE19F1AA3C8A7AC97A91DC29 /* iOS */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		DBDC94BBD205C677AF0AC7F77D9F6152 /* Quickblox-WebRTC */ = {
+			isa = PBXGroup;
+			children = (
+				7D10E01A2E939EBB04E3C934C683EA22 /* Frameworks */,
+			);
+			name = "Quickblox-WebRTC";
+			path = "Quickblox-WebRTC";
+			sourceTree = "<group>";
+		};
+		F49A0F1FF81F05BCBAEBCD0983333453 /* Targets Support Files */ = {
+			isa = PBXGroup;
+			children = (
+				BB79F10EE56E320A27AFEB713F1412E3 /* Pods-DGStream */,
+			);
+			name = "Targets Support Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		AC1B25259BF4BA67BCFEC78C96340EB7 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1427B65A3D5AF537492D7E960D3B37B2 /* Pods-DGStream-umbrella.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E49D72D051042123E89FDA2639936CC2 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				972E88F572B4FBB1604ADBC03698CA54 /* KMZDrawView-umbrella.h in Headers */,
+				1239C94A0519EB6453A4BA00BCBCCE20 /* KMZDrawView.h in Headers */,
+				7F8B3D8A04EEB23B7A727FBC210527D4 /* KMZFrame.h in Headers */,
+				C341BF088099236673C36F1E142EEADF /* KMZLine.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		BCA4B11F5DF36B799CADC14E6C195F15 /* KMZDrawView */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C6C842C112DC76B0F809EBD0994D8D17 /* Build configuration list for PBXNativeTarget "KMZDrawView" */;
+			buildPhases = (
+				6A5BA68AB5B9619382C3A2D9D262EBBB /* Sources */,
+				385849C58D884FC0F825EC6E2331C4F7 /* Frameworks */,
+				E49D72D051042123E89FDA2639936CC2 /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = KMZDrawView;
+			productName = KMZDrawView;
+			productReference = C452766878D666423293C847A7516904 /* KMZDrawView.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		DC611947674F7B3DA64561420D1F0A3F /* Pods-DGStream */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AE32F5A6EF0A7DA6565172773FF7A2F1 /* Build configuration list for PBXNativeTarget "Pods-DGStream" */;
+			buildPhases = (
+				2DACEA963EBEF8FF0B9B96DDF2FDEF31 /* Sources */,
+				CB9E6C5224CD4A8957408438C66B922A /* Frameworks */,
+				AC1B25259BF4BA67BCFEC78C96340EB7 /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				815765D14212D47CF14BAA5486BB2CD2 /* PBXTargetDependency */,
+			);
+			name = "Pods-DGStream";
+			productName = "Pods-DGStream";
+			productReference = 3C6308449BD60D676A664D2018AC6B2C /* Pods_DGStream.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D41D8CD98F00B204E9800998ECF8427E /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 0730;
+				LastUpgradeCheck = 0700;
+			};
+			buildConfigurationList = 2D8E8EC45A3A1A1D94AE762CB5028504 /* Build configuration list for PBXProject "Pods" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 7DB346D0F39D3F0E887471402A8071AB;
+			productRefGroup = 451C9D6F08E7F01892EEF78CE7725D50 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BCA4B11F5DF36B799CADC14E6C195F15 /* KMZDrawView */,
+				DC611947674F7B3DA64561420D1F0A3F /* Pods-DGStream */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2DACEA963EBEF8FF0B9B96DDF2FDEF31 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FAA406D28A1889D1CEC66B0478AD012C /* Pods-DGStream-dummy.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6A5BA68AB5B9619382C3A2D9D262EBBB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DBE8F1EC24F78EBB316C1A87AD603960 /* KMZDrawView-dummy.m in Sources */,
+				D805C14CDE30C0A6D5F2E26BF9FCD707 /* KMZDrawView.m in Sources */,
+				0A8E25C1F3CB0E03CAD545B2DBF65AD9 /* KMZFrame.m in Sources */,
+				844283B318FF5C06E127E04A653014E0 /* KMZLine.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		815765D14212D47CF14BAA5486BB2CD2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = KMZDrawView;
+			target = BCA4B11F5DF36B799CADC14E6C195F15 /* KMZDrawView */;
+			targetProxy = 20C81E91D106F151F43547287758DC38 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		12914D756594D15C6F2CA12FE5F89F1B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGNING_REQUIRED = NO;
+				COPY_PHASE_STRIP = NO;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"POD_CONFIGURATION_DEBUG=1",
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				ONLY_ACTIVE_ARCH = YES;
+				PROVISIONING_PROFILE_SPECIFIER = NO_SIGNING/;
+				STRIP_INSTALLED_PRODUCT = NO;
+				SYMROOT = "${SRCROOT}/../build";
+			};
+			name = Debug;
+		};
+		286E7B6D1DA8FBA80A3C0A6B5D6F7462 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = E00058848CB44DB168C533FC8C0A6B36 /* KMZDrawView.xcconfig */;
+			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREFIX_HEADER = "Target Support Files/KMZDrawView/KMZDrawView-prefix.pch";
+				INFOPLIST_FILE = "Target Support Files/KMZDrawView/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MODULEMAP_FILE = "Target Support Files/KMZDrawView/KMZDrawView.modulemap";
+				MTL_ENABLE_DEBUG_INFO = NO;
+				PRODUCT_NAME = KMZDrawView;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 3.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		732FBD9564BC854C6478617F81BF7115 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = CF7E6ACAE7FB8BCC3F2CEE334120C7E4 /* Pods-DGStream.release.xcconfig */;
+			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				INFOPLIST_FILE = "Target Support Files/Pods-DGStream/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MACH_O_TYPE = staticlib;
+				MODULEMAP_FILE = "Target Support Files/Pods-DGStream/Pods-DGStream.modulemap";
+				MTL_ENABLE_DEBUG_INFO = NO;
+				OTHER_LDFLAGS = "";
+				OTHER_LIBTOOLFLAGS = "";
+				PODS_ROOT = "$(SRCROOT)";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_NAME = Pods_DGStream;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
+		A720F47B52DEB06C24AFAA57EB4DC580 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 10447E6069D0BC89F6EC0DAA697F5CBB /* Pods-DGStream.debug.xcconfig */;
+			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				INFOPLIST_FILE = "Target Support Files/Pods-DGStream/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MACH_O_TYPE = staticlib;
+				MODULEMAP_FILE = "Target Support Files/Pods-DGStream/Pods-DGStream.modulemap";
+				MTL_ENABLE_DEBUG_INFO = YES;
+				OTHER_LDFLAGS = "";
+				OTHER_LIBTOOLFLAGS = "";
+				PODS_ROOT = "$(SRCROOT)";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_NAME = Pods_DGStream;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		E72E7977875C2D251FC62736BBDDC389 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGNING_REQUIRED = NO;
+				COPY_PHASE_STRIP = YES;
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"POD_CONFIGURATION_RELEASE=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				PROVISIONING_PROFILE_SPECIFIER = NO_SIGNING/;
+				STRIP_INSTALLED_PRODUCT = NO;
+				SYMROOT = "${SRCROOT}/../build";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		F2B063D740664CA69D75B3F1DC1C0DAA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = E00058848CB44DB168C533FC8C0A6B36 /* KMZDrawView.xcconfig */;
+			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREFIX_HEADER = "Target Support Files/KMZDrawView/KMZDrawView-prefix.pch";
+				INFOPLIST_FILE = "Target Support Files/KMZDrawView/Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				MODULEMAP_FILE = "Target Support Files/KMZDrawView/KMZDrawView.modulemap";
+				MTL_ENABLE_DEBUG_INFO = YES;
+				PRODUCT_NAME = KMZDrawView;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 3.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2D8E8EC45A3A1A1D94AE762CB5028504 /* Build configuration list for PBXProject "Pods" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				12914D756594D15C6F2CA12FE5F89F1B /* Debug */,
+				E72E7977875C2D251FC62736BBDDC389 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AE32F5A6EF0A7DA6565172773FF7A2F1 /* Build configuration list for PBXNativeTarget "Pods-DGStream" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A720F47B52DEB06C24AFAA57EB4DC580 /* Debug */,
+				732FBD9564BC854C6478617F81BF7115 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C6C842C112DC76B0F809EBD0994D8D17 /* Build configuration list for PBXNativeTarget "KMZDrawView" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F2B063D740664CA69D75B3F1DC1C0DAA /* Debug */,
+				286E7B6D1DA8FBA80A3C0A6B5D6F7462 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = D41D8CD98F00B204E9800998ECF8427E /* Project object */;
+}

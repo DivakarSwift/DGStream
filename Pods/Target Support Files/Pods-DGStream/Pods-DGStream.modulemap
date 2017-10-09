@@ -1,0 +1,6 @@
+framework module Pods_DGStream {
+  umbrella header "Pods-DGStream-umbrella.h"
+
+  export *
+  module * { export * }
+}
