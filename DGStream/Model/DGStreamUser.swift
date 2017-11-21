@@ -18,6 +18,7 @@ public class DGStreamUser: NSObject {
     public var password: String?
     public var id: String?
     public var userID: NSNumber?
+    public var image: Data?
     var lastSeen: Date?
     
     class func fromQuickblox(user: QBUUser) -> DGStreamUser? {
@@ -62,5 +63,59 @@ public class DGStreamUser: NSObject {
             }
         }
         return dgUsers
+    }
+    
+    class func createDGStreamUserFrom(proto: DGStreamUserProtocol) -> DGStreamUser {
+        let user = DGStreamUser()
+        user.id = proto.dgID
+        user.userID = proto.dgUserID
+        user.username = proto.dgUsername
+        return user
+    }
+    
+}
+
+extension DGStreamUser: DGStreamUserProtocol {
+    public var dgImage: Data? {
+        get {
+            return self.image
+        }
+        set {
+            self.dgImage = self.image
+        }
+    }
+    
+    public var dgID: String {
+        get {
+            return self.id ?? ""
+        }
+        set {
+            self.dgID = self.id ?? ""
+        }
+    }
+    
+    public var dgUsername: String {
+        get {
+            return self.username ?? ""
+        }
+        set {
+            self.dgUsername = self.username ?? ""
+        }
+    }
+    public var dgPassword: String {
+        get {
+            return self.password ?? ""
+        }
+        set {
+            self.dgPassword = self.password ?? ""
+        }
+    }
+    public var dgUserID: NSNumber {
+        get {
+            return self.userID ?? NSNumber(value: 0)
+        }
+        set {
+            self.dgUserID = self.userID ?? NSNumber(value: 0)
+        }
     }
 }

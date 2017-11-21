@@ -12,35 +12,39 @@ import QuickbloxWebRTC
 
 class DGStreamUsersViewController: UIViewController {
     
+    @IBOutlet weak var navBarView: UIView!
+    @IBOutlet weak var navTitleLabel: UILabel!
+    @IBOutlet weak var audioCallButton: UIButton!
+    @IBOutlet weak var videoCallButton: UIButton!
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
+    
+    var selectedUsers:[NSNumber] = []
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        audioCallButton.setImage(UIImage.init(named: "audio", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
+        audioCallButton.tintColor = UIColor.dgBlack()
+        audioCallButton.layer.cornerRadius = audioCallButton.frame.size.width / 2
+        audioCallButton.imageEdgeInsets = UIEdgeInsetsMake(10, 10, 10, 10)
+        audioCallButton.backgroundColor = UIColor(red: (30/255.0), green: (220/255.0), blue: (35/255.0), alpha: 1)
+        audioCallButton.addTarget(self, action: #selector(audioCallButtonTapped), for: .touchUpInside)
+        
+        videoCallButton.setImage(UIImage.init(named: "video", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
+        videoCallButton.tintColor = UIColor.dgBlack()
+        videoCallButton.layer.cornerRadius = videoCallButton.frame.size.width / 2
+        videoCallButton.imageEdgeInsets = UIEdgeInsetsMake(10, 10, 10, 10)
+        videoCallButton.backgroundColor = UIColor(red: (30/255.0), green: (220/255.0), blue: (35/255.0), alpha: 1)
+        videoCallButton.addTarget(self, action: #selector(videoCallButtonTapped), for: .touchUpInside)
+        
+        view.backgroundColor = UIColor.dgWhite()
         DGStreamCore.instance.presentedViewController = self
         DGStreamCore.instance.add(delegate: self)
         QBRTCClient.instance().add(self)
         configureTableView()
         configureNavBar()
-        
-        if let user = DGStreamCore.instance.currentUser {
-            DGStreamCore.instance.loginWith(user: user) { (success, errorMessage) in
-                
-                if success {
-                    UIApplication.shared.registerForRemoteNotifications()
-                    self.loadUsers()
-                }
-                else {
-                    let alert = UIAlertController(title: "Error", message: errorMessage, preferredStyle: .alert)
-                    alert.addAction(UIAlertAction(title: "OK", style: .default, handler: { (action: UIAlertAction) in
-                        alert.dismiss(animated: true, completion: nil)
-                    }))
-                    self.present(alert, animated: true, completion: nil)
-                }
-                
-            }
-        }
-
+        loadUsers()
     }
 
     override func didReceiveMemoryWarning() {
@@ -50,27 +54,19 @@ class DGStreamUsersViewController: UIViewController {
     
     func configureNavBar() {
         
-        self.navigationController?.navigationBar.barTintColor = UIColor.dgBlueDark()
-        self.navigationController?.navigationBar.isTranslucent = false
-        self.navigationController?.navigationBar.tintColor = .white
-        
-        self.navigationItem.setLeftBarButton(UIBarButtonItem.init(barButtonSystemItem: .cancel, target: self, action: #selector(cancelButtonTapped)), animated: false)
-        
-        let audioButton = UIBarButtonItem(title: "Audio Call", style: .plain, target: self, action: #selector(audioCallButtonTapped))
-        
-        let fixedSpace = UIBarButtonItem(barButtonSystemItem: .fixedSpace, target: self, action: nil)
-        fixedSpace.width = 20
-        
-        let videoButton = UIBarButtonItem(title: "Video Call", style: .plain, target: self, action: #selector(videoCallButtonTapped))
-        
-        self.navigationItem.setRightBarButtonItems([audioButton, fixedSpace, videoButton], animated: true)
+        self.navBarView.backgroundColor = UIColor.dgBlack()
+        self.navTitleLabel.textColor = UIColor.dgWhite()
     }
     
     func configureTableView() {
-        DGStreamCore.instance.userDataSource = DGStreamUserDataSource(currentUser: DGStreamCore.instance.currentUser)
-        self.tableView.dataSource = DGStreamCore.instance.userDataSource
-        self.tableView.delegate = self
-        self.tableView.rowHeight = 60
+        if let currentUser = DGStreamCore.instance.currentUser {
+            DGStreamCore.instance.userDataSource = DGStreamUserDataSource(currentUser: currentUser)
+            self.tableView.dataSource = DGStreamCore.instance.userDataSource
+            self.tableView.delegate = self
+            self.tableView.rowHeight = 60
+            self.tableView.backgroundColor = .clear
+            self.tableView.backgroundView?.backgroundColor = .clear
+        }
     }
 
     func loadUsers() {
@@ -102,46 +98,43 @@ class DGStreamUsersViewController: UIViewController {
     }
     
     func audioCallButtonTapped() {
-        callSelectedUsersWith(type: .audio)
+        //callSelectedUsersWith(type: .audio)
     }
     
     func videoCallButtonTapped() {
-        callSelectedUsersWith(type: .video)
+        //callSelectedUsersWith(type: .video)
         print("videoCallButtonTapped")
-    }
-    
-    func callSelectedUsersWith(type: QBRTCConferenceType) {
-        
-        if DGStreamCore.instance.isReachable {
-            
-            let userIDs = DGStreamCore.instance.userDataSource?.idsFor(users: DGStreamCore.instance.userDataSource?.selectedUsers ?? [])
-            
-            let session = QBRTCClient.instance().createNewSession(withOpponents: userIDs ?? [], with: type)
-            
-            let callVC = UIStoryboard(name: "Call", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as! DGStreamCallViewController
-            callVC.session = session
-            
-            let nav = UINavigationController(rootViewController: callVC)
-            nav.modalTransitionStyle = .crossDissolve
-            
-            present(nav, animated: true, completion: nil)
-            print("This is the comment that will need to be seen")
-        }
-        
     }
 
 }
 
 extension DGStreamUsersViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        DGStreamCore.instance.userDataSource?.selectUserAt(indexPath: indexPath)
+        if let userID = DGStreamCore.instance.userDataSource?.selectUserAt(indexPath: indexPath), let cell = self.tableView.cellForRow(at: indexPath) as? DGStreamUserTableViewCell {
+                
+            // Remove / Add
+            if let idx = selectedUsers.index(of: userID) {
+                selectedUsers.remove(at: idx)
+                cell.selectedIndex = 0
+                cell.selectedNumberLabel.text = ""
+                cell.selectedNumberLabel.isHidden = true
+            }
+            else {
+                selectedUsers.append(userID)
+                let count = selectedUsers.count
+                cell.selectedIndex = count
+                cell.selectedNumberLabel.text = "\(count)"
+                cell.selectedNumberLabel.isHidden = false
+            }
+            
+        }
     }
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 30
+        return 0
     }
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let label = UILabel(frame: CGRect(x: 0, y: 0, width: 320, height: 30))
-        label.backgroundColor = .white
+        label.backgroundColor = UIColor.dgWhite()
         label.textColor = UIColor.dgBlack()
         label.text = "    Select Users To Call..."
         label.font = UIFont.dgBasicFont()

@@ -49,7 +49,7 @@ class DGStreamUserDataSource: NSObject {
         return users
     }
     
-    func selectUserAt(indexPath: IndexPath) {
+    func selectUserAt(indexPath: IndexPath) -> NSNumber? {
         
         let user = self.usersSortedByLastSeen()[indexPath.row]
         
@@ -60,6 +60,11 @@ class DGStreamUserDataSource: NSObject {
             selectedUsers.append(user)
         }
         
+        if let userID = user.userID {
+            return userID
+        }
+        
+        return nil
     }
     
     func userWith(id: UInt) -> DGStreamUser? {
@@ -125,14 +130,6 @@ extension DGStreamUserDataSource: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell") as! DGStreamUserTableViewCell
         cell.configureWith(user: self.usersSortedByLastSeen()[indexPath.row])
-        if indexPath.row % 2 == 0 {
-            cell.contentView.backgroundColor = UIColor.dgBackground()
-            cell.userImageView.backgroundColor = UIColor.dgCellImageBlue()
-        }
-        else {
-            cell.contentView.backgroundColor = UIColor.dgBackgroundHalf()
-            cell.userImageView.backgroundColor = UIColor.dgCellImageGreen()
-        }
         return cell
     }
 }

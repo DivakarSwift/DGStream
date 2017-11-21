@@ -1,19 +1,22 @@
 PODS:
-  - KMZDrawView (0.0.1)
+  - jot (0.1.5):
+    - Masonry (~> 0.6.1)
+  - Masonry (0.6.4)
   - QuickBlox (2.9.2)
   - Quickblox-WebRTC (2.5):
     - QuickBlox (>= 2.7)
 
 DEPENDENCIES:
-  - KMZDrawView
+  - jot
   - QuickBlox
   - Quickblox-WebRTC
 
 SPEC CHECKSUMS:
-  KMZDrawView: 786a84089fbf954e2114a589d90845c7422dc7d1
+  jot: 0f5dc333defa6ad805d01adc3834b201c22510a7
+  Masonry: 281802d04d787ea2973179ee8bcb50500579ede2
   QuickBlox: 67cafa5d7b237db7344c506ca5dc38365180cacb
   Quickblox-WebRTC: 79a88793ce090d2516963fe207f4d8eeecdb8b4f
 
-PODFILE CHECKSUM: 621aaec5a6e7d41c2127963179b3375713f74117
+PODFILE CHECKSUM: b42dae7932818a49dd671cc448c1a6c2382ee057
 
 COCOAPODS: 1.2.0

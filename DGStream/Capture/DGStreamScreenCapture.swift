@@ -34,13 +34,39 @@ class DGStreamScreenCapture: QBRTCVideoCapture {
         view.drawHierarchy(in: view.bounds, afterScreenUpdates: false)
         if let image = UIGraphicsGetImageFromCurrentImageContext() {
             UIGraphicsEndImageContext()
-            return self.imageWithImage(sourceImage: image, scaledToWidth: view.bounds.width)
+            return DGStreamScreenCapture.imageWithImage(sourceImage: image, scaledToWidth: view.bounds.width)
         }
         print("No Screenshot")
         return nil
     }
     
-    func imageWithImage (sourceImage:UIImage, scaledToWidth: CGFloat) -> UIImage {
+    class func takeScreenshotOf(view: UIView) -> UIImage? {
+        UIGraphicsBeginImageContextWithOptions(view.frame.size, true, 0.5)
+        view.drawHierarchy(in: view.bounds, afterScreenUpdates: false)
+        if let image = UIGraphicsGetImageFromCurrentImageContext() {
+            UIGraphicsEndImageContext()
+            return DGStreamScreenCapture.imageWithImage(sourceImage: image, scaledToWidth: view.bounds.width)
+        }
+        print("No Screenshot")
+        return nil
+        
+//        guard let layer = UIApplication.shared.keyWindow?.layer else { return nil }
+//        let renderer = UIGraphicsImageRenderer(size: layer.frame.size)
+//        let image = renderer.image(actions: { context in
+//            layer.render(in: context.cgContext)
+//        })
+//        return image
+        
+//        let bounds = UIScreen.main.bounds
+//        UIGraphicsBeginImageContextWithOptions(bounds.size, true, 0.0)
+//        yourUIViewController.view!.drawHierarchy(in: bounds, afterScreenUpdates: false)
+//
+//        let img = UIGraphicsGetImageFromCurrentImageContext()
+//        UIGraphicsEndImageContext()
+//        return
+    }
+    
+    class func imageWithImage (sourceImage:UIImage, scaledToWidth: CGFloat) -> UIImage {
         let oldWidth = sourceImage.size.width
         let scaleFactor = scaledToWidth / oldWidth
 
@@ -94,7 +120,7 @@ class DGStreamScreenCapture: QBRTCVideoCapture {
                         
                         super.send(videoFrame)
                         self.int += 1
-                        print("SENT VIDEO FRAME \(self.int)")
+//                        print("SENT VIDEO FRAME \(self.int)")
                         
                     }
                     else {

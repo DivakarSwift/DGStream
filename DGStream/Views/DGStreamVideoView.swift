@@ -21,7 +21,6 @@ class DGStreamVideoView: UIView {
         self.videoLayer = layer
         self.videoLayer.frame = frame
         layer.videoGravity = AVLayerVideoGravityResizeAspect
-        
         let image = UIImage(named: "", in: Bundle(identifier: ""), compatibleWith: nil)
         
         self.switchCameraButton = UIButton(type: .custom)

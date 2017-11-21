@@ -15,7 +15,6 @@
 		0C0A9DC81F67691E00FAC6DD /* DGStreamCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C0A9DC71F67691E00FAC6DD /* DGStreamCore.swift */; };
 		0C0F01CD1F7D8F7100FCF3B6 /* NSNumber+CVPixelFormatType.h in Headers */ = {isa = PBXBuildFile; fileRef = 0C0F01CB1F7D8F7100FCF3B6 /* NSNumber+CVPixelFormatType.h */; };
 		0C0F01CE1F7D8F7100FCF3B6 /* NSNumber+CVPixelFormatType.m in Sources */ = {isa = PBXBuildFile; fileRef = 0C0F01CC1F7D8F7100FCF3B6 /* NSNumber+CVPixelFormatType.m */; };
-		0C19029A1F6772D80065564C /* KMZDrawView.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0CFE288E1F6758CB004005A9 /* KMZDrawView.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		0C1902A41F6775710065564C /* Reachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C1902A31F6775710065564C /* Reachability.swift */; };
 		0C1902A61F685ADF0065564C /* DGStreamVideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C1902A51F685ADF0065564C /* DGStreamVideoView.swift */; };
 		0C32BF331F69E03300E4C5A2 /* DGStreamUsersViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C32BF321F69E03300E4C5A2 /* DGStreamUsersViewController.swift */; };
@@ -23,9 +22,22 @@
 		0C32BF371F69E19000E4C5A2 /* DGStreamUserTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C32BF361F69E19000E4C5A2 /* DGStreamUserTableViewCell.swift */; };
 		0C32BF3A1F69EE0D00E4C5A2 /* DGStreamUserOperationQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C32BF391F69EE0D00E4C5A2 /* DGStreamUserOperationQueue.swift */; };
 		0C32BF3C1F69EE2400E4C5A2 /* DGStreamUserOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C32BF3B1F69EE2400E4C5A2 /* DGStreamUserOperation.swift */; };
+		0C4150BB1FBAB54E006ABAD4 /* DGStreamPhotoSaver.h in Headers */ = {isa = PBXBuildFile; fileRef = 0C4150B91FBAB54E006ABAD4 /* DGStreamPhotoSaver.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		0C4150BC1FBAB54E006ABAD4 /* DGStreamPhotoSaver.m in Sources */ = {isa = PBXBuildFile; fileRef = 0C4150BA1FBAB54E006ABAD4 /* DGStreamPhotoSaver.m */; };
 		0C41BB9C1F637233001F42ED /* DGStreamUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C41BB9B1F637233001F42ED /* DGStreamUser.swift */; };
 		0C41BBA11F637449001F42ED /* DGStreamManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C41BBA01F637449001F42ED /* DGStreamManager.swift */; };
 		0C41BBA31F637458001F42ED /* DGStreamProtocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C41BBA21F637458001F42ED /* DGStreamProtocols.swift */; };
+		0C465AA61FB9A62000283CEE /* DGStreamAudioIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C465AA51FB9A62000283CEE /* DGStreamAudioIndicator.swift */; };
+		0C465AA81FB9A63F00283CEE /* DGStreamAudioIndicator.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0C465AA71FB9A63F00283CEE /* DGStreamAudioIndicator.xib */; };
+		0C465AAB1FB9B9FC00283CEE /* DGStreamAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C465AAA1FB9B9FC00283CEE /* DGStreamAudioPlayer.swift */; };
+		0C5003021F99DB5400732730 /* TabBar.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0C5003011F99DB5400732730 /* TabBar.storyboard */; };
+		0C5003041F99DB9D00732730 /* DGStreamTabBarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5003031F99DB9D00732730 /* DGStreamTabBarViewController.swift */; };
+		0C5003061F9A595800732730 /* DGStreamContactsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5003051F9A595800732730 /* DGStreamContactsTableViewCell.swift */; };
+		0C50030A1F9A5AC600732730 /* DGStreamRecentsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5003091F9A5AC600732730 /* DGStreamRecentsTableViewCell.swift */; };
+		0C50030C1F9A5E7B00732730 /* DGStreamRecent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C50030B1F9A5E7B00732730 /* DGStreamRecent.swift */; };
+		0C50030E1F9A5E8400732730 /* DGStreamContact.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C50030D1F9A5E8400732730 /* DGStreamContact.swift */; };
+		0C5003101F9A708200732730 /* DGStreamConversationsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C50030F1F9A708200732730 /* DGStreamConversationsTableViewCell.swift */; };
+		0C50FD6F1FB42B9E008F59F8 /* jot.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0C50FD701FB42B9E008F59F8 /* jot.framework */; };
 		0C5463191F6C9E630008A9B8 /* UIScreenExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5463181F6C9E630008A9B8 /* UIScreenExtension.swift */; };
 		0C54631F1F6C9FC20008A9B8 /* DGStreamFullLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C54631E1F6C9FC20008A9B8 /* DGStreamFullLayout.swift */; };
 		0C5463211F7190830008A9B8 /* CVReturnExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5463201F7190830008A9B8 /* CVReturnExtension.swift */; };
@@ -35,16 +47,23 @@
 		0C6257E91F6AF15200DFFE93 /* UIColorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6257E81F6AF15200DFFE93 /* UIColorExtension.swift */; };
 		0C6257EC1F6AF74600DFFE93 /* UIFontExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6257EB1F6AF74600DFFE93 /* UIFontExtension.swift */; };
 		0C6257EF1F6B3A0100DFFE93 /* UIViewExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6257EE1F6B3A0100DFFE93 /* UIViewExtension.swift */; };
-		0C6257F11F6B4ACD00DFFE93 /* DGStreamIncomingCallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C6257F01F6B4ACD00DFFE93 /* DGStreamIncomingCallView.swift */; };
-		0C6257F51F6B4B2500DFFE93 /* DGStreamIncomingCallView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0C6257F41F6B4B2500DFFE93 /* DGStreamIncomingCallView.xib */; };
 		0C6257F71F6C420200DFFE93 /* DGStreamAssets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0C6257F61F6C420200DFFE93 /* DGStreamAssets.xcassets */; };
+		0C7273F81F8E91FD003F3AD4 /* DGStreamAlertView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C7273F71F8E91FD003F3AD4 /* DGStreamAlertView.swift */; };
+		0C7273FC1F8EA258003F3AD4 /* DGStreamAlertView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0C7273FB1F8EA258003F3AD4 /* DGStreamAlertView.xib */; };
+		0C7B080F1FC3B13500F6D0AD /* DGStreamWhiteBoardSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C7B080E1FC3B13500F6D0AD /* DGStreamWhiteBoardSession.swift */; };
 		0C8067431F68729D0074FFD2 /* DGStreamSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C8067421F68729D0074FFD2 /* DGStreamSettings.swift */; };
 		0C8067451F6875B00074FFD2 /* DGStreamRecordSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C8067441F6875B00074FFD2 /* DGStreamRecordSettings.swift */; };
 		0C8067481F689ABE0074FFD2 /* DGStreamUserDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C8067471F689ABE0074FFD2 /* DGStreamUserDataSource.swift */; };
-		0C80674C1F68BA750074FFD2 /* KMZDrawView.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 0CFE288E1F6758CB004005A9 /* KMZDrawView.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		0C8730151F58D7CA004B316D /* DGStream.h in Headers */ = {isa = PBXBuildFile; fileRef = 0C8730141F58D7CA004B316D /* DGStream.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		0C87301A1F58D87F004B316D /* DGStreamBroadcast.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C8730191F58D87F004B316D /* DGStreamBroadcast.swift */; };
-		0CA6CD5B1F8BF4A70061D3D9 /* DGStreamRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CA6CD5A1F8BF4A70061D3D9 /* DGStreamRenderer.swift */; };
+		0C88A4EB1FBF757D008C5627 /* DGStreamChatPeekView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C88A4EA1FBF757D008C5627 /* DGStreamChatPeekView.swift */; };
+		0C88A4ED1FBF7DBB008C5627 /* DGStreamChatPeekCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C88A4EC1FBF7DBB008C5627 /* DGStreamChatPeekCell.swift */; };
+		0C88A4EF1FBF7DDA008C5627 /* DGStreamChatPeekCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0C88A4EE1FBF7DDA008C5627 /* DGStreamChatPeekCell.xib */; };
+		0CA6CD5D1F8C06000061D3D9 /* DGStreamGreenScreenCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CA6CD5C1F8C06000061D3D9 /* DGStreamGreenScreenCapture.swift */; };
+		0CB061491F981B7900F79792 /* DGStreamConversation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CB061481F981B7900F79792 /* DGStreamConversation.swift */; };
+		0CB8161A1F916A540079728E /* Chat.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0CB816191F916A540079728E /* Chat.storyboard */; };
+		0CB8161C1F916A6A0079728E /* DGStreamChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CB8161B1F916A6A0079728E /* DGStreamChatViewController.swift */; };
+		0CB8161E1F91984F0079728E /* DGStreamChatTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CB8161D1F91984F0079728E /* DGStreamChatTableViewCell.swift */; };
+		0CB816201F9199070079728E /* DGStreamMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CB8161F1F9199070079728E /* DGStreamMessage.swift */; };
 		0CD79AB51F74A0F10034D2B4 /* GSVideoProcessor.h in Headers */ = {isa = PBXBuildFile; fileRef = 0CD79AB31F74A0F10034D2B4 /* GSVideoProcessor.h */; };
 		0CD79AB61F74A0F10034D2B4 /* GSVideoProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 0CD79AB41F74A0F10034D2B4 /* GSVideoProcessor.m */; };
 		0CD79AB91F74A1E80034D2B4 /* GSGreenScreenEffect.h in Headers */ = {isa = PBXBuildFile; fileRef = 0CD79AB71F74A1E80034D2B4 /* GSGreenScreenEffect.h */; };
@@ -65,7 +84,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				0C80674C1F68BA750074FFD2 /* KMZDrawView.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -76,7 +94,7 @@
 		0C08FA3D1F671E9D00B03CB2 /* DGStreamScreenCapture.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DGStreamScreenCapture.swift; path = ../DGStreamScreenCapture.swift; sourceTree = "<group>"; };
 		0C08FA401F67251600B03CB2 /* DispatchExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DispatchExtension.swift; sourceTree = "<group>"; };
 		0C0A9DC31F675D6300FAC6DD /* DGStreamCollectionViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DGStreamCollectionViewCell.swift; sourceTree = "<group>"; };
-		0C0A9DC51F675DD100FAC6DD /* Call.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = Call.storyboard; path = DGStream/Controllers/Call/Call.storyboard; sourceTree = SOURCE_ROOT; };
+		0C0A9DC51F675DD100FAC6DD /* Call.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Call.storyboard; sourceTree = "<group>"; };
 		0C0A9DC71F67691E00FAC6DD /* DGStreamCore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DGStreamCore.swift; sourceTree = "<group>"; };
 		0C0F01CB1F7D8F7100FCF3B6 /* NSNumber+CVPixelFormatType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSNumber+CVPixelFormatType.h"; sourceTree = "<group>"; };
 		0C0F01CC1F7D8F7100FCF3B6 /* NSNumber+CVPixelFormatType.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSNumber+CVPixelFormatType.m"; sourceTree = "<group>"; };
@@ -87,9 +105,22 @@
 		0C32BF361F69E19000E4C5A2 /* DGStreamUserTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DGStreamUserTableViewCell.swift; sourceTree = "<group>"; };
 		0C32BF391F69EE0D00E4C5A2 /* DGStreamUserOperationQueue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DGStreamUserOperationQueue.swift; sourceTree = "<group>"; };
 		0C32BF3B1F69EE2400E4C5A2 /* DGStreamUserOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DGStreamUserOperation.swift; sourceTree = "<group>"; };
+		0C4150B91FBAB54E006ABAD4 /* DGStreamPhotoSaver.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DGStreamPhotoSaver.h; sourceTree = "<group>"; };
+		0C4150BA1FBAB54E006ABAD4 /* DGStreamPhotoSaver.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DGStreamPhotoSaver.m; sourceTree = "<group>"; };
 		0C41BB9B1F637233001F42ED /* DGStreamUser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DGStreamUser.swift; sourceTree = "<group>"; };
 		0C41BBA01F637449001F42ED /* DGStreamManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DGStreamManager.swift; sourceTree = "<group>"; };
 		0C41BBA21F637458001F42ED /* DGStreamProtocols.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DGStreamProtocols.swift; sourceTree = "<group>"; };
+		0C465AA51FB9A62000283CEE /* DGStreamAudioIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamAudioIndicator.swift; sourceTree = "<group>"; };
+		0C465AA71FB9A63F00283CEE /* DGStreamAudioIndicator.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DGStreamAudioIndicator.xib; sourceTree = "<group>"; };
+		0C465AAA1FB9B9FC00283CEE /* DGStreamAudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamAudioPlayer.swift; sourceTree = "<group>"; };
+		0C5003011F99DB5400732730 /* TabBar.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = TabBar.storyboard; sourceTree = "<group>"; };
+		0C5003031F99DB9D00732730 /* DGStreamTabBarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamTabBarViewController.swift; sourceTree = "<group>"; };
+		0C5003051F9A595800732730 /* DGStreamContactsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamContactsTableViewCell.swift; sourceTree = "<group>"; };
+		0C5003091F9A5AC600732730 /* DGStreamRecentsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamRecentsTableViewCell.swift; sourceTree = "<group>"; };
+		0C50030B1F9A5E7B00732730 /* DGStreamRecent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamRecent.swift; sourceTree = "<group>"; };
+		0C50030D1F9A5E8400732730 /* DGStreamContact.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamContact.swift; sourceTree = "<group>"; };
+		0C50030F1F9A708200732730 /* DGStreamConversationsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamConversationsTableViewCell.swift; sourceTree = "<group>"; };
+		0C50FD701FB42B9E008F59F8 /* jot.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = jot.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C5463181F6C9E630008A9B8 /* UIScreenExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIScreenExtension.swift; sourceTree = "<group>"; };
 		0C54631E1F6C9FC20008A9B8 /* DGStreamFullLayout.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DGStreamFullLayout.swift; sourceTree = "<group>"; };
 		0C5463201F7190830008A9B8 /* CVReturnExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CVReturnExtension.swift; sourceTree = "<group>"; };
@@ -99,17 +130,25 @@
 		0C6257E81F6AF15200DFFE93 /* UIColorExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIColorExtension.swift; sourceTree = "<group>"; };
 		0C6257EB1F6AF74600DFFE93 /* UIFontExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIFontExtension.swift; sourceTree = "<group>"; };
 		0C6257EE1F6B3A0100DFFE93 /* UIViewExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIViewExtension.swift; sourceTree = "<group>"; };
-		0C6257F01F6B4ACD00DFFE93 /* DGStreamIncomingCallView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DGStreamIncomingCallView.swift; sourceTree = "<group>"; };
-		0C6257F41F6B4B2500DFFE93 /* DGStreamIncomingCallView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = DGStreamIncomingCallView.xib; sourceTree = "<group>"; };
 		0C6257F61F6C420200DFFE93 /* DGStreamAssets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = DGStreamAssets.xcassets; sourceTree = "<group>"; };
+		0C7273F71F8E91FD003F3AD4 /* DGStreamAlertView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamAlertView.swift; sourceTree = "<group>"; };
+		0C7273FB1F8EA258003F3AD4 /* DGStreamAlertView.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DGStreamAlertView.xib; sourceTree = "<group>"; };
+		0C7B080E1FC3B13500F6D0AD /* DGStreamWhiteBoardSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamWhiteBoardSession.swift; sourceTree = "<group>"; };
 		0C8067421F68729D0074FFD2 /* DGStreamSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DGStreamSettings.swift; sourceTree = "<group>"; };
 		0C8067441F6875B00074FFD2 /* DGStreamRecordSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DGStreamRecordSettings.swift; sourceTree = "<group>"; };
 		0C8067471F689ABE0074FFD2 /* DGStreamUserDataSource.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DGStreamUserDataSource.swift; sourceTree = "<group>"; };
 		0C8730141F58D7CA004B316D /* DGStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = DGStream.h; sourceTree = "<group>"; };
-		0C8730191F58D87F004B316D /* DGStreamBroadcast.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DGStreamBroadcast.swift; sourceTree = "<group>"; };
+		0C88A4EA1FBF757D008C5627 /* DGStreamChatPeekView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamChatPeekView.swift; sourceTree = "<group>"; };
+		0C88A4EC1FBF7DBB008C5627 /* DGStreamChatPeekCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamChatPeekCell.swift; sourceTree = "<group>"; };
+		0C88A4EE1FBF7DDA008C5627 /* DGStreamChatPeekCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DGStreamChatPeekCell.xib; sourceTree = "<group>"; };
 		0C9143CA1F58C15D00708198 /* DGStream.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DGStream.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C9143CE1F58C15D00708198 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		0CA6CD5A1F8BF4A70061D3D9 /* DGStreamRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamRenderer.swift; sourceTree = "<group>"; };
+		0CA6CD5C1F8C06000061D3D9 /* DGStreamGreenScreenCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamGreenScreenCapture.swift; sourceTree = "<group>"; };
+		0CB061481F981B7900F79792 /* DGStreamConversation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamConversation.swift; sourceTree = "<group>"; };
+		0CB816191F916A540079728E /* Chat.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Chat.storyboard; sourceTree = "<group>"; };
+		0CB8161B1F916A6A0079728E /* DGStreamChatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamChatViewController.swift; sourceTree = "<group>"; };
+		0CB8161D1F91984F0079728E /* DGStreamChatTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamChatTableViewCell.swift; sourceTree = "<group>"; };
+		0CB8161F1F9199070079728E /* DGStreamMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamMessage.swift; sourceTree = "<group>"; };
 		0CD79AB31F74A0F10034D2B4 /* GSVideoProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GSVideoProcessor.h; sourceTree = "<group>"; };
 		0CD79AB41F74A0F10034D2B4 /* GSVideoProcessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GSVideoProcessor.m; sourceTree = "<group>"; };
 		0CD79AB71F74A1E80034D2B4 /* GSGreenScreenEffect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GSGreenScreenEffect.h; sourceTree = "<group>"; };
@@ -121,8 +160,6 @@
 		0CD79AC41F74A87C0034D2B4 /* GreenScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = GreenScreen.storyboard; sourceTree = "<group>"; };
 		0CD79AC71F74ABA30034D2B4 /* greenScreen.fsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = greenScreen.fsh; sourceTree = "<group>"; };
 		0CD79AC81F74ABA30034D2B4 /* greenScreen.vsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = greenScreen.vsh; sourceTree = "<group>"; };
-		0CFE288E1F6758CB004005A9 /* KMZDrawView.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = KMZDrawView.framework; path = "../../../Library/Developer/Xcode/DerivedData/DGStreamTestApp-duqzncajaugpswfvaxxosguscrxm/Build/Products/Debug-iphoneos/KMZDrawView/KMZDrawView.framework"; sourceTree = "<group>"; };
-		2F44A413580A54A59D1693BB /* Pods_DGStream.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DGStream.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		74F4356033D6B7160D0C6EA7 /* Pods-DGStream.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DGStream.debug.xcconfig"; path = "Pods/Target Support Files/Pods-DGStream/Pods-DGStream.debug.xcconfig"; sourceTree = "<group>"; };
 		B779F294D5239BA41E10B464 /* Pods-DGStream.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DGStream.release.xcconfig"; path = "Pods/Target Support Files/Pods-DGStream/Pods-DGStream.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -132,7 +169,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0C19029A1F6772D80065564C /* KMZDrawView.framework in Frameworks */,
+				0C50FD6F1FB42B9E008F59F8 /* jot.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -159,6 +196,8 @@
 		0C08FA3A1F671A2E00B03CB2 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				0C5003001F99DB4200732730 /* TabBar */,
+				0CB816171F916A1B0079728E /* Chat */,
 				0C32BF311F69DFF700E4C5A2 /* Users */,
 				0C32BF301F69DF0800E4C5A2 /* Call */,
 			);
@@ -184,11 +223,13 @@
 		0C0A9DC21F675CD200FAC6DD /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				0C0A9DC31F675D6300FAC6DD /* DGStreamCollectionViewCell.swift */,
+				0C465AA41FB9A5FE00283CEE /* Audio */,
+				0C7273FA1F8E989D003F3AD4 /* Alert */,
+				0C7273F91F8E9811003F3AD4 /* Cells */,
 				0C1902A51F685ADF0065564C /* DGStreamVideoView.swift */,
-				0C32BF361F69E19000E4C5A2 /* DGStreamUserTableViewCell.swift */,
-				0C6257F01F6B4ACD00DFFE93 /* DGStreamIncomingCallView.swift */,
-				0C6257F41F6B4B2500DFFE93 /* DGStreamIncomingCallView.xib */,
+				0C88A4EA1FBF757D008C5627 /* DGStreamChatPeekView.swift */,
+				0C88A4EC1FBF7DBB008C5627 /* DGStreamChatPeekCell.swift */,
+				0C88A4EE1FBF7DDA008C5627 /* DGStreamChatPeekCell.xib */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -225,7 +266,12 @@
 			children = (
 				0C08FA3F1F6724C100B03CB2 /* Apple Extensions */,
 				0C41BB9B1F637233001F42ED /* DGStreamUser.swift */,
+				0CB061481F981B7900F79792 /* DGStreamConversation.swift */,
+				0CB8161F1F9199070079728E /* DGStreamMessage.swift */,
 				0C54631E1F6C9FC20008A9B8 /* DGStreamFullLayout.swift */,
+				0C50030B1F9A5E7B00732730 /* DGStreamRecent.swift */,
+				0C50030D1F9A5E8400732730 /* DGStreamContact.swift */,
+				0C7B080E1FC3B13500F6D0AD /* DGStreamWhiteBoardSession.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -239,24 +285,76 @@
 			path = "App Interface";
 			sourceTree = "<group>";
 		};
+		0C465AA41FB9A5FE00283CEE /* Audio */ = {
+			isa = PBXGroup;
+			children = (
+				0C465AA51FB9A62000283CEE /* DGStreamAudioIndicator.swift */,
+				0C465AA71FB9A63F00283CEE /* DGStreamAudioIndicator.xib */,
+			);
+			path = Audio;
+			sourceTree = "<group>";
+		};
+		0C465AA91FB9B9E100283CEE /* Audio */ = {
+			isa = PBXGroup;
+			children = (
+				0C465AAA1FB9B9FC00283CEE /* DGStreamAudioPlayer.swift */,
+			);
+			path = Audio;
+			sourceTree = "<group>";
+		};
+		0C5003001F99DB4200732730 /* TabBar */ = {
+			isa = PBXGroup;
+			children = (
+				0C5003011F99DB5400732730 /* TabBar.storyboard */,
+				0C5003031F99DB9D00732730 /* DGStreamTabBarViewController.swift */,
+			);
+			path = TabBar;
+			sourceTree = "<group>";
+		};
 		0C54632D1F71C80A0008A9B8 /* Screen Capture */ = {
 			isa = PBXGroup;
 			children = (
 				0C08FA3D1F671E9D00B03CB2 /* DGStreamScreenCapture.swift */,
+				0CA6CD5C1F8C06000061D3D9 /* DGStreamGreenScreenCapture.swift */,
 				0CD79AB21F74A0C30034D2B4 /* Green Screen */,
 			);
 			path = "Screen Capture";
 			sourceTree = "<group>";
 		};
+		0C7273F91F8E9811003F3AD4 /* Cells */ = {
+			isa = PBXGroup;
+			children = (
+				0C0A9DC31F675D6300FAC6DD /* DGStreamCollectionViewCell.swift */,
+				0C32BF361F69E19000E4C5A2 /* DGStreamUserTableViewCell.swift */,
+				0CB8161D1F91984F0079728E /* DGStreamChatTableViewCell.swift */,
+				0C5003051F9A595800732730 /* DGStreamContactsTableViewCell.swift */,
+				0C5003091F9A5AC600732730 /* DGStreamRecentsTableViewCell.swift */,
+				0C50030F1F9A708200732730 /* DGStreamConversationsTableViewCell.swift */,
+			);
+			path = Cells;
+			sourceTree = "<group>";
+		};
+		0C7273FA1F8E989D003F3AD4 /* Alert */ = {
+			isa = PBXGroup;
+			children = (
+				0C7273F71F8E91FD003F3AD4 /* DGStreamAlertView.swift */,
+				0C7273FB1F8EA258003F3AD4 /* DGStreamAlertView.xib */,
+			);
+			path = Alert;
+			sourceTree = "<group>";
+		};
 		0C8067411F68725E0074FFD2 /* Utility */ = {
 			isa = PBXGroup;
 			children = (
+				0C465AA91FB9B9E100283CEE /* Audio */,
 				0C32BF381F69ED9D00E4C5A2 /* UserOperation */,
 				0C8067461F689A880074FFD2 /* UserDataSource */,
 				0C8067421F68729D0074FFD2 /* DGStreamSettings.swift */,
 				0C8067441F6875B00074FFD2 /* DGStreamRecordSettings.swift */,
 				0C5F26F71F7F0D4D001B1D80 /* DGStreamNotification.h */,
 				0C5F26F81F7F0D4D001B1D80 /* DGStreamNotification.m */,
+				0C4150B91FBAB54E006ABAD4 /* DGStreamPhotoSaver.h */,
+				0C4150BA1FBAB54E006ABAD4 /* DGStreamPhotoSaver.m */,
 			);
 			path = Utility;
 			sourceTree = "<group>";
@@ -267,14 +365,6 @@
 				0C8067471F689ABE0074FFD2 /* DGStreamUserDataSource.swift */,
 			);
 			path = UserDataSource;
-			sourceTree = "<group>";
-		};
-		0C8730181F58D853004B316D /* Broadcast */ = {
-			isa = PBXGroup;
-			children = (
-				0C8730191F58D87F004B316D /* DGStreamBroadcast.swift */,
-			);
-			path = Broadcast;
 			sourceTree = "<group>";
 		};
 		0C9143C01F58C15C00708198 = {
@@ -299,7 +389,6 @@
 			isa = PBXGroup;
 			children = (
 				0C41BB9F1F6373D4001F42ED /* App Interface */,
-				0C8730181F58D853004B316D /* Broadcast */,
 				0C08FA371F6702F900B03CB2 /* Capture */,
 				0C08FA3A1F671A2E00B03CB2 /* Controllers */,
 				0C0A9DC21F675CD200FAC6DD /* Views */,
@@ -312,6 +401,15 @@
 				0C1902A31F6775710065564C /* Reachability.swift */,
 			);
 			path = DGStream;
+			sourceTree = "<group>";
+		};
+		0CB816171F916A1B0079728E /* Chat */ = {
+			isa = PBXGroup;
+			children = (
+				0CB816191F916A540079728E /* Chat.storyboard */,
+				0CB8161B1F916A6A0079728E /* DGStreamChatViewController.swift */,
+			);
+			path = Chat;
 			sourceTree = "<group>";
 		};
 		0CD79AB21F74A0C30034D2B4 /* Green Screen */ = {
@@ -327,7 +425,6 @@
 				0CD79ABF1F74A21A0034D2B4 /* GSViewController.h */,
 				0CD79AC01F74A21A0034D2B4 /* GSViewController.m */,
 				0CD79AC41F74A87C0034D2B4 /* GreenScreen.storyboard */,
-				0CA6CD5A1F8BF4A70061D3D9 /* DGStreamRenderer.swift */,
 			);
 			path = "Green Screen";
 			sourceTree = "<group>";
@@ -344,8 +441,7 @@
 		D5D64BE885955FCDEA1A5AE8 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				0CFE288E1F6758CB004005A9 /* KMZDrawView.framework */,
-				2F44A413580A54A59D1693BB /* Pods_DGStream.framework */,
+				0C50FD701FB42B9E008F59F8 /* jot.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -361,6 +457,7 @@
 				0CD79AB91F74A1E80034D2B4 /* GSGreenScreenEffect.h in Headers */,
 				0CD79AC11F74A21A0034D2B4 /* GSViewController.h in Headers */,
 				0C5F26F91F7F0D4D001B1D80 /* DGStreamNotification.h in Headers */,
+				0C4150BB1FBAB54E006ABAD4 /* DGStreamPhotoSaver.h in Headers */,
 				0C0F01CD1F7D8F7100FCF3B6 /* NSNumber+CVPixelFormatType.h in Headers */,
 				0CD79ABD1F74A1F60034D2B4 /* UtilityEffect.h in Headers */,
 				0CD79AB51F74A0F10034D2B4 /* GSVideoProcessor.h in Headers */,
@@ -430,13 +527,17 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0C6257F51F6B4B2500DFFE93 /* DGStreamIncomingCallView.xib in Resources */,
+				0C7273FC1F8EA258003F3AD4 /* DGStreamAlertView.xib in Resources */,
+				0C5003021F99DB5400732730 /* TabBar.storyboard in Resources */,
 				0CD79ACA1F74ABA30034D2B4 /* greenScreen.vsh in Resources */,
+				0C465AA81FB9A63F00283CEE /* DGStreamAudioIndicator.xib in Resources */,
 				0C6257F71F6C420200DFFE93 /* DGStreamAssets.xcassets in Resources */,
 				0CD79AC51F74A87C0034D2B4 /* GreenScreen.storyboard in Resources */,
 				0CD79AC91F74ABA30034D2B4 /* greenScreen.fsh in Resources */,
 				0C0A9DC61F675DD100FAC6DD /* Call.storyboard in Resources */,
+				0CB8161A1F916A540079728E /* Chat.storyboard in Resources */,
 				0C32BF351F69E04500E4C5A2 /* Users.storyboard in Resources */,
+				0C88A4EF1FBF7DDA008C5627 /* DGStreamChatPeekCell.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -484,35 +585,50 @@
 				0C08FA3E1F671E9D00B03CB2 /* DGStreamScreenCapture.swift in Sources */,
 				0C6257EF1F6B3A0100DFFE93 /* UIViewExtension.swift in Sources */,
 				0C0A9DC81F67691E00FAC6DD /* DGStreamCore.swift in Sources */,
-				0C6257F11F6B4ACD00DFFE93 /* DGStreamIncomingCallView.swift in Sources */,
+				0C7273F81F8E91FD003F3AD4 /* DGStreamAlertView.swift in Sources */,
 				0C5463251F71AC890008A9B8 /* UIImageExtension.swift in Sources */,
+				0C465AAB1FB9B9FC00283CEE /* DGStreamAudioPlayer.swift in Sources */,
+				0CB816201F9199070079728E /* DGStreamMessage.swift in Sources */,
+				0C50030C1F9A5E7B00732730 /* DGStreamRecent.swift in Sources */,
+				0C88A4ED1FBF7DBB008C5627 /* DGStreamChatPeekCell.swift in Sources */,
 				0C41BB9C1F637233001F42ED /* DGStreamUser.swift in Sources */,
 				0C41BBA11F637449001F42ED /* DGStreamManager.swift in Sources */,
 				0C0A9DC41F675D6300FAC6DD /* DGStreamCollectionViewCell.swift in Sources */,
 				0C8067431F68729D0074FFD2 /* DGStreamSettings.swift in Sources */,
+				0CA6CD5D1F8C06000061D3D9 /* DGStreamGreenScreenCapture.swift in Sources */,
 				0C6257E91F6AF15200DFFE93 /* UIColorExtension.swift in Sources */,
 				0C08FA3C1F671A6800B03CB2 /* DGStreamCallViewController.swift in Sources */,
 				0CD79ABA1F74A1E80034D2B4 /* GSGreenScreenEffect.m in Sources */,
+				0C4150BC1FBAB54E006ABAD4 /* DGStreamPhotoSaver.m in Sources */,
+				0C50030A1F9A5AC600732730 /* DGStreamRecentsTableViewCell.swift in Sources */,
 				0C32BF3C1F69EE2400E4C5A2 /* DGStreamUserOperation.swift in Sources */,
+				0C88A4EB1FBF757D008C5627 /* DGStreamChatPeekView.swift in Sources */,
 				0CD79AB61F74A0F10034D2B4 /* GSVideoProcessor.m in Sources */,
+				0C5003061F9A595800732730 /* DGStreamContactsTableViewCell.swift in Sources */,
 				0C5F26FA1F7F0D4D001B1D80 /* DGStreamNotification.m in Sources */,
 				0C6257EC1F6AF74600DFFE93 /* UIFontExtension.swift in Sources */,
 				0C54631F1F6C9FC20008A9B8 /* DGStreamFullLayout.swift in Sources */,
 				0C5463191F6C9E630008A9B8 /* UIScreenExtension.swift in Sources */,
+				0C5003041F99DB9D00732730 /* DGStreamTabBarViewController.swift in Sources */,
 				0C0F01CE1F7D8F7100FCF3B6 /* NSNumber+CVPixelFormatType.m in Sources */,
+				0CB8161C1F916A6A0079728E /* DGStreamChatViewController.swift in Sources */,
+				0CB061491F981B7900F79792 /* DGStreamConversation.swift in Sources */,
 				0C41BBA31F637458001F42ED /* DGStreamProtocols.swift in Sources */,
 				0CD79ABE1F74A1F60034D2B4 /* UtilityEffect.m in Sources */,
+				0CB8161E1F91984F0079728E /* DGStreamChatTableViewCell.swift in Sources */,
+				0C465AA61FB9A62000283CEE /* DGStreamAudioIndicator.swift in Sources */,
 				0C5463211F7190830008A9B8 /* CVReturnExtension.swift in Sources */,
 				0C1902A61F685ADF0065564C /* DGStreamVideoView.swift in Sources */,
 				0CD79AC21F74A21A0034D2B4 /* GSViewController.m in Sources */,
 				0C32BF3A1F69EE0D00E4C5A2 /* DGStreamUserOperationQueue.swift in Sources */,
+				0C5003101F9A708200732730 /* DGStreamConversationsTableViewCell.swift in Sources */,
 				0C32BF371F69E19000E4C5A2 /* DGStreamUserTableViewCell.swift in Sources */,
 				0C8067481F689ABE0074FFD2 /* DGStreamUserDataSource.swift in Sources */,
 				0C1902A41F6775710065564C /* Reachability.swift in Sources */,
 				0C32BF331F69E03300E4C5A2 /* DGStreamUsersViewController.swift in Sources */,
-				0CA6CD5B1F8BF4A70061D3D9 /* DGStreamRenderer.swift in Sources */,
-				0C87301A1F58D87F004B316D /* DGStreamBroadcast.swift in Sources */,
 				0C08FA411F67251600B03CB2 /* DispatchExtension.swift in Sources */,
+				0C7B080F1FC3B13500F6D0AD /* DGStreamWhiteBoardSession.swift in Sources */,
+				0C50030E1F9A5E8400732730 /* DGStreamContact.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

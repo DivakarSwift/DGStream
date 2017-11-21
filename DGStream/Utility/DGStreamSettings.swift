@@ -41,7 +41,7 @@ class DGStreamSettings: NSObject {
             self.videoFormat = format
         }
         else {
-            self.videoFormat = QBRTCVideoFormat(width: 640, height: 480, frameRate: 30, pixelFormat: .formatARGB)
+            self.videoFormat = QBRTCVideoFormat(width: 480, height: 480, frameRate: 30, pixelFormat: .formatARGB)
         }
         
         if let mediaConfigData = defaults.object(forKey: "kMediaConfigKey") as? Data, let config = NSKeyedUnarchiver.unarchiveObject(with: mediaConfigData) as? QBRTCMediaStreamConfiguration {
