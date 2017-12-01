@@ -14,18 +14,33 @@ enum DGStreamTabBarItem: Int {
     case messages = 2
 }
 
-class DGStreamTabBarViewController: UIViewController {
+class DGStreamTabBarViewController: CustomTransitionViewController {
     
     @IBOutlet weak var navBarView: UIView!
     @IBOutlet weak var navTitleLabel: UILabel!
     @IBOutlet weak var rightButton: UIButton!
+    @IBOutlet weak var userImageView: UIImageView!
     @IBOutlet weak var leftButton: UIButton!
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var tabBar: UITabBar!
     
+    @IBOutlet weak var initialUserImageViewContainerCenterX: NSLayoutConstraint!
+    @IBOutlet weak var initialUserImageViewContainerCenterY: NSLayoutConstraint!
+    @IBOutlet weak var initialUserImageViewContainerWidth: NSLayoutConstraint!
+    @IBOutlet weak var initialUserImageViewContainerHeight: NSLayoutConstraint!
+    
     @IBOutlet weak var videoCallButton: UIButton!
     @IBOutlet weak var audioCallButton: UIButton!
     @IBOutlet weak var messageButton: UIButton!
+    
+    
+    @IBOutlet weak var initialUserImageViewContainer: UIView!
+    @IBOutlet weak var blackoutView: UIView!
+    
+    @IBOutlet weak var initialUserImageView: UIImageView!
+    @IBOutlet weak var abrevLabel: UILabel!
+    @IBOutlet weak var welcomeLabel: UILabel!
+    @IBOutlet weak var lastLoggedInLabel: UILabel!
     
     var recents:[DGStreamRecent] = []
     var contacts:[DGStreamContact] = []
@@ -35,18 +50,23 @@ class DGStreamTabBarViewController: UIViewController {
     var selectedRows:[(row: Int, count: Int)] = []
     var selectedItem:DGStreamTabBarItem = .recents
     
+    @IBOutlet weak var emptyLabel: UILabel!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+    
+        self.emptyLabel.alpha = 0
         
         self.view.backgroundColor = UIColor.dgBackground()
+        self.blackoutView.backgroundColor = UIColor.dgGreen()
                 
-        // Dummy Data
+        // Data
         loadRecents()
         loadContacts()
         loadConversations()
 
         // Nav Bar
-        self.navBarView.backgroundColor = UIColor.dgDarkGray()
+        self.navBarView.backgroundColor = UIColor.dgGray()
         self.navTitleLabel.textColor = UIColor.dgBackground()
         
         //Table View
@@ -54,20 +74,93 @@ class DGStreamTabBarViewController: UIViewController {
         self.tableView.backgroundColor = .clear
         self.tableView.backgroundView?.backgroundColor = .clear
         
-        self.tabBar.backgroundColor = UIColor.dgDarkGray()
-        self.tabBar.barTintColor = UIColor.dgDarkGray()
-        self.tabBar.tintColor = UIColor.dgBackground()
+        self.tabBar.backgroundColor = UIColor.dgGreen()
+        self.tabBar.barTintColor = UIColor.dgGreen()
+        self.tabBar.tintColor = UIColor.dgGray()
         self.tabBar.unselectedItemTintColor = .white
         self.tabBar.delegate = self
         
         self.setUpButtons()
         
+        self.tabBar.delegate = self
+        
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
+        self.initialUserImageView.backgroundColor = UIColor.dgGray()
+        self.initialUserImageView.layer.cornerRadius = self.initialUserImageView.frame.size.width / 2
+        
+        self.welcomeLabel.textColor = .white
+        self.lastLoggedInLabel.textColor = .white
+        
+        if let currentUser = DGStreamCore.instance.currentUser {
+            
+            if let imageData = currentUser.image, let image = UIImage.init(data: imageData) {
+                self.initialUserImageView.image = image
+                self.abrevLabel.isHidden = true
+            }
+            else {
+                self.abrevLabel.text = NSString(string: currentUser.username ?? "?").substring(to: 1)
+                self.abrevLabel.textColor = .white
+            }
+            
+            self.welcomeLabel.text = "Welcome \(currentUser.username ?? "Unknown")"
+            self.lastLoggedInLabel.text = "Last Seen \(currentUser.lastSeen ?? Date())"
+        }
+        
         self.tableView.reloadData()
         DGStreamCore.instance.presentedViewController = self
+    }
+    
+    func viewTapped() {
+        
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        if self.blackoutView.isHidden == false {
+            showInitialViews()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.25, execute: {
+                self.animateInitialViews()
+            })
+        }
+    }
+    
+    func showInitialViews() {
+        UIView.animate(withDuration: 0.25) {
+            self.initialUserImageViewContainer.alpha = 1
+            self.welcomeLabel.alpha = 1
+            self.lastLoggedInLabel.alpha = 1
+        }
+    }
+    
+    func animateInitialViews() {
+        
+        let initialRect = self.view.convert(self.initialUserImageViewContainer.frame, to: self.blackoutView)
+        let endRect = CGRect(x: self.view.bounds.size.width - (10 + 44), y: 10, width: 44, height: 44)
+        
+        self.initialUserImageViewContainer.isHidden = true
+        
+        let animateImageView = UIImageView(frame: initialRect)
+        animateImageView.clipsToBounds = true
+        animateImageView.image = self.initialUserImageView.image
+        animateImageView.backgroundColor = .red
+        animateImageView.layer.cornerRadius = animateImageView.frame.size.width / 2
+        self.blackoutView.addSubview(animateImageView)
+    
+        UIView.animate(withDuration: 1.25, animations: {
+            self.blackoutView.backgroundColor = .clear
+            self.welcomeLabel.alpha = 0
+            self.lastLoggedInLabel.alpha = 0
+            animateImageView.frame = endRect
+            animateImageView.layer.cornerRadius = endRect.size.width / 2
+            self.blackoutView.layoutIfNeeded()
+        }) { (f) in
+            self.blackoutView.isHidden = true
+        }
     }
 
     override func didReceiveMemoryWarning() {
@@ -115,6 +208,10 @@ class DGStreamTabBarViewController: UIViewController {
         if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID {
             self.recents = DGStreamRecent.createDGStreamRecentsFrom(protocols: DGStreamManager.instance.dataSource.streamManager(DGStreamManager.instance, recentsWithUserID: currentUserID))
             print("Loadded Recents \(self.recents.count)")
+            if self.recents.count == 0 {
+                self.emptyLabel.text = "No Recents"
+                self.emptyLabel.alpha = 1
+            }
         }
     }
     
@@ -122,6 +219,10 @@ class DGStreamTabBarViewController: UIViewController {
         if let currentUser = DGStreamCore.instance.currentUser, let userID = currentUser.userID {
             self.contacts = DGStreamContact.createDGStreamContactsFrom(protocols: DGStreamManager.instance.dataSource.streamManager(DGStreamManager.instance, contactsForUserID: userID))
             print("Loaded Contacts \(self.contacts.count)")
+            if self.contacts.count == 0 {
+                self.emptyLabel.text = "No Contacts"
+                self.emptyLabel.alpha = 1
+            }
         }
     }
 
@@ -129,6 +230,10 @@ class DGStreamTabBarViewController: UIViewController {
         if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID {
             self.conversations = DGStreamConversation.createDGStreamConversationsFrom(protocols: DGStreamManager.instance.dataSource.streamManager(DGStreamManager.instance, conversationsWithCurrentUser: currentUserID))
             print("Loaded Conversations \(self.conversations.count)")
+            if self.conversations.count == 0 {
+                self.emptyLabel.text = "No Messages"
+                self.emptyLabel.alpha = 1
+            }
         }
     }
     
@@ -161,7 +266,9 @@ class DGStreamTabBarViewController: UIViewController {
                     callVC.isAudioCall = true
                 }
                 DGStreamCore.instance.audioPlayer.ringFor(receiver: false)
-                self.navigationController?.pushViewController(callVC, animated: true)
+                self.present(callVC, animated: false, completion: {
+                    
+                })
                 
             }
         }
@@ -265,7 +372,7 @@ class DGStreamTabBarViewController: UIViewController {
             }
             
             
-            let chatVC = UIStoryboard(name: "Chat", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as! DGStreamChatViewController
+            let chatVC = UIStoryboard(name: "Chat", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as! DGStreamChatNavigationController
             chatVC.chatConversation = conversation
             
             self.navigationController?.pushViewController(chatVC, animated: true)
@@ -508,6 +615,7 @@ extension DGStreamTabBarViewController: UITableViewDelegate, UITableViewDataSour
 
 extension DGStreamTabBarViewController: UITabBarDelegate {
     func tabBar(_ tabBar: UITabBar, didSelect item: UITabBarItem) {
+        self.emptyLabel.alpha = 0
         if let streamItem:DGStreamTabBarItem = DGStreamTabBarItem(rawValue: item.tag) {
             if streamItem != selectedItem {
                 selectedItem = streamItem
@@ -534,7 +642,22 @@ extension DGStreamTabBarViewController: UITabBarDelegate {
 }
 
 extension DGStreamTabBarViewController: DGStreamTableViewCellDelegate {
-    func streamCallButtonTappedWith(userID: NSNumber, type: QBRTCConferenceType) {
-        callUsers(userIDs: [userID], for: type)
+    func streamCallButtonTappedWith(userID: NSNumber, type: QBRTCConferenceType, cellIndex: Int, buttonFrame: CGRect) {
+        
+        if let cell = tableView.cellForRow(at: IndexPath(row: cellIndex, section: 0)) {
+            let convertedRect = cell.contentView.convert(buttonFrame, to: self.view)
+            
+            let expander = TransitionButton(frame: convertedRect)
+            expander.backgroundColor = UIColor.dgGreen()
+            expander.cornerRadius = buttonFrame.size.width / 2
+            self.view.addSubview(expander)
+            expander.stopAnimation(animationStyle: .expand, revertAfterDelay: 0.5, completion: {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0, execute: {
+                    expander.removeFromSuperview()
+                })
+            })
+            
+            self.callUsers(userIDs: [userID], for: type)
+        }
     }
 }

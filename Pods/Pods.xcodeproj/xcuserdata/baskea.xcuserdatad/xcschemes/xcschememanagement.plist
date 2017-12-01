@@ -4,12 +4,37 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
+		<key>AsyncDisplayKit.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
 		<key>Masonry.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>
 		</dict>
+		<key>NMessenger.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>PINCache.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>PINRemoteImage.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
 		<key>Pods-DGStream.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false/>
+		</dict>
+		<key>YNDropDownMenu.xcscheme</key>
 		<dict>
 			<key>isShown</key>
 			<false/>

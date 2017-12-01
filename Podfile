@@ -5,6 +5,8 @@ def pods
     pod 'Quickblox-WebRTC'
     pod 'QuickBlox'
     pod 'jot'
+    pod 'NMessenger'
+    pod 'YNDropDownMenu'
 end
 
 target ‘DGStream’ do

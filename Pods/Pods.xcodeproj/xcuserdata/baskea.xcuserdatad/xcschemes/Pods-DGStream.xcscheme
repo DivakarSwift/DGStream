@@ -14,7 +14,7 @@
             buildForArchiving = "YES">
             <BuildableReference
                BuildableIdentifier = 'primary'
-               BlueprintIdentifier = '7F5143B04AFFDA81AF37CE2CE2C29152'
+               BlueprintIdentifier = '63E0DE4107934AEE17AD2EC2CE5895EA'
                BlueprintName = 'Pods-DGStream'
                ReferencedContainer = 'container:Pods.xcodeproj'
                BuildableName = 'Pods-DGStream.framework'>

@@ -6,16 +6,17 @@
 //  Copyright © 2017 Dataglance. All rights reserved.
 //
 
-import UIKit
-
 protocol DGStreamChatViewControllerDelegate {
     func chat(viewController: DGStreamChatViewController, backButtonTapped sender:Any?)
     func chat(viewController: DGStreamChatViewController, didReceiveMessage message: DGStreamMessage)
 }
 
-public class DGStreamChatViewController: UIViewController {
-    
-    @IBOutlet weak var tableView: UITableView!
+
+import UIKit
+import NMessenger
+import AsyncDisplayKit
+
+class DGStreamChatViewController: UIViewController {
     
     @IBOutlet weak var textBar: UIView!
     @IBOutlet weak var textBarHeightConstraint: NSLayoutConstraint!
@@ -25,17 +26,33 @@ public class DGStreamChatViewController: UIViewController {
     @IBOutlet weak var photoButton: UIButton!
     
     @IBOutlet weak var navBarView: UIView!
-    @IBOutlet weak var backButton: UIButton!
     @IBOutlet weak var abrevLabel: UILabel!
-    @IBOutlet weak var nameLabel: UILabel!
+    @IBOutlet weak var backButton: UIButton!
     @IBOutlet weak var imageView: UIImageView!
-    @IBOutlet weak var moreButton: UIButton!
+    @IBOutlet weak var nameLabel: UILabel!
+    
+    var messengerView:NMessenger!
+    @IBOutlet weak var messengerContainer: UIView!
     
     var chatMessages:[DGStreamMessage] = []
     var chatConversation:DGStreamConversation!
     var isKeyboardShown = false
     
     var delegate: DGStreamChatViewControllerDelegate!
+    
+    let segmentedControlPadding:CGFloat = 10
+    let segmentedControlHeight: CGFloat = 30
+    
+    lazy var senderSegmentedControl : UISegmentedControl = {
+        let control = UISegmentedControl(items: ["incoming", "outgoing"])
+        control.selectedSegmentIndex = 0
+        return control
+    }()
+    
+    private(set) var lastMessageGroup:MessageGroup? = nil
+    
+    //This is not needed in your implementation. This just for a demo purpose.
+    var bootstrapWithRandomMessages : Int = 0
     
     override public func viewDidLoad() {
         super.viewDidLoad()
@@ -47,15 +64,9 @@ public class DGStreamChatViewController: UIViewController {
         self.imageView.layer.cornerRadius = self.imageView.frame.size.width / 2
         self.imageView.backgroundColor = UIColor.dgBackground()
         self.backButton.setTitleColor(.white, for: .normal)
-        self.moreButton.setTitleColor(.white, for: .normal)
+        //self.moreButton.setTitleColor(.white, for: .normal)
         self.nameLabel.textColor = UIColor.dgBackground()
         self.abrevLabel.textColor = UIColor.dgDarkGray()
-        
-        // Table View
-        self.tableView.rowHeight = UITableViewAutomaticDimension
-        self.tableView.estimatedRowHeight = 50
-        self.tableView.backgroundColor = .clear
-        self.tableView.backgroundView?.backgroundColor = .clear
         
         // Text Bar
         self.textBar.backgroundColor = UIColor.dgDarkGray()
@@ -72,7 +83,9 @@ public class DGStreamChatViewController: UIViewController {
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardDidShow), name: Notification.Name.UIKeyboardDidShow, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(notification:)), name: Notification.Name.UIKeyboardWillHide, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillChangeFrame(notification:)), name: Notification.Name.UIKeyboardWillChangeFrame, object: nil)
-    
+        
+        self.messengerView = NMessenger(frame: self.messengerContainer.bounds)
+        self.messengerView.boundInside(container: self.messengerContainer)
     }
     
     override public func viewWillAppear(_ animated: Bool) {
@@ -89,8 +102,13 @@ public class DGStreamChatViewController: UIViewController {
         DGStreamCore.instance.chatViewController = self
         loadMessages()
         if self.chatMessages.count > 2 {
-            self.tableView.scrollToRow(at: IndexPath.init(row: self.chatMessages.count - 1, section: 0), at: .bottom, animated: false)
+//            self.tableView.scrollToRow(at: IndexPath.init(row: self.chatMessages.count - 1, section: 0), at: .bottom, animated: false)
         }
+    }
+    
+    override public func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
     }
     
     func loadMessages() {
@@ -100,9 +118,10 @@ public class DGStreamChatViewController: UIViewController {
             messages.append(DGStreamMessage.createDGStreamMessageFrom(proto: proto))
         }
         chatMessages = messages
-        self.tableView.reloadData()
+        
+        
     }
-
+    
     override public func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -130,7 +149,7 @@ public class DGStreamChatViewController: UIViewController {
     @IBAction func sendButtonTapped(_ sender: Any) {
         sendChatMessageWith(text: textView.text)
     }
-
+    
     @IBAction func photoButtonTapped(_ sender: Any) {
         
     }
@@ -160,7 +179,7 @@ extension DGStreamChatViewController {
                 options = UIViewAnimationOptions.init(rawValue: keyboardAnimationCurve)
             }
             
-            textBarBottomConstraint.constant = -keyboardHeight
+            textBarBottomConstraint.constant = keyboardHeight
             textBarHeightConstraint.constant = textBarHeight
             UIView.animate(withDuration: duration, delay: 0.0, options: options, animations: {
                 self.view.layoutIfNeeded()
@@ -224,14 +243,14 @@ extension DGStreamChatViewController: UITableViewDataSource {
             cellIdentifier = "SelfCell"
         }
         else {
-            cellIdentifier = "Cell"
+                cellIdentifier = "Cell"
+            }
+    
+            let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as! DGStreamChatTableViewCell
+            cell.configureWith(chatMessage: chatMessage)
+            return cell
         }
-        
-        let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as! DGStreamChatTableViewCell
-        cell.configureWith(chatMessage: chatMessage)
-        return cell
     }
-}
 
 // MARK:- UITextViewDelegate
 extension DGStreamChatViewController: UITextViewDelegate {
@@ -255,21 +274,46 @@ extension DGStreamChatViewController: UITextViewDelegate {
     }
     
     fileprivate func addChat(message: DGStreamMessage) {
-        DGStreamCore.instance.audioPlayer.ringForText()
+
         chatMessages.append(message)
-        self.tableView.beginUpdates()
-        self.tableView.insertRows(at: [IndexPath(row: chatMessages.count - 1, section: 0)], with: .fade)
-        self.tableView.endUpdates()
+//        self.tableView.beginUpdates()
+//        self.tableView.insertRows(at: [IndexPath(row: chatMessages.count - 1, section: 0)], with: .fade)
+//        self.tableView.endUpdates()
+        
+        var isIncomingMessage:Bool = true
+        if let user = DGStreamCore.instance.currentUser, let currentUserID = user.userID, message.senderID == currentUserID {
+            isIncomingMessage = false
+        }
+        
+        let textNode = TextContentNode(textMessageString: message.message)
+        textNode.isIncomingMessage = isIncomingMessage
+        textNode.incomingTextFont = UIFont(name: "HelveticaNeue-Bold", size: 14)!
+        textNode.outgoingTextFont = UIFont(name: "HelveticaNeue-Bold", size: 14)!
+        textNode.insets = UIEdgeInsetsMake(8, 8, 8, 8)
+        textNode.incomingTextColor = UIColor.red
+        
+        if isIncomingMessage {
+            textNode.backgroundBubble?.bubbleColor = UIColor.dgGreen()
+        }
+        else {
+            textNode.backgroundBubble?.bubbleColor = UIColor.dgBlueDark()
+        }
+        
+        let messageNode = MessageNode(content: textNode)
+        messageNode.isIncomingMessage = isIncomingMessage
+        
+        self.messengerView.addMessage(messageNode, scrollsToMessage: true)
+        
     }
     
     func sendChatMessageWith(text: String) {
         textView.resignFirstResponder()
-        if let user = DGStreamCore.instance.currentUser, let userID = user.userID {
+        if let user = DGStreamCore.instance.currentUser, let currentUserID = user.userID {
             
             var receivers: [NSNumber] = []
             if let userIDs = self.chatConversation.userIDs {
                 for id in userIDs {
-                    if id != userID {
+                    if id != currentUserID {
                         receivers.append(id)
                     }
                 }
@@ -278,7 +322,8 @@ extension DGStreamChatViewController: UITextViewDelegate {
             let chatMessage = DGStreamMessage()
             chatMessage.delivered = Date()
             chatMessage.message = text
-            chatMessage.senderID = userID
+            chatMessage.senderID = currentUserID
+            chatMessage.receiverID = receivers.first
             if self.chatConversation.type == .callConversation {
                 chatMessage.conversationID = "0"
             }
@@ -293,4 +338,10 @@ extension DGStreamChatViewController: UITextViewDelegate {
             addChat(message: chatMessage)
         }
     }
+    
 }
+    
+    
+    
+    
+

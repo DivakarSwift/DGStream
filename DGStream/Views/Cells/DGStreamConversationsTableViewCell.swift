@@ -19,9 +19,9 @@ class DGStreamConversationsTableViewCell: UITableViewCell {
         // Initialization code
         self.contentView.backgroundColor = .clear
         self.backgroundColor = .clear
-        nameLabel.textColor = UIColor.dgDarkGray()
-        userImageView.backgroundColor = UIColor.dgDarkGray()
-        abrevLabel.textColor = UIColor.dgBackground()
+        nameLabel.textColor = UIColor.dgGray()
+        userImageView.backgroundColor = UIColor.dgGray()
+        abrevLabel.textColor = .white
         userImageView.layer.cornerRadius = userImageView.frame.size.width / 2
     }
 

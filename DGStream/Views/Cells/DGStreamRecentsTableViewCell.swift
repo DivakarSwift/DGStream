@@ -30,13 +30,13 @@ class DGStreamRecentsTableViewCell: UITableViewCell {
         self.backgroundColor = .clear
         self.numberLabel.backgroundColor = UIColor.dgGreen()
         self.numberLabel.layer.cornerRadius = self.numberLabel.frame.size.width / 2
-        self.numberLabel.textColor = UIColor.dgBackground()
+        self.numberLabel.textColor = .white
         userImageView.layer.cornerRadius = userImageView.frame.size.width / 2
-        userImageView.backgroundColor = UIColor.dgDarkGray()
-        abrevLabel.textColor = UIColor.dgBackground()
-        nameLabel.textColor = UIColor.dgDarkGray()
-        dateLabel.textColor = UIColor.dgDarkGray()
-        durationLabel.textColor = UIColor.dgDarkGray()
+        userImageView.backgroundColor = UIColor.dgGray()
+        abrevLabel.textColor = .white
+        nameLabel.textColor = UIColor.dgGray()
+        dateLabel.textColor = UIColor.dgGray()
+        durationLabel.textColor = UIColor.dgGray()
         self.setUpButtons()
     }
 
@@ -158,7 +158,11 @@ class DGStreamRecentsTableViewCell: UITableViewCell {
                 userID = senderID
             }
             if let userID = userID {
-                self.delegate.streamCallButtonTappedWith(userID: userID, type: .video)
+                
+                let button = sender as? UIButton
+                let buttonFrame = button?.frame ?? .zero
+                
+                self.delegate.streamCallButtonTappedWith(userID: userID, type: .video, cellIndex: self.tag, buttonFrame: buttonFrame)
             }
         }
     }
@@ -172,9 +176,11 @@ class DGStreamRecentsTableViewCell: UITableViewCell {
             else {
                 userID = senderID
             }
-            if let userID = userID {
-                self.delegate.streamCallButtonTappedWith(userID: userID, type: .audio)
-            }
+            
+            let button = sender as? UIButton
+            let buttonFrame = button?.frame ?? .zero
+            
+            self.delegate.streamCallButtonTappedWith(userID: userID ?? NSNumber.init(value: 0), type: .video, cellIndex: self.tag, buttonFrame: buttonFrame)
         }
     }
     

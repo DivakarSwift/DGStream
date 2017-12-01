@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13196" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="AlA-tN-Eil">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13173"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <customFonts key="customFonts">
+        <array key="HelveticaNeue.ttc">
+            <string>HelveticaNeue-Bold</string>
+        </array>
+    </customFonts>
+    <scenes>
+        <!--Stream Drop Down View Controller-->
+        <scene sceneID="B5j-nh-lSy">
+            <objects>
+                <viewController id="AlA-tN-Eil" customClass="DGStreamDropDownViewController" customModule="DGStream" customModuleProvider="target" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="PD0-JU-dWf">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="64"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="x6f-Xm-K42">
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="64"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <collectionViewFlowLayout key="collectionViewLayout" minimumLineSpacing="10" minimumInteritemSpacing="10" id="MLR-4N-0JP">
+                                    <size key="itemSize" width="44" height="44"/>
+                                    <size key="headerReferenceSize" width="0.0" height="0.0"/>
+                                    <size key="footerReferenceSize" width="0.0" height="0.0"/>
+                                    <inset key="sectionInset" minX="10" minY="10" maxX="0.0" maxY="0.0"/>
+                                </collectionViewFlowLayout>
+                                <cells>
+                                    <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="Cell" id="KWo-hr-ajH" customClass="DGStreamDropDownCollectionViewCell" customModule="DGStream" customModuleProvider="target">
+                                        <rect key="frame" x="10" y="10" width="44" height="44"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO">
+                                            <rect key="frame" x="0.0" y="0.0" width="44" height="44"/>
+                                            <autoresizingMask key="autoresizingMask"/>
+                                            <subviews>
+                                                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="0LW-Xc-5hZ">
+                                                    <rect key="frame" x="0.0" y="0.0" width="44" height="44"/>
+                                                    <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="14"/>
+                                                    <nil key="textColor"/>
+                                                    <nil key="highlightedColor"/>
+                                                </label>
+                                            </subviews>
+                                        </view>
+                                        <constraints>
+                                            <constraint firstAttribute="trailing" secondItem="0LW-Xc-5hZ" secondAttribute="trailing" id="0tu-r1-INT"/>
+                                            <constraint firstItem="0LW-Xc-5hZ" firstAttribute="top" secondItem="KWo-hr-ajH" secondAttribute="top" id="Dra-wm-yvm"/>
+                                            <constraint firstAttribute="bottom" secondItem="0LW-Xc-5hZ" secondAttribute="bottom" id="EfA-Zx-kgB"/>
+                                            <constraint firstItem="0LW-Xc-5hZ" firstAttribute="leading" secondItem="KWo-hr-ajH" secondAttribute="leading" id="Njs-GB-r8D"/>
+                                        </constraints>
+                                        <connections>
+                                            <outlet property="label" destination="0LW-Xc-5hZ" id="Ue5-6L-41n"/>
+                                        </connections>
+                                    </collectionViewCell>
+                                </cells>
+                                <connections>
+                                    <outlet property="dataSource" destination="AlA-tN-Eil" id="WVJ-sy-ur4"/>
+                                    <outlet property="delegate" destination="AlA-tN-Eil" id="dav-ml-QB1"/>
+                                </connections>
+                            </collectionView>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="x6f-Xm-K42" firstAttribute="trailing" secondItem="GKN-Mo-Nk5" secondAttribute="trailing" id="3Ee-Cd-e72"/>
+                            <constraint firstItem="x6f-Xm-K42" firstAttribute="top" secondItem="GKN-Mo-Nk5" secondAttribute="top" id="8fp-n8-bxh"/>
+                            <constraint firstItem="x6f-Xm-K42" firstAttribute="bottom" secondItem="GKN-Mo-Nk5" secondAttribute="bottom" id="FPM-Gq-ZP5"/>
+                            <constraint firstItem="x6f-Xm-K42" firstAttribute="leading" secondItem="GKN-Mo-Nk5" secondAttribute="leading" id="fFR-Lh-TuL"/>
+                        </constraints>
+                        <viewLayoutGuide key="safeArea" id="GKN-Mo-Nk5"/>
+                    </view>
+                    <size key="freeformSize" width="320" height="64"/>
+                    <connections>
+                        <outlet property="collectionView" destination="x6f-Xm-K42" id="IIB-GJ-KPA"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="NoL-Nq-NEO" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="56" y="-31.484257871064472"/>
+        </scene>
+    </scenes>
+</document>
