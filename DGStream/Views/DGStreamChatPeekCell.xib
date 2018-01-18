@@ -82,7 +82,7 @@
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="nUA-X5-DcM">
                     <rect key="frame" x="277.5" y="0.0" width="50.5" height="30"/>
                     <subviews>
-                        <visualEffectView opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="FbB-zq-q6e">
+                        <visualEffectView hidden="YES" opaque="NO" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="FbB-zq-q6e">
                             <rect key="frame" x="0.0" y="0.0" width="50.5" height="30"/>
                             <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" insetsLayoutMarginsFromSafeArea="NO" id="eEq-Fq-FI4">
                                 <rect key="frame" x="0.0" y="0.0" width="50.5" height="30"/>

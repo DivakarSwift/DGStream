@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13196" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Xvf-ae-VJO">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Xvf-ae-VJO">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13173"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -31,7 +31,7 @@
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="64"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="Fag-kl-qgl">
-                                        <rect key="frame" x="8" y="34" width="80" height="30"/>
+                                        <rect key="frame" x="8" y="26" width="80" height="30"/>
                                         <constraints>
                                             <constraint firstAttribute="width" constant="80" id="ExU-D3-B1Z"/>
                                             <constraint firstAttribute="height" constant="30" id="i5w-md-HeJ"/>
@@ -92,7 +92,7 @@
                                     <constraint firstItem="k96-nG-py4" firstAttribute="top" secondItem="pFz-Wz-4iA" secondAttribute="bottom" id="8Mo-eO-9be"/>
                                     <constraint firstItem="k96-nG-py4" firstAttribute="top" secondItem="4hY-wI-4rI" secondAttribute="bottom" id="NLL-Ix-4YZ"/>
                                     <constraint firstItem="ZpS-y0-dQw" firstAttribute="top" secondItem="qLv-yC-CWC" secondAttribute="top" constant="20" id="OPs-XB-Obe"/>
-                                    <constraint firstAttribute="bottom" secondItem="Fag-kl-qgl" secondAttribute="bottom" id="Own-ag-XKu"/>
+                                    <constraint firstAttribute="bottom" secondItem="Fag-kl-qgl" secondAttribute="bottom" constant="8" id="Own-ag-XKu"/>
                                     <constraint firstItem="ZpS-y0-dQw" firstAttribute="centerX" secondItem="qLv-yC-CWC" secondAttribute="centerX" id="Qmm-qi-8SL"/>
                                     <constraint firstAttribute="trailing" secondItem="pFz-Wz-4iA" secondAttribute="trailing" constant="8" id="RSr-qw-4sc"/>
                                     <constraint firstItem="eiQ-6A-zSg" firstAttribute="centerX" secondItem="qLv-yC-CWC" secondAttribute="centerX" id="S6k-ij-IRE"/>
@@ -163,14 +163,19 @@
                                     <constraint firstAttribute="bottom" secondItem="Ihs-pJ-qLk" secondAttribute="bottom" constant="8" id="zhI-xP-ImS"/>
                                 </constraints>
                             </view>
+                            <activityIndicatorView opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" style="whiteLarge" translatesAutoresizingMaskIntoConstraints="NO" id="HlB-ui-hh8">
+                                <rect key="frame" x="169" y="315" width="37" height="37"/>
+                            </activityIndicatorView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
                             <constraint firstItem="l82-3r-KVF" firstAttribute="bottom" secondItem="V7O-Bo-PWQ" secondAttribute="bottom" constant="44" id="3nD-6v-lV0"/>
                             <constraint firstItem="l82-3r-KVF" firstAttribute="bottom" secondItem="b8n-BE-whT" secondAttribute="bottom" id="50S-Q2-TH5"/>
                             <constraint firstItem="V7O-Bo-PWQ" firstAttribute="leading" secondItem="l82-3r-KVF" secondAttribute="leading" id="Gal-wi-14V"/>
+                            <constraint firstItem="HlB-ui-hh8" firstAttribute="centerY" secondItem="aLg-En-I79" secondAttribute="centerY" id="HSK-U9-K3w"/>
                             <constraint firstItem="qLv-yC-CWC" firstAttribute="leading" secondItem="l82-3r-KVF" secondAttribute="leading" id="MLz-4n-tse"/>
                             <constraint firstItem="qLv-yC-CWC" firstAttribute="trailing" secondItem="l82-3r-KVF" secondAttribute="trailing" id="QYy-Lp-gkB"/>
+                            <constraint firstItem="HlB-ui-hh8" firstAttribute="centerX" secondItem="aLg-En-I79" secondAttribute="centerX" id="RLm-6v-W1a"/>
                             <constraint firstItem="b8n-BE-whT" firstAttribute="leading" secondItem="l82-3r-KVF" secondAttribute="leading" id="RTY-7k-RFr"/>
                             <constraint firstItem="l82-3r-KVF" firstAttribute="trailing" secondItem="V7O-Bo-PWQ" secondAttribute="trailing" id="S5k-T2-0Yw"/>
                             <constraint firstItem="b8n-BE-whT" firstAttribute="trailing" secondItem="l82-3r-KVF" secondAttribute="trailing" id="Yqw-h8-CP0"/>
@@ -181,9 +186,11 @@
                     </view>
                     <connections>
                         <outlet property="abrevLabel" destination="ZpS-y0-dQw" id="u7q-H0-w38"/>
+                        <outlet property="activityIndicator" destination="HlB-ui-hh8" id="qlB-Xh-198"/>
                         <outlet property="backButton" destination="Fag-kl-qgl" id="yA2-DQ-oIK"/>
                         <outlet property="imageView" destination="eiQ-6A-zSg" id="R73-bo-9CT"/>
                         <outlet property="messengerContainer" destination="V7O-Bo-PWQ" id="UXJ-AX-Jdb"/>
+                        <outlet property="messengerContainerBottomConstraint" destination="3nD-6v-lV0" id="QjO-QC-7QF"/>
                         <outlet property="nameLabel" destination="4hY-wI-4rI" id="CRN-B0-Ymn"/>
                         <outlet property="navBarView" destination="qLv-yC-CWC" id="rg7-Wj-XXd"/>
                         <outlet property="photoButton" destination="kFl-nW-kGK" id="EtW-dr-tCI"/>

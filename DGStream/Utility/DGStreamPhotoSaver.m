@@ -96,14 +96,7 @@ didFinishSavingWithError:(NSError *)error
 
 -(void)captureOutput:(AVCaptureOutput *)output didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection {
     // Create a UIImage+Orientation from the sample buffer data
-    //[self.session stopRunning];
-    
-    //_captureFrame = NO;
     UIImage *image = [DGStreamPhotoSaver imageFromSampleBuffer:sampleBuffer];
-    //image = [image rotate:UIImageOrientationRight];
-    
-    //_frameCaptured = YES;
-    
     if (self.delegate != nil)
     {
         [self.delegate didTakeSessionSnapshot:image];

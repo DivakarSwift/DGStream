@@ -32,9 +32,9 @@ class DGStreamUserOperation: Operation {
         QBRequest.users(withTags: self.tags, page: self.page, successBlock: { (response, page, users) in
             if !self.isCancelled, response.isSuccess {
                 
-                page?.currentPage += 1
+                page.currentPage += 1
 
-                if let page = page, page.currentPage * page.perPage >= page.totalEntries {
+                if page.currentPage * page.perPage >= page.totalEntries {
                     // Last page
                     self.delegate.userOperationDidFinishLastPageWith(users: DGStreamUser.usersFrom(users: users ?? []))
                 }

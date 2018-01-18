@@ -11,14 +11,12 @@ import Quickblox
 import QuickbloxWebRTC
 import GLKit
 import jot
-import YNDropDownMenu
 
 typealias CellUpdateBlock = (_ cell: DGStreamCollectionViewCell) -> Void
 
 enum CallMode {
     case stream
     case merge
-    case draw
     case share
     case board
 }
@@ -37,26 +35,31 @@ public class DGStreamCallViewController: UIViewController {
     static let kOpponentCollectionViewCellIdentifier = "OpponentCollectionViewCellIdentifier"
     static let kSharingViewControllerIdentifier = "SharingViewController"
     
-    
     @IBOutlet weak var blackoutView: UIView!
     @IBOutlet weak var blackoutLabel: UILabel!
+    
+    @IBOutlet weak var blackoutButtonContainer: UIView!
+    @IBOutlet weak var blackoutCancelButton: UIButton!
+    @IBOutlet weak var blackoutCancelLabel: UILabel!
+    @IBOutlet weak var blackoutCallBackButton: UIButton!
+    @IBOutlet weak var blackoutCallBackLabel: UILabel!
     
     @IBOutlet weak var savedPhotoLabel: UILabel!
     var isShowingLabel = false
     
     @IBOutlet weak var statusBar: UIView!
     @IBOutlet weak var statusBarBackButton: UIButton!
+    @IBOutlet weak var statusBarDoneButton: UIButton!
     @IBOutlet weak var statusBarTitle: UILabel!
-    
     
     @IBOutlet weak var dropDownContainer: UIView!
     @IBOutlet weak var dropDownTopConstraint: NSLayoutConstraint!
-    
     var dropDown:DGStreamDropDownMenu!
+    var dropDownManager: DGStreamDropDownManager!
     
-    var sizeDropDownVC:DGStreamDropDownViewController!
-    var colorDropDownVC:DGStreamDropDownViewController!
-    var stampDropDownVC:DGStreamDropDownViewController!
+    var sizeCollectionView: UICollectionView!
+    var colorCollectionView: UICollectionView!
+    var stampCollectionView: UICollectionView!
     
     @IBOutlet weak var collectionView: UICollectionView!
     @IBOutlet weak var localVideoViewContainer: UIView!
@@ -71,8 +74,7 @@ public class DGStreamCallViewController: UIViewController {
     var remoteVideoViewContainerCenterXConstraint: NSLayoutConstraint?
     var remoteVideoViewContainerCenterYConstraint: NSLayoutConstraint?
     
-    @IBOutlet weak var buttonsContainer: UIView!
-    @IBOutlet weak var buttonsContainerHeightConstraint: NSLayoutConstraint!
+    @IBOutlet weak var buttonsContainer: UIStackView!
     
     @IBOutlet weak var drawButtonContainer: UIView!
     @IBOutlet weak var drawButton: UIButton! //80
@@ -93,6 +95,7 @@ public class DGStreamCallViewController: UIViewController {
     @IBOutlet weak var freezeButton: UIButton!
     var freezeImageView: UIImageView?
     var isFrozen: Bool = false
+    @IBOutlet weak var freezeActivityIndicator: UIActivityIndicatorView!
     
     @IBOutlet weak var snapshotButtonContainer: UIView!
     @IBOutlet weak var snapshotButton: UIButton!
@@ -115,6 +118,7 @@ public class DGStreamCallViewController: UIViewController {
     
     @IBOutlet weak var paletteTextButton: UIButton!
 
+    var isShowingControls = true
     
     var isAudioCall = false
     
@@ -124,6 +128,7 @@ public class DGStreamCallViewController: UIViewController {
     
     var isChatShown = false
     var didHangUp = false
+    var didOtherUserHangUp = false
     
     var localVideoView:DGStreamVideoView?
     
@@ -148,6 +153,7 @@ public class DGStreamCallViewController: UIViewController {
     var isHelper = false
     var isDrawing = false
     var stampMode:DGStreamStampMode = .off
+    var drawingUsers:[NSNumber] = []
     
     var screenCapture: DGStreamScreenCapture?
     var videoTextureCache: CVOpenGLESTextureCache?
@@ -159,17 +165,28 @@ public class DGStreamCallViewController: UIViewController {
     var callMode: CallMode = .stream
     var alertView: DGStreamAlertView?
     var jotVC: JotViewController?
-    var flattenedImageView: UIImageView?
+    var localDrawImageView: UIImageView?
+    var remoteDrawImageView: UIImageView?
     var isSettingText: Bool = false
-    
+    var drawSize:CGFloat = 24
+    var drawColor:UIColor = .black
+    var drawOperationQueue: DGStreamDrawOperationQueue = DGStreamDrawOperationQueue()
+    var drawingTimer:Timer?
+    var drawingWaitTimer:Timer?
     var chatVC: DGStreamChatViewController!
+    @IBOutlet weak var chatContainer: UIView!
     
-    var whiteBoardSessions:[DGStreamWhiteBoardSession] = []
+    var whiteBoardUsers:[NSNumber] = []
+    var whiteBoardView:UIView?
     
     override public func viewDidLoad() {
         super.viewDidLoad()
         
-        self.blackoutView.backgroundColor = UIColor.dgGreen()
+        let tap = UITapGestureRecognizer(target: self, action: #selector(toggleControls))
+        tap.delegate = self
+        self.view.addGestureRecognizer(tap)
+        
+        self.blackoutView.backgroundColor = UIColor.dgBlueDark()
         
         self.savedPhotoLabel.clipsToBounds = true
         self.savedPhotoLabel.textColor = UIColor.dgDarkGray()
@@ -184,22 +201,21 @@ public class DGStreamCallViewController: UIViewController {
         
         DGStreamCore.instance.presentedViewController = self
         
-        // Set delegates
-        QBRTCClient.instance().add(self)
-        QBRTCAudioSession.instance().addDelegate(self)
-        QBRTCAudioSession.instance().initialize { (config) in
-            config.categoryOptions = [.defaultToSpeaker]
-            if self.session.conferenceType == .video {
-                config.mode = AVAudioSessionModeVideoChat
-            }
-        }
-        
         initCall()
         self.setUpButtons()
+        self.setUpChat()
     }
     
     override public func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        
+        self.freezeActivityIndicator.isHidden = true
+        
+        self.statusBar.backgroundColor = UIColor.dgBlueDark()
+        
+        self.chatContainer.alpha = 0
+        
+        self.blackoutButtonContainer.alpha = 0
         
         if let user = DGStreamCore.instance.getOtherUserWith(userID: self.selectedUser), let username = user.username {
             var callModeString = "Video"
@@ -219,9 +235,7 @@ public class DGStreamCallViewController: UIViewController {
         self.snapshotButtonContainer.alpha = 0
         self.chatButtonContainer.alpha = 0
         
-        self.view.bringSubview(toFront: self.buttonsContainer)
-        
-        self.localVideoViewContainer.frame = frameForLocalVideo()
+        self.localVideoViewContainer.frame = frameForLocalVideo(isCenter: true)
         self.localVideoViewContainer.clipsToBounds = true
         self.localVideoViewContainer.layer.cornerRadius = self.localVideoViewContainer.frame.size.width / 2
         
@@ -237,43 +251,15 @@ public class DGStreamCallViewController: UIViewController {
         
         // Drop Down
         
+        self.dropDownManager = DGStreamDropDownManager()
+        self.dropDownManager.configureWith(container: self.dropDownContainer, delegate: self)
+        
         var dropDownViews:[UIView] = []
         let dropDownViewTitles:[String] = ["Size", "Color", "Stamps"]
         
-        let dropDownStoryboard = UIStoryboard(name: "DropDown", bundle: Bundle(identifier: "com.dataglance.DGStream"))
-        
-        if let dropDownVC = dropDownStoryboard.instantiateInitialViewController() as? DGStreamDropDownViewController {
-            dropDownVC.viewDidLoad()
-            dropDownVC.view.frame = CGRect(x: 0, y: 0, width: 320, height: 140)
-            dropDownVC.view.alpha = 1
-            dropDownVC.configureFor(type: .size)
-            dropDownVC.delegate = self
-            dropDownVC.didMove(toParentViewController: self)
-            dropDownViews.append(dropDownVC.view)
-            self.sizeDropDownVC = dropDownVC
-        }
-        
-        if let dropDownVC = dropDownStoryboard.instantiateInitialViewController() as? DGStreamDropDownViewController {
-            dropDownVC.viewDidLoad()
-            dropDownVC.view.frame = CGRect(x: 0, y: 0, width: 320, height: 140)
-            dropDownVC.view.alpha = 1
-            dropDownVC.configureFor(type: .color)
-            dropDownVC.delegate = self
-            dropDownVC.didMove(toParentViewController: self)
-            dropDownViews.append(dropDownVC.view)
-            self.colorDropDownVC = dropDownVC
-        }
-        
-        if let dropDownVC = dropDownStoryboard.instantiateInitialViewController() as? DGStreamDropDownViewController {
-            dropDownVC.viewDidLoad()
-            dropDownVC.view.frame = CGRect(x: 0, y: 0, width: 320, height: 140)
-            dropDownVC.view.alpha = 1
-            dropDownVC.configureFor(type: .stamp)
-            dropDownVC.delegate = self
-            dropDownVC.didMove(toParentViewController: self)
-            dropDownViews.append(dropDownVC.view)
-            self.stampDropDownVC = dropDownVC
-        }
+        dropDownViews.append(self.dropDownManager.getDropDownViewFor(type: .size))
+        dropDownViews.append(self.dropDownManager.getDropDownViewFor(type: .color))
+        dropDownViews.append(self.dropDownManager.getDropDownViewFor(type: .stamp))
         
         self.dropDown = DGStreamDropDownMenu(frame: self.dropDownContainer.frame, dropDownViews: dropDownViews, dropDownViewTitles: dropDownViewTitles)
         var size:CGFloat = 14
@@ -281,7 +267,7 @@ public class DGStreamCallViewController: UIViewController {
             size = 24
         }
         self.dropDown.setLabel(font: UIFont(name: "HelveticaNeue-Bold", size: size)!)
-        self.dropDown.setLabelColorWhen(normal: UIColor.dgGray(), selected: UIColor.dgGray(), disabled: UIColor.dgGray())
+        self.dropDown.setLabelColorWhen(normal: UIColor.dgBlack(), selected: UIColor.dgBlack(), disabled: UIColor.dgBlack())
         self.view.insertSubview(self.dropDown, belowSubview: self.statusBar)
         self.dropDown.setImageWhen(normal: UIImage.init(named: "down", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil), selected: UIImage.init(named: "up", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil), disabled: nil)
         self.dropDown.alpha = 0
@@ -303,8 +289,6 @@ public class DGStreamCallViewController: UIViewController {
         self.remoteVideoViewContainerRightConstraint = results.right
         self.view.sendSubview(toBack: self.remoteVideoViewContainer)
         
-        updateFrameFor(mode: .draw)
-        
         self.chatPeekView = DGStreamChatPeekView()
         self.chatPeekView.configureWithin(container: self.chatPeekViewContainer)
         
@@ -320,11 +304,38 @@ public class DGStreamCallViewController: UIViewController {
     }
     
     func keyboardWillShow(notification: Notification) {
-        
+        UIView.animate(withDuration: 0.25) {
+            self.view.layoutIfNeeded()
+        }
     }
     
     func keyboardWillHide(notification: Notification) {
-        
+        UIView.animate(withDuration: 0.25) {
+            self.view.layoutIfNeeded()
+        }
+    }
+    
+    func layoutRemoteViewHeirarchy() {
+        DispatchQueue.main.async {
+            if let videoView = self.videoViewWith(userID: self.selectedUser), self.remoteVideoViewContainer.subviews.contains(videoView) {
+                self.remoteVideoViewContainer.bringSubview(toFront: videoView)
+            }
+            if let localVideoView = self.localVideoView, self.remoteVideoViewContainer.subviews.contains(localVideoView) {
+                self.remoteVideoViewContainer.bringSubview(toFront: localVideoView)
+            }
+            if let whiteBoard = self.whiteBoardView, self.remoteVideoViewContainer.subviews.contains(whiteBoard) {
+                self.remoteVideoViewContainer.bringSubview(toFront: whiteBoard)
+            }
+            if let remote = self.remoteDrawImageView, self.remoteVideoViewContainer.subviews.contains(remote) {
+                self.remoteVideoViewContainer.bringSubview(toFront: remote)
+            }
+            if let local = self.localDrawImageView, self.remoteVideoViewContainer.subviews.contains(local) {
+                self.remoteVideoViewContainer.bringSubview(toFront: local)
+            }
+            if let jot = self.jotVC, self.remoteVideoViewContainer.subviews.contains(jot.view) {
+                self.remoteVideoViewContainer.bringSubview(toFront: jot.view)
+            }
+        }
     }
     
     override public func viewWillDisappear(_ animated: Bool) {
@@ -335,11 +346,6 @@ public class DGStreamCallViewController: UIViewController {
     
     override public func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
-        self.chatVC.delegate = self
-        self.chatVC.view.boundInside(container: self.buttonsContainer)
-        self.chatVC.view.alpha = 0
-        self.chatVC.didMove(toParentViewController: self)
         
         if !self.isInitiator {
             
@@ -371,6 +377,51 @@ public class DGStreamCallViewController: UIViewController {
         self.remoteVideoViewContainer.bringSubview(toFront: self.statusBar)
         
     }
+    
+    func deviceOrientationDidChange() {
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.20) {
+            
+            self.dropDown.frame = self.dropDownContainer.frame
+            
+            if self.callMode == .merge {
+                
+                if self.localVideoView != nil {
+                    self.localVideoView?.removeFromSuperview()
+                    self.localVideoView = nil
+                }
+                
+                self.localVideoView = DGStreamVideoView(layer: self.cameraCapture.previewLayer, frame: self.remoteVideoViewContainer.bounds)
+                self.localVideoView?.boundInside(container: self.remoteVideoViewContainer)
+                
+                if self.isHelper {
+                    self.localVideoView?.alpha = 0.45
+                    
+                    if let remoteView = self.videoViewWith(userID: self.selectedUser) as? QBRTCRemoteVideoView {
+                        remoteView.alpha = 1.0
+                    }
+                    
+                }
+                else {
+                    self.localVideoView?.alpha = 1.0
+                    
+                    if let remoteView = self.videoViewWith(userID: self.selectedUser) as? QBRTCRemoteVideoView {
+                        remoteView.alpha = 0.45
+                    }
+                    
+                    self.remoteVideoViewContainer.sendSubview(toBack: self.localVideoView!)
+                    
+                }
+                
+                self.localVideoView?.updateOrientationIfNeeded()
+                self.localVideoView?.videoLayer.videoGravity = AVLayerVideoGravityResize
+            }
+            else {
+                self.localVideoView?.videoLayer.videoGravity = AVLayerVideoGravityResizeAspectFill
+            }
+        }
+        
+    }
 
     override public func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
@@ -378,6 +429,24 @@ public class DGStreamCallViewController: UIViewController {
     }
     
     fileprivate func initCall() {
+        
+        self.didHangUp = false
+        self.didOtherUserHangUp = false
+        
+        self.timeDuration = 0.0
+        
+        self.statusBarTitle.alpha = 1
+        
+        // Set delegates
+        QBRTCClient.instance().add(self)
+        QBRTCAudioSession.instance().addDelegate(self)
+        QBRTCAudioSession.instance().initialize { (config) in
+            config.categoryOptions = [.defaultToSpeaker]
+            if self.session.conferenceType == .video {
+                config.mode = AVAudioSessionModeVideoChat
+            }
+        }
+        
         let settings = DGStreamSettings.instance
         
         if self.session.conferenceType == .video, let videoSettings = settings.videoFormat {
@@ -460,9 +529,6 @@ public class DGStreamCallViewController: UIViewController {
         if let first = self.users.first, let firstUserID = first.userID {
             self.selectedUser = firstUserID
         }
-        
-//        self.collectionView.setCollectionViewLayout(DGStreamFullLayout(), animated: false)
-//        self.collectionView.reloadData()
 
         if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID {
             self.isInitiator = currentUserID.uintValue == self.session.initiatorID.uintValue
@@ -489,9 +555,6 @@ public class DGStreamCallViewController: UIViewController {
                 self.localVideoView = videoView as? DGStreamVideoView
                 self.localVideoView?.frame = self.localVideoViewContainer.bounds
                 videoView?.boundInside(container: self.localVideoViewContainer)
-                
-                
-                //            self.localVideoView!.isHidden = !self.session.localMediaStream.videoTrack.isEnabled
                 self.localVideoView?.isHidden = false
             }
         }
@@ -499,9 +562,11 @@ public class DGStreamCallViewController: UIViewController {
     
     func setUpButtons() {
         
-        self.buttonsContainer.clipsToBounds = true
         self.buttonsContainer.layer.cornerRadius = 6
-        self.buttonsContainer.backgroundColor = .clear
+        self.buttonsContainer.layer.borderColor = UIColor.dgBlack().cgColor
+        self.buttonsContainer.layer.borderWidth = 0.5
+        
+        let callPhoneImage = UIImage(named: "video", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate)
         
         let mergeImage = UIImage(named: "merge", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate)
         
@@ -514,6 +579,7 @@ public class DGStreamCallViewController: UIViewController {
         let screenShare = UIImage(named: "screenshare", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)
         
         self.statusBarBackButton.setTitleColor(UIColor.dgBlack(), for: .normal)
+        self.statusBarDoneButton.setTitleColor(UIColor.dgBlack(), for: .normal)
         
         // Hang up
         self.hangUpButton.setImage(hangUpImage?.withRenderingMode(.alwaysTemplate), for: .normal)
@@ -524,6 +590,7 @@ public class DGStreamCallViewController: UIViewController {
         self.hangUpButton.contentVerticalAlignment = .fill
         self.hangUpButton.contentMode = .scaleAspectFill
         self.hangUpButton.imageEdgeInsets =  UIEdgeInsetsMake(8, 8, 8, 8)
+        self.hangUpButtonContainer.layer.cornerRadius = self.hangUpButtonContainer.frame.size.width / 2
         
         // Merge
         self.mergeButton.setImage(mergeImage?.withRenderingMode(.alwaysTemplate), for: .normal)
@@ -533,7 +600,7 @@ public class DGStreamCallViewController: UIViewController {
         self.mergeButton.contentHorizontalAlignment = .fill
         self.mergeButton.contentMode = .scaleAspectFill
         self.mergeButton.imageEdgeInsets = UIEdgeInsetsMake(8, 8, 8, 8)
-        self.mergeButtonContainer.backgroundColor = UIColor.dgBlueDark()
+        self.mergeButton.backgroundColor = UIColor.dgBlueDark()
         
         // Draw
         self.drawButton.setImage(drawImage?.withRenderingMode(.alwaysTemplate), for: .normal)
@@ -543,7 +610,7 @@ public class DGStreamCallViewController: UIViewController {
         self.drawButton.contentVerticalAlignment = .fill
         self.drawButton.contentMode = .scaleAspectFill
         self.drawButton.imageEdgeInsets = UIEdgeInsetsMake(8, 8, 8, 8)
-        self.drawButtonContainer.backgroundColor = UIColor.dgBlueDark()
+        self.drawButton.backgroundColor = UIColor.dgBlueDark()
         
         // Screen share
         self.shareScreenButton.setImage(screenShare?.withRenderingMode(.alwaysTemplate), for: .normal)
@@ -553,7 +620,7 @@ public class DGStreamCallViewController: UIViewController {
         self.shareScreenButton.contentVerticalAlignment = .fill
         self.shareScreenButton.contentMode = .scaleAspectFill
         self.shareScreenButton.imageEdgeInsets = UIEdgeInsetsMake(4, 4, 4, 4)
-        self.shareScreenButtonContainer.backgroundColor = UIColor.dgBlueDark()
+        self.shareScreenButton.backgroundColor = UIColor.dgBlueDark()
         
         // White Board
         self.whiteBoardButton.setImage(whiteBoardImage?.withRenderingMode(.alwaysTemplate), for: .normal)
@@ -563,34 +630,32 @@ public class DGStreamCallViewController: UIViewController {
         self.whiteBoardButton.contentVerticalAlignment = .fill
         self.whiteBoardButton.contentMode = .scaleAspectFill
         self.whiteBoardButton.imageEdgeInsets = UIEdgeInsetsMake(5, 5, 5, 5)
-        self.whiteBoardButtonContainer.backgroundColor = UIColor.dgBlueDark()
+        self.whiteBoardButton.backgroundColor = UIColor.dgBlueDark()
         
         // Freeze
-        self.freezeButtonContainer.layer.cornerRadius = self.freezeButtonContainer.frame.size.width / 2
         self.freezeButton.setImage(UIImage.init(named: "freeze", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
         self.freezeButton.imageEdgeInsets = UIEdgeInsetsMake(8, 8, 8, 8)
         self.freezeButton.tintColor = .white
         self.freezeButton.contentHorizontalAlignment = .fill
         self.freezeButton.contentVerticalAlignment = .fill
         self.freezeButton.contentMode = .scaleAspectFill
-        self.freezeButtonContainer.backgroundColor = UIColor.dgBlueDark()
+        self.freezeButton.backgroundColor = UIColor.dgBlueDark()
         
         // Snapshot
-        self.snapshotButtonContainer.layer.cornerRadius = self.freezeButtonContainer.frame.size.width / 2
         self.snapshotButton.setImage(UIImage.init(named: "capture", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
         self.snapshotButton.imageEdgeInsets = UIEdgeInsetsMake(8, 8, 8, 8)
         self.snapshotButton.tintColor = .white
         self.snapshotButton.contentHorizontalAlignment = .fill
         self.snapshotButton.contentVerticalAlignment = .fill
         self.snapshotButton.contentMode = .scaleAspectFill
-        self.snapshotButtonContainer.backgroundColor = UIColor.dgBlueDark()
+        self.snapshotButton.backgroundColor = UIColor.dgBlueDark()
         
         // Chat
         self.chatButtonContainer.layer.cornerRadius = 6
         self.chatButton.setImage(UIImage.init(named: "message", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
         self.chatButton.tintColor = .white
         self.chatButton.imageEdgeInsets = UIEdgeInsetsMake(8, 8, 8, 8)
-        self.chatButtonContainer.backgroundColor = UIColor.dgBlueDark()
+        self.chatButton.backgroundColor = UIColor.dgBlueDark()
         
         var hangUpButtonWH:CGFloat = 0
         var otherButtonsWH:CGFloat = 0
@@ -610,53 +675,33 @@ public class DGStreamCallViewController: UIViewController {
         
         let inset = hangUpButtonWH / 8
         insets = UIEdgeInsetsMake(inset, inset, inset, inset)
-    
-//        self.hangUpButtonWidthConstraint.constant = hangUpButtonWH
-//        self.hangUpButtonHeightConstraint.constant = hangUpButtonWH
-        //self.hangUpButton.imageEdgeInsets = insets
-        self.hangUpButton.layoutIfNeeded()
-        self.hangUpButtonContainer.layer.cornerRadius = hangUpButtonContainer.frame.size.width / 2
         
-//        self.mergeButtonRightConstraint.constant = padding
-//        self.mergeButtonWidthConstraint.constant = otherButtonsWH
-//        self.mergeButtonHeightConstraint.constant = otherButtonsWH
-        //self.mergeButton.imageEdgeInsets = insets
-        self.mergeButton.layoutIfNeeded()
-        self.mergeButtonContainer.layer.cornerRadius = self.mergeButtonContainer.frame.size.width / 2
+        self.blackoutCancelLabel.textColor = .white
+        self.blackoutCallBackLabel.textColor = .white
         
-//        self.drawButtonLeftConstraint.constant = padding
-//        self.drawButtonWidthConstraint.constant = otherButtonsWH
-//        self.drawButtonHeightConstraint.constant = otherButtonsWH
-        //self.drawButton.imageEdgeInsets = insets
-        self.drawButton.layoutIfNeeded()
-        self.drawButtonContainer.layer.cornerRadius = self.drawButtonContainer.frame.size.width / 2
+        self.blackoutCancelButton.setTitle("X", for: .normal)
+        self.blackoutCancelButton.titleLabel?.font = UIFont.systemFont(ofSize: 60)
+        self.blackoutCancelButton.setTitleColor(.white, for: .normal)
+        self.blackoutCancelButton.layer.cornerRadius = self.blackoutCancelButton.frame.size.width / 2
+        self.blackoutCancelButton.backgroundColor = UIColor.dgBlack()
         
-//        self.shareScreenButtonRightConstraint.constant = padding
-//        self.shareScreenWidthConstraint.constant = otherButtonsWH
-//        self.shareScreenHeightConstraint.constant = otherButtonsWH
-        //self.shareScreenButton.imageEdgeInsets = insets
-        self.shareScreenButton.layoutIfNeeded()
-        self.shareScreenButtonContainer.layer.cornerRadius = self.shareScreenButtonContainer.frame.size.width / 2
-        
-//        self.whiteBoardButtonLeftConstraint.constant = padding
-//        self.whiteBoardButtonWidthConstraint.constant = otherButtonsWH
-//        self.whiteBoardButtonHeightConstraint.constant = otherButtonsWH
-        //self.whiteBoardButton.imageEdgeInsets = insets
-        self.whiteBoardButton.layoutIfNeeded()
-        self.whiteBoardButtonContainer.layer.cornerRadius = self.whiteBoardButtonContainer.frame.size.width / 2
-        
-        self.muteButtonContainer.layoutIfNeeded()
-        self.muteButtonContainer.layer.cornerRadius = self.muteButtonContainer.frame.size.width / 2
-        
-        self.chatButtonContainer.layoutIfNeeded()
-        if Display.pad {
-            self.chatButtonContainer.layer.cornerRadius = 22
-        }
-        else {
-            self.chatButtonContainer.layer.cornerRadius = self.chatButtonContainer.frame.size.width / 2
-        }
+        self.blackoutCallBackButton.setImage(callPhoneImage, for: .normal)
+        self.blackoutCallBackButton.tintColor = .white
+        self.blackoutCallBackButton.backgroundColor = UIColor.dgGreen()
+        self.blackoutCallBackButton.layer.cornerRadius = self.blackoutCallBackButton.frame.size.width / 2
+        self.blackoutCallBackButton.layer.borderColor = UIColor.dgBlack().cgColor
+        self.blackoutCallBackButton.layer.borderWidth = 0.5
         
         self.view.layoutIfNeeded()
+    }
+    
+    func setUpChat() {
+        print("SET UP CHAT")
+        self.chatVC.delegate = self
+        self.chatVC.view.boundInside(container: self.chatContainer)
+        self.chatVC.view.alpha = 0
+        self.chatVC.didMove(toParentViewController: self)
+        self.chatVC.loadData()
     }
     
     func animateButtons() {
@@ -670,14 +715,14 @@ public class DGStreamCallViewController: UIViewController {
         }
     }
     
-    func frameForLocalVideo() -> CGRect {
+    func frameForLocalVideo(isCenter: Bool) -> CGRect {
     
         var wh:CGFloat = 0
         var x: CGFloat = 0
         var y: CGFloat = 0
         
         // Calling Screen
-        if self.blackoutView.alpha == 1 {
+        if isCenter {
             
             if Display.pad {
                 wh = 248
@@ -703,7 +748,7 @@ public class DGStreamCallViewController: UIViewController {
                 wh = 100
             }
             
-            if callMode == .draw || self.isDrawing == true {
+            if self.isDrawing == true {
                 y = 84
             }
             else {
@@ -719,13 +764,7 @@ public class DGStreamCallViewController: UIViewController {
     }
     
     func refreshVideoViews() {
-//        if let cells = self.collectionView.visibleCells as? [DGStreamCollectionViewCell] {
-//            for cell in cells {
-//                if let videoView = cell.videoView {
-//                    cell.set(videoView: videoView)
-//                }
-//            }
-//        }
+
     }
     
     func videoViewWith(userID: NSNumber) -> UIView? {
@@ -782,9 +821,54 @@ public class DGStreamCallViewController: UIViewController {
     }
     
     func acceptCall() {
-        //[[QMSoundManager instance] stopAllSounds];
-        //Accept call
         self.session.acceptCall(nil)
+    }
+    
+    func showCallEndedWith(isHungUp: Bool) {
+        
+        var suffix = ""
+        if isHungUp {
+            suffix = "Hung Up"
+        }
+        else {
+            suffix = "Was Disconnected"
+        }
+        
+        if let user = DGStreamCore.instance.getOtherUserWith(userID: self.selectedUser), let username = user.username {
+            self.blackoutLabel.text = "\(username) \(suffix)"
+        }
+        else {
+            self.blackoutLabel.text = "The Other User \(suffix)"
+        }
+        
+        self.statusBar.backgroundColor = UIColor.dgBlueDark()
+        self.statusBarBackButton.alpha = 0
+        
+        self.statusBarTitle.alpha = 0
+        
+        self.buttonsContainer.alpha = 0
+        self.hangUpButtonContainer.alpha = 0
+        self.chatContainer.alpha = 0
+        self.chatVC.view.alpha = 0
+        
+        self.hideDropDown(animated: false)
+        
+        let newFrame = self.frameForLocalVideo(isCenter: true)
+        
+        self.localVideoView?.frame = CGRect(x: 0, y: 0, width: newFrame.size.width, height: newFrame.size.height)
+        self.localVideoView?.videoLayer.frame = CGRect(x: 0, y: 0, width: newFrame.size.width, height: newFrame.size.height)
+        self.localVideoView?.layoutIfNeeded()
+        
+        self.localVideoViewContainer.frame = newFrame
+        self.localVideoViewContainer.layoutIfNeeded()
+        self.localVideoViewContainer.layer.cornerRadius = newFrame.size.width / 2
+        
+        self.view.layoutIfNeeded()
+        
+        UIView.animate(withDuration: 0.25, animations: {
+            self.blackoutView.alpha = 1
+            self.blackoutButtonContainer.alpha = 1
+        })
     }
     
     //MARK:- Timers
@@ -844,11 +928,13 @@ public class DGStreamCallViewController: UIViewController {
         
         self.blackoutView.alpha = 0.99
         
-        let newFrame = frameForLocalVideo()
+        let newFrame = frameForLocalVideo(isCenter: false)
         
         print("New Frame \(newFrame)")
         
         UIView.animate(withDuration: 0.35, delay: 0.01, options: .curveEaseIn, animations: {
+            
+            self.statusBar.backgroundColor = UIColor.dgGreen()
             
             self.blackoutView.alpha = 0
             
@@ -860,8 +946,8 @@ public class DGStreamCallViewController: UIViewController {
             self.snapshotButtonContainer.alpha = 1
             self.chatButtonContainer.alpha = 1
             
-            self.localVideoView?.frame = newFrame
-            self.localVideoView?.videoLayer.frame = newFrame
+            self.localVideoView?.frame = CGRect(x: 0, y: 0, width: newFrame.size.width, height: newFrame.size.height)
+            self.localVideoView?.videoLayer.frame = CGRect(x: 0, y: 0, width: newFrame.size.width, height: newFrame.size.height)
             self.localVideoView?.layoutIfNeeded()
             self.localVideoViewContainer.frame = newFrame
             self.localVideoViewContainer.layer.cornerRadius = newFrame.size.width / 2
@@ -869,7 +955,13 @@ public class DGStreamCallViewController: UIViewController {
             
         }) { (f) in
             self.animateButtons()
+            
         }
+        
+        self.freezeImageView = UIImageView.init(frame: self.remoteVideoViewContainer.bounds)
+        self.freezeImageView?.image = nil
+        self.freezeImageView?.boundInside(container: self.remoteVideoViewContainer)
+        self.freezeImageView?.alpha = 0
     
     }
     
@@ -885,15 +977,59 @@ public class DGStreamCallViewController: UIViewController {
         }
     }
     
-    func hideDropDown() {
+    func hideDropDown(animated: Bool) {
         self.dropDownTopConstraint.constant = 0
         self.view.layoutIfNeeded()
         let newRect = CGRect(x: 10, y: 40, width: self.localVideoViewContainer.frame.width, height: self.localVideoViewContainer.frame.height)
-        UIView.animate(withDuration: 0.25) {
+        if animated {
+            UIView.animate(withDuration: 0.25) {
+                self.dropDown.backgroundColor = UIColor.dgGreen()
+                self.dropDown.frame = self.dropDownContainer.frame
+                self.dropDown.alpha = 0
+                self.localVideoViewContainer.frame = newRect
+            }
+        }
+        else {
             self.dropDown.backgroundColor = UIColor.dgGreen()
             self.dropDown.frame = self.dropDownContainer.frame
             self.dropDown.alpha = 0
             self.localVideoViewContainer.frame = newRect
+        }
+    }
+    
+    func toggleControls() {
+        if self.chatVC.view.alpha == 1 {
+            if self.chatVC.isKeyboardShown == false {
+                self.hideChatVC()
+            }
+        }
+        else if self.isDrawing == false && self.callMode != .board {
+            if self.isShowingControls {
+                self.hideControls()
+            }
+            else {
+                self.showControls()
+            }
+        }
+    }
+    
+    func showControls() {
+        self.isShowingControls = true
+        UIView.animate(withDuration: 0.25) {
+            self.buttonsContainer.alpha = 1
+            self.statusBar.alpha = 1
+            self.hangUpButtonContainer.alpha = 1
+            self.localVideoViewContainer.alpha = 1
+        }
+    }
+    
+    func hideControls() {
+        self.isShowingControls = false
+        UIView.animate(withDuration: 0.25) {
+            self.buttonsContainer.alpha = 0
+            self.statusBar.alpha = 0
+            self.hangUpButtonContainer.alpha = 0
+            self.localVideoViewContainer.alpha = 0
         }
     }
     
@@ -907,25 +1043,23 @@ public class DGStreamCallViewController: UIViewController {
     }
     
     @IBAction func drawButtonTapped(_ sender: Any) {
-        if self.callMode == .draw || self.isDrawing {
-            hideDropDown()
-            endDrawMode()
+        if self.isDrawing {
+            drawEndRequest()
         }
         else {
-            showDropDown()
-            startDrawMode()
+            drawRequest()
         }
     }
     
     @IBAction func whiteBoardButtonTapped(_ sender: Any) {
         // Hide video
-        if callMode == .board {
-            hideDropDown()
-            endWhiteBoard()
+        if self.whiteBoardUsers.contains(DGStreamCore.instance.currentUser?.userID ?? 0) {
+            hideDropDown(animated: true)
+            endWhiteBoardFor(userID: DGStreamCore.instance.currentUser?.userID ?? 0)
         }
         else {
             showDropDown()
-            startWhiteBoard()
+            startWhiteBoardFor(userID: DGStreamCore.instance.currentUser?.userID ?? 0)
         }
     }
     
@@ -933,8 +1067,14 @@ public class DGStreamCallViewController: UIViewController {
         
         if callMode == .merge {
             if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID {
-                DGStreamNotification.unmerge(from: currentUserID, with: { (success, errorMessage) in
-                    
+
+                let unmergeMessage = QBChatMessage()
+                unmergeMessage.text = "mergeEnd"
+                unmergeMessage.senderID = currentUserID.uintValue
+                unmergeMessage.recipientID = self.selectedUser.uintValue
+                
+                QBChat.instance.sendSystemMessage(unmergeMessage, completion: { (error) in
+                    print("Sent Unmerge System Message With \(error?.localizedDescription ?? "No Error")")
                 })
             }
             returnToStreamMode()
@@ -942,24 +1082,26 @@ public class DGStreamCallViewController: UIViewController {
         else {
             // Send push notification that asks the helper to merge with their reality
             if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID, let mergeRequestView = UINib(nibName: "DGStreamAlertView", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiate(withOwner: self, options: nil).first as? DGStreamAlertView {
+                
                 mergeRequestView.configureFor(mode: .mergeRequest, fromUsername: nil, message: "Waiting For Response...",isWaiting: true)
                 self.alertView = mergeRequestView
                 DGStreamManager.instance.waitingForResponse = .merge
                 mergeRequestView.presentWithin(viewController: self, fromUsername: "Merge", block: { (accepted) in })
-                DGStreamNotification.merge(from: currentUserID, with: { (success, errorMessage) in
-                    if !success {
-                        
+                
+                let mergeRequestMessage = QBChatMessage()
+                mergeRequestMessage.text = "mergeRequest"
+                mergeRequestMessage.senderID = currentUserID.uintValue
+                mergeRequestMessage.recipientID = self.selectedUser.uintValue
+                
+                QBChat.instance.sendSystemMessage(mergeRequestMessage, completion: { (error) in
+                    print("Sent Merge System Message With \(error?.localizedDescription ?? "No Error")")
+                    if error != nil {
                         mergeRequestView.dismiss()
                         
-                        if let alert = UINib(nibName: "DGStreamAlertView", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiate(withOwner: self, options: nil).first as? DGStreamAlertView {
-                            alert.configureFor(mode: .error, fromUsername: nil, message: errorMessage ?? "Error", isWaiting: false)
-                            alert.presentWithin(viewController: self, fromUsername: "", block: { (accepted) in
-                                alert.dismiss()
-                            })
-                        }
-                    }
-                    else {
-                        print("Successfully Pushed Merge Notification")
+                        let message = DGStreamMessage()
+                        message.message = "Merge failed."
+                        message.isSystem = true
+                        self.chatPeekView.addCellWith(message: message)
                     }
                 })
             }
@@ -979,68 +1121,140 @@ public class DGStreamCallViewController: UIViewController {
         DGStreamCore.instance.audioPlayer.stopAllSounds()
         self.didHangUp = true
         self.session.hangUp(["hangup" : "hang up"])
-        self.dismiss(animated: false, completion: nil)
+        self.navigationController?.popViewController(animated: false)
     }
     
-    func freezeWith(imageData: Data) {
-        if let image = UIImage(data: imageData) {
+    func freeze(imageData: Data?) {
+        
+        self.jotVC?.view.alpha = 0
+        
+        // Freeze from remote
+        if let imageData = imageData, let image = UIImage(data: imageData) {
+            
+            let freezeMessage = QBChatMessage()
+            freezeMessage.text = "didFreeze"
+            freezeMessage.senderID = DGStreamCore.instance.currentUser?.userID?.uintValue ?? 0
+            freezeMessage.recipientID = self.selectedUser.uintValue
+            
+            QBChat.instance.sendSystemMessage(freezeMessage, completion: { (error) in
+                print("Sent Did Freeze System Message With \(error?.localizedDescription ?? "No Error")")
+            })
+            
             isFrozen = true
-            self.freezeButtonContainer.backgroundColor = UIColor.dgYellow()
-            self.freezeImageView = UIImageView.init(frame: self.remoteVideoViewContainer.bounds)
             self.freezeImageView?.image = image
-            self.freezeImageView?.boundInside(container: self.remoteVideoViewContainer)
+            self.freezeImageView?.alpha = 1
             print("frozen")
             if let jot = self.jotVC, let freezeView = self.freezeImageView {
                 self.remoteVideoViewContainer.insertSubview(freezeView, belowSubview: jot.view)
             }
         }
-    }
-    
-    @IBAction func freezeButtonTapped(_ sender: Any) {
-        if isFrozen {
-            
-            self.unfreeze()
-            
-//            DGStreamNotification.unfreeze(for: [self.selectedUser], with: { (success, errorMessage) in
-//                if success {
-//                    print("Sent Push!")
-//                }
-//                else if let message = errorMessage {
-//                    print("Failed To Unfreeze with \(message)")
-//                }
-//            })
-            
-        }
-        else if let screenshot = DGStreamScreenCapture.takeScreenshotOf(view: self.remoteVideoViewContainer) {
-            
-            // Set frozen for local
-            isFrozen = true
-            self.freezeButtonContainer.backgroundColor = UIColor.dgYellow()
-            self.freezeImageView = UIImageView.init(frame: self.remoteVideoViewContainer.bounds)
-            self.freezeImageView?.image = screenshot
-            self.freezeImageView?.boundInside(container: self.remoteVideoViewContainer)
-            
-            if let jot = self.jotVC, let freezeView = self.freezeImageView {
-                self.remoteVideoViewContainer.insertSubview(freezeView, belowSubview: jot.view)
-            }
-            
-            captureScreen(screenView: self.remoteVideoViewContainer)
-            
-        }
+        // Local Freeze
         else {
-            // couldnt take snapshot
+            
+            let freezeMessage = QBChatMessage()
+            freezeMessage.text = "prepFreeze"
+            freezeMessage.senderID = DGStreamCore.instance.currentUser?.userID?.uintValue ?? 0
+            freezeMessage.recipientID = self.selectedUser.uintValue
+            
+            QBChat.instance.sendSystemMessage(freezeMessage, completion: { (error) in
+                print("Sent Did Freeze System Message With \(error?.localizedDescription ?? "No Error")")
+            })
+            
+            if let snapshot = DGStreamScreenCapture.takeScreenshotOf(view: self.remoteVideoViewContainer), let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID, let imageData = UIImagePNGRepresentation(snapshot), let fileID = NSString.init(string: UUID().uuidString).components(separatedBy: "-").first {
+                
+                isFrozen = true
+                self.freezeImageView?.image = snapshot
+                self.freezeImageView?.alpha = 1
+                print("frozen")
+                if let jot = self.jotVC, let freezeView = self.freezeImageView {
+                    self.remoteVideoViewContainer.insertSubview(freezeView, belowSubview: jot.view)
+                }
+                
+                QBRequest.tUploadFile(imageData, fileName: fileID, contentType: "image/png", isPublic: true, successBlock: { (response, blob) in
+                    
+                    let freezeMessage = QBChatMessage()
+                    freezeMessage.text = "freeze"
+                    freezeMessage.senderID = currentUserID.uintValue
+                    freezeMessage.recipientID = self.selectedUser.uintValue
+                    
+                    let uploadedFileID: UInt = blob.id
+                    let attachment: QBChatAttachment = QBChatAttachment()
+                    attachment.type = "image"
+                    attachment.id = String(uploadedFileID)
+                    freezeMessage.attachments = [attachment]
+                    
+                    QBChat.instance.sendSystemMessage(freezeMessage, completion: { (error) in
+                        print("Sent Freeze System Message With \(error?.localizedDescription ?? "No Error")")
+                    })
+                    
+                }, statusBlock: { (request, status) in
+                    
+                }, errorBlock: { (response) in
+                    
+                })
+                
+                self.jotVC?.view.alpha = 1
+                
+            }
+        
         }
+        
     }
     
     func unfreeze() {
         isFrozen = false
-        self.freezeButtonContainer.backgroundColor = UIColor.dgBlueDark()
-        self.freezeImageView?.removeFromSuperview()
-        self.freezeImageView = nil
-        self.endScreenCapture()
-        if self.callMode == .draw || (self.callMode == .merge && self.isDrawing) {
-            self.captureScreen(screenView: self.remoteVideoViewContainer)
+        self.freezeButton.backgroundColor = UIColor.dgBlueDark()
+        self.freezeImageView?.image = nil
+        self.freezeImageView?.alpha = 0
+    }
+    
+    @IBAction func freezeButtonTapped(_ sender: Any) {
+        
+        showFreezeActivityIndicator()
+        
+        if isFrozen, let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID {
+            
+            self.unfreeze()
+            
+            let unfreezeMessage = QBChatMessage()
+            unfreezeMessage.text = "unfreeze"
+            unfreezeMessage.senderID = currentUserID.uintValue
+            unfreezeMessage.recipientID = self.selectedUser.uintValue
+            
+            QBChat.instance.sendSystemMessage(unfreezeMessage, completion: { (error) in
+                print("Sent Unfreeze System Message With \(error?.localizedDescription ?? "No Error")")
+                self.hideFreezeActivityIndicator()
+            })
+            
         }
+        else {
+            self.freeze(imageData: nil)
+        }
+    }
+    
+    func showFreezeActivityIndicator() {
+        self.freezeButton.setImage(nil, for: .normal)
+        self.freezeButton.isEnabled = false
+        self.freezeActivityIndicator.isHidden = false
+        self.freezeActivityIndicator.startAnimating()
+    }
+    
+    func hideFreezeActivityIndicator() {
+        // The freeze is confirmed by other device
+        if self.isFrozen {
+            self.freezeButton.backgroundColor = UIColor.dgYellow()
+            self.statusBar.backgroundColor = UIColor.dgYellow()
+        }
+        else {
+            self.freezeButton.backgroundColor = UIColor.dgBlueDark()
+            if self.isDrawing == false && self.callMode != .merge && self.callMode != .board {
+                self.statusBar.backgroundColor = UIColor.dgGreen()
+            }
+        }
+        self.freezeButton.setImage(UIImage.init(named: "freeze", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
+        self.freezeButton.isEnabled = true
+        self.freezeActivityIndicator.isHidden = true
+        self.freezeActivityIndicator.stopAnimating()
     }
     
     @IBAction func snapshotButtonTapped(_ sender: Any) {
@@ -1067,95 +1281,74 @@ public class DGStreamCallViewController: UIViewController {
     }
     
     @IBAction func chatButtonTapped(_ sender: Any) {
-        showChatVC()
+        toggleChat()
+    }
+    
+    func toggleChat() {
+        if self.isChatShown {
+            self.hideChatVC()
+        }
+        else {
+            self.showChatVC()
+        }
     }
     
     func showChatVC() {
         // Fade out buttons
-        UIView.animate(withDuration: 0.14, animations: {
-            self.hangUpButtonContainer.alpha = 0
-            self.mergeButtonContainer.alpha = 0
-            self.drawButtonContainer.alpha = 0
-            self.whiteBoardButtonContainer.alpha = 0
-            self.shareScreenButtonContainer.alpha = 0
+        self.isChatShown = true
+        UIView.animate(withDuration: 0.25, animations: {
+            self.view.layoutIfNeeded()
+            self.chatContainer.alpha = 1
+            self.chatVC.view.alpha = 1
         }) { (fi) in
             
-            var height:CGFloat
-            
-            if Display.pad {
-                height = 600
-            }
-            else {
-                height = 400
-            }
-            
-            self.buttonsContainerHeightConstraint.constant = height
-            UIView.animate(withDuration: 0.46, animations: {
-                self.view.layoutIfNeeded()
-                self.chatVC.view.alpha = 1
-            }) { (fi) in
-                
-            }
         }
     }
     
     func hideChatVC() {
         // Dismiss ChatVC
-        
-        var height:CGFloat
-        
-        if Display.pad {
-            height = 140
-        }
-        else {
-            height = 100
-        }
-        
-        self.buttonsContainerHeightConstraint.constant = height
-        UIView.animate(withDuration: 0.46, animations: {
+        self.isChatShown = false
+        UIView.animate(withDuration: 0.25, animations: {
             self.view.layoutIfNeeded()
+            self.chatContainer.alpha = 0
             self.chatVC.view.alpha = 0
         }) { (fi) in
-            // Fade in buttons
-            UIView.animate(withDuration: 0.14, animations: {
-                self.hangUpButtonContainer.alpha = 1
-                self.mergeButtonContainer.alpha = 1
-                self.drawButtonContainer.alpha = 1
-                self.whiteBoardButtonContainer.alpha = 1
-                self.shareScreenButtonContainer.alpha = 1
-            }) { (fi) in
-                
-            }
+            
         }
     }
     
     @IBAction func doneButtonTapped(_ sender: Any) {
+        if isSettingText {
+            sendDrawing()
+            endSettingText(cancelled: false)
+        }
+    }
+    
+    @IBAction func backButtonTapped(_ sender: Any) {
         
         if self.isSettingText {
-            self.endSettingText()
+            self.endSettingText(cancelled: true)
         }
-        else {
-            switch callMode {
-            case .draw:
-                endDrawMode()
-                break
-            case .merge:
-                if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID {
-                    DGStreamNotification.unmerge(from: currentUserID, with: { (success, errorMessage) in
-                        
-                    })
-                }
-                returnToStreamMode()
-                break
-            case .share:
-                break
-            case .board:
-                endWhiteBoard()
-                break
-            case .stream:
-                self.navigationController?.popViewController(animated: true)
-                break
+        else if self.callMode == .board {
+            endWhiteBoardFor(userID: DGStreamCore.instance.currentUser?.userID ?? 0)
+        }
+        else if self.isDrawing {
+            self.drawEndRequest()
+        }
+        else if self.callMode == .merge {
+            if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID {
+                
+                let unmergeMessage = QBChatMessage()
+                unmergeMessage.text = "unmerge"
+                unmergeMessage.senderID = currentUserID.uintValue
+                unmergeMessage.recipientID = self.selectedUser.uintValue
+                
+                QBChat.instance.sendSystemMessage(unmergeMessage, completion: { (error) in
+                    print("Sent Unmerge System Message With \(error?.localizedDescription ?? "No Error")")
+                })
+                
             }
+            returnToStreamMode()
         }
     
     }
@@ -1178,157 +1371,101 @@ public class DGStreamCallViewController: UIViewController {
         }
     }
     
-    //MARK:- Switch Mode
+    @IBAction func blackoutCancelButtonTapped(_ sender: Any) {
+        self.hangUpButtonTapped(sender)
+    }
     
-    func updateFrameFor(mode: CallMode) {
-
-        if mode == .stream {
-            if let width = self.remoteVideoViewContainerWidthConstraint,
-                let height = self.remoteVideoViewContainerHeightConstraint,
-                let centerX = self.remoteVideoViewContainerCenterXConstraint,
-                let centerY = self.remoteVideoViewContainerCenterYConstraint {
-                NSLayoutConstraint.deactivate([width, height, centerX, centerY])
-            }
-            NSLayoutConstraint.activate([self.remoteVideoViewContainerTopConstraint, self.remoteVideoViewContainerLeftConstraint, self.remoteVideoViewContainerBottomConstraint, self.remoteVideoViewContainerRightConstraint])
+    @IBAction func blackoutCallBackButtonTapped(_ sender: Any) {
+        self.blackoutButtonContainer.alpha = 0
+        self.hangUpButtonContainer.alpha = 1
+        self.navigationController?.popViewController(animated: false)
+        if self.isAudioCall {
+            NotificationCenter.default.post(name: Notification.Name("RestartAudioCall"), object: self.selectedUser)
         }
         else {
-            NSLayoutConstraint.deactivate([self.remoteVideoViewContainerTopConstraint, self.remoteVideoViewContainerLeftConstraint, self.remoteVideoViewContainerBottomConstraint, self.remoteVideoViewContainerRightConstraint])
-
-            if self.remoteVideoViewContainerCenterXConstraint == nil {
-                let returnedConstraints = self.remoteVideoViewContainer.boundInCenterOf(container: self.view)
-                self.remoteVideoViewContainerWidthConstraint = returnedConstraints.width
-                self.remoteVideoViewContainerHeightConstraint = returnedConstraints.height
-                self.remoteVideoViewContainerCenterXConstraint = returnedConstraints.centerX
-                self.remoteVideoViewContainerCenterYConstraint = returnedConstraints.centerY
-            }
-            else {
-                NSLayoutConstraint.activate([self.remoteVideoViewContainerTopConstraint, self.remoteVideoViewContainerLeftConstraint, self.remoteVideoViewContainerBottomConstraint, self.remoteVideoViewContainerRightConstraint])
-            }
+            NotificationCenter.default.post(name: Notification.Name("RestartVideoCall"), object: self.selectedUser)
         }
-        self.view.layoutIfNeeded()
-        if let remoteVideo = self.videoViewWith(userID: self.selectedUser) as? QBRTCRemoteVideoView {
-            remoteVideo.setSize(self.remoteVideoViewContainer.bounds.size)
-            remoteVideo.layoutIfNeeded()
-        }
-
+//        self.hangUpButtonTapped(sender)
     }
     
-    func startMergeModeForHelper() {
-        
-        DGStreamCore.instance.audioPlayer.stopAllSounds()
-        if QBRTCAudioSession.instance().isAudioEnabled == false {
-            QBRTCAudioSession.instance().isAudioEnabled = true
-        }
-        
-        print("Start Merge For Helper")
-        
-        self.isHelper = true
-        
-        self.statusBarBackButton.setTitle("Cancel", for: .normal)
-        
-        UIView.animate(withDuration: 0.18) {
-            self.mergeButtonContainer.backgroundColor = UIColor.dgMergeMode()
-            self.statusBar.backgroundColor = UIColor.dgMergeMode()
-            self.statusBarBackButton.alpha = 1
-        }
-        
-        // Set Merge Mode
-        self.callMode = .merge
-        
-        // Remove LocalVideoVideo from container
-        if self.localVideoView != nil {
-            self.localVideoView?.removeFromSuperview()
-            self.localVideoView = nil
-        }
-        
-        // Hide Local Video Container
-        self.localVideoViewContainer.isHidden = true
-        
-        // Place Local Video On Top of Remote
-        self.localVideoView = DGStreamVideoView(layer: self.cameraCapture.previewLayer, frame: self.remoteVideoViewContainer.bounds)
-        self.localVideoView?.boundInside(container: self.remoteVideoViewContainer)
-        self.localVideoView?.alpha = 0.45
-        self.localVideoView?.updateOrientationIfNeeded()
-        self.localVideoView?.videoLayer.videoGravity = AVLayerVideoGravityResize
-        
-        if let remoteVideo = self.videoViewWith(userID: self.selectedUser) as? QBRTCRemoteVideoView {
-            remoteVideo.alpha = 1
-            remoteVideo.videoGravity = AVLayerVideoGravityResize
-        }
-        
-        // Set Transmission To Send Back Camera Video
-        self.cameraCapture.position = .back
-        self.session.localMediaStream.videoTrack.videoCapture = nil
-        self.session.localMediaStream.videoTrack.videoCapture = self.cameraCapture
-        
-        QBRTCAudioSession.instance().initialize { (config) in
-            config.categoryOptions = [.defaultToSpeaker]
-            if self.session.conferenceType == .video {
-                config.mode = AVAudioSessionModeVideoChat
-            }
-        }
-        self.session.localMediaStream.audioTrack.isEnabled = true
-        self.session.localMediaStream.videoTrack.isEnabled = true
-        
-    }
-    
-    func startMergeModeForHelp() {
-        
-        DGStreamCore.instance.audioPlayer.stopAllSounds()
-        if QBRTCAudioSession.instance().isAudioEnabled == false {
-            QBRTCAudioSession.instance().isAudioEnabled = true
-        }
-        
-        print("Start Merge For Help")
-        
-        self.isHelper = false
-        
-        self.statusBarBackButton.setTitle("Cancel", for: .normal)
-        
-        UIView.animate(withDuration: 0.18) {
-            self.mergeButtonContainer.backgroundColor = UIColor.dgMergeMode()
-            self.statusBar.backgroundColor = UIColor.dgMergeMode()
-            self.statusBarBackButton.alpha = 1
-        }
-        
-        if let alert = self.alertView {
-            alert.dismiss()
-        }
-        
-        self.callMode = .merge
-        
-        // Place Local Video Below Remote Video
-        if self.localVideoView != nil {
-            self.localVideoView?.removeFromSuperview()
-            self.localVideoView = nil
-        }
-        
-        self.localVideoView = DGStreamVideoView(layer: self.cameraCapture.previewLayer, frame: self.remoteVideoViewContainer.bounds)
-        self.localVideoView?.boundInside(container: self.remoteVideoViewContainer)
-        self.localVideoView?.alpha = 1.0
-        self.localVideoView?.updateOrientationIfNeeded()
-        self.localVideoView?.videoLayer.videoGravity = AVLayerVideoGravityResize
-        
-        self.remoteVideoViewContainer.sendSubview(toBack: self.localVideoView!)
-        
-        // Fade Remote Video On Top Of Local Video
-        if let remoteVideo = self.videoViewWith(userID: self.selectedUser) as? QBRTCRemoteVideoView {
-            remoteVideo.alpha = 0.45
-            remoteVideo.videoGravity = AVLayerVideoGravityResize
-        }
-        
-        // Hide Local Video Container
-        self.localVideoViewContainer.isHidden = true
-        
-        // Set Transmission To Send Back Camera Video
-        self.cameraCapture.position = .back
-        self.session.localMediaStream.videoTrack.videoCapture = nil
-        self.session.localMediaStream.videoTrack.videoCapture = self.cameraCapture
-    }
+    //MARK:- Switch Mode
     
     func playMergeSound() {
         QBRTCAudioSession.instance().isAudioEnabled = false
         DGStreamCore.instance.audioPlayer.ringForMerge()
+    }
+    
+    func startMergeMode() {
+        
+        DispatchQueue.main.async {
+            DGStreamCore.instance.audioPlayer.stopAllSounds()
+            if QBRTCAudioSession.instance().isAudioEnabled == false {
+                QBRTCAudioSession.instance().isAudioEnabled = true
+            }
+            
+            if let alertView = self.alertView {
+                alertView.dismiss()
+            }
+            
+            print("\n\nStart Merge For Helper\n\n")
+            
+            self.isHelper = true
+            
+            self.statusBarBackButton.setTitle("Cancel", for: .normal)
+            
+            UIView.animate(withDuration: 0.18) {
+                self.mergeButton.backgroundColor = UIColor.dgMergeMode()
+                self.statusBar.backgroundColor = UIColor.dgMergeMode()
+                self.statusBarBackButton.alpha = 1
+            }
+            
+            // Set Merge Mode
+            self.callMode = .merge
+            
+            // Remove LocalVideoVideo from container
+            print("\n\nLocal Video View is nil? \(self.localVideoView == nil)\n\n")
+            if self.localVideoView != nil {
+                self.localVideoView?.removeFromSuperview()
+                self.localVideoView = nil
+            }
+            
+            // Place Local Video On Top of Remote
+            self.localVideoView = DGStreamVideoView(layer: self.cameraCapture.previewLayer, frame: self.remoteVideoViewContainer.bounds)
+            self.localVideoView?.boundInside(container: self.remoteVideoViewContainer)
+            self.localVideoView?.alpha = 0.45
+            self.localVideoView?.updateOrientationIfNeeded()
+            self.localVideoView?.videoLayer.videoGravity = AVLayerVideoGravityResize
+            
+            if let freezeImageView = self.freezeImageView {
+                self.remoteVideoViewContainer.insertSubview(freezeImageView, aboveSubview: self.remoteVideoViewContainer)
+            }
+            
+            if let remoteVideo = self.videoViewWith(userID: self.selectedUser) as? QBRTCRemoteVideoView {
+                remoteVideo.alpha = 1
+                remoteVideo.videoGravity = AVLayerVideoGravityResize
+            }
+            
+            // Hide Local Video Container
+            self.localVideoViewContainer.isHidden = true
+            
+            // Set Transmission To Send Back Camera Video
+            self.cameraCapture.position = .back
+            self.session.localMediaStream.videoTrack.videoCapture = nil
+            self.session.localMediaStream.videoTrack.videoCapture = self.cameraCapture
+            
+            QBRTCAudioSession.instance().initialize { (config) in
+                config.categoryOptions = [.defaultToSpeaker]
+                if self.session.conferenceType == .video {
+                    config.mode = AVAudioSessionModeVideoChat
+                }
+            }
+            self.session.localMediaStream.audioTrack.isEnabled = true
+            self.session.localMediaStream.videoTrack.isEnabled = true
+            
+            self.whiteBoardButton.isEnabled = false
+            self.shareScreenButton.isEnabled = false
+        }
+        
     }
     
     func returnToStreamMode() {
@@ -1339,8 +1476,14 @@ public class DGStreamCallViewController: UIViewController {
         }
         
         UIView.animate(withDuration: 0.18) {
-            self.mergeButtonContainer.backgroundColor = UIColor.dgBlueDark()
-            self.drawButtonContainer.backgroundColor = UIColor.dgBlueDark()
+            self.mergeButton.backgroundColor = UIColor.dgBlueDark()
+            self.mergeButton.isEnabled = true
+            if !self.isDrawing {
+                self.drawButton.backgroundColor = UIColor.dgBlueDark()
+            }
+            self.drawButton.isEnabled = true
+            self.whiteBoardButton.backgroundColor = UIColor.dgBlueDark()
+            self.whiteBoardButton.isEnabled = true
             self.statusBar.backgroundColor = UIColor.dgStreamMode()
             self.statusBarBackButton.alpha = 0
         }
@@ -1350,12 +1493,6 @@ public class DGStreamCallViewController: UIViewController {
         }
         
         self.callMode = .stream
-        self.isDrawing = false
-        
-        if let jot = self.jotVC {
-            jot.view.removeFromSuperview()
-            self.jotVC = nil
-        }
 
         // Switch current device to merge mode
         self.localVideoViewContainer.alpha = 1.0
@@ -1367,7 +1504,7 @@ public class DGStreamCallViewController: UIViewController {
         self.localVideoView = DGStreamVideoView(layer: self.cameraCapture.previewLayer, frame: self.localVideoViewContainer.bounds)
         self.localVideoViewContainer.addSubview(self.localVideoView!)
         self.localVideoView?.alpha = 1
-        self.localVideoView?.videoLayer.videoGravity = AVLayerVideoGravityResizeAspect
+        self.localVideoView?.videoLayer.videoGravity = AVLayerVideoGravityResizeAspectFill
         
         if let remoteVideo = self.videoViewWith(userID: self.selectedUser) as? QBRTCRemoteVideoView {
             remoteVideo.alpha = 1
@@ -1383,6 +1520,13 @@ public class DGStreamCallViewController: UIViewController {
         self.session.localMediaStream.videoTrack.isEnabled = true
     }
     
+    func placeLocalVideoViewInRemoteContainer() {
+        if let remoteVideoView = self.videoViewWith(userID: self.selectedUser) {
+            remoteVideoView.alpha = 0
+        }
+        self.localVideoView?.boundInside(container: self.remoteVideoViewContainer)
+    }
+    
     //MARK:- Orientation
     
     func shouldAutorotateToInterfaceOrientation(interfaceOrientation: UIInterfaceOrientation) -> Bool {
@@ -1393,369 +1537,364 @@ public class DGStreamCallViewController: UIViewController {
     }
     
     //MARK:- Touches
-    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+    override public func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         
     }
     
-    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
-        sendDrawing()
+    override public func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        if !self.isSettingText {
+            sendDrawing()
+        }
     }
     
     //MARK:- Draw Mode
     
-    func startDrawMode() {
-        
-        self.statusBarBackButton.setTitle("Cancel", for: .normal)
-        
-        UIView.animate(withDuration: 0.18) {
-            
-            self.drawButtonContainer.backgroundColor = UIColor.dgMergeMode()
-            self.statusBar.backgroundColor = UIColor.dgMergeMode()
-            self.statusBarBackButton.alpha = 1
-            
-            self.paletteButtonContainer.alpha = 1
-            self.paletteTextButtonContainer.alpha = 1
-        }
-        
-        if self.callMode == .merge {
-            self.isDrawing = true
-        }
-        else {
-            self.callMode = .draw
-        }
-        
-        self.jotVC = JotViewController()
-        self.jotVC?.delegate = self
-        self.jotVC?.view.boundInside(container: self.remoteVideoViewContainer)
-        self.jotVC?.didMove(toParentViewController: self)
-        self.jotVC?.state = .drawing
-        self.jotVC?.drawingColor = UIColor.black
-        self.jotVC?.textColor = UIColor.black
-        self.jotVC?.initialTextInsets = UIEdgeInsets(top: UIScreen.main.bounds.size.height / 2, left: 0, bottom: 0, right: 0)
-        self.jotVC?.textEditingInsets = UIEdgeInsets(top: UIScreen.main.bounds.size.height / 2, left: 0, bottom: 0, right: 0)
-        
-        //AVLayerVideoGravityResize
-        
-        captureScreen(screenView: self.remoteVideoViewContainer)
+    func startDrawingTimer() {
+        self.drawingTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: true, block: { (timer) in
+            if !self.isSettingText {
+                self.sendDrawing()
+            }
+        })
     }
     
-    func endDrawMode() {
+    func endDrawingTimer() {
+        if let timer = self.drawingTimer {
+            timer.invalidate()
+            self.drawingTimer = nil
+        }
+    }
+    
+    func drawRequest() {
         
-        self.hideDropDown()
+        let currentUserID = DGStreamCore.instance.currentUser?.userID ?? NSNumber.init(value: 0)
+
+        // Update the UI to indicate we are switching to Draw Mode
+        //self.remoteVideoViewContainer.alpha = 0
         
-        UIView.animate(withDuration: 0.18) {
-            self.drawButtonContainer.backgroundColor = UIColor.dgBlueDark()
-            self.statusBar.backgroundColor = UIColor.dgStreamMode()
-            self.statusBarBackButton.alpha = 0
-            
-            self.paletteButtonContainer.alpha = 0
-            self.paletteTextButtonContainer.alpha = 0
-            
+        // Send the Draw Request to each other user
+        let drawStartMessage = QBChatMessage()
+        drawStartMessage.text = "drawStart"
+        drawStartMessage.senderID = currentUserID.uintValue
+        drawStartMessage.recipientID = self.selectedUser.uintValue
+        
+        QBChat.instance.sendSystemMessage(drawStartMessage) { (error) in
+            print("Sent Draw Start System Message With \(error?.localizedDescription ?? "No Error")")
+            if error != nil {
+                self.drawFailedWith(errorMessage: error?.localizedDescription ?? "Error")
+            }
         }
         
-        if self.callMode == .merge {
-            self.isDrawing = false
+        // Wait for the callback in drawAccepted()
+        
+        // Check if all other users have accepted (later)
+        setDrawUserWith(userID: currentUserID)
+        
+    }
+    
+    func drawAcceptedFor(userID: NSNumber) {
+        
+        let currentUserID = DGStreamCore.instance.currentUser?.userID ?? NSNumber.init(value: 0)
+        
+        // Check if all other users have accepted (later)
+        setDrawUserWith(userID: currentUserID)
+        
+        // Remove alert and show container
+        self.remoteVideoViewContainer.alpha = 1
+    }
+    
+    func setDrawUserWith(userID: NSNumber) {
+        
+        // Flag user as a drawing user
+        if !self.drawingUsers.contains(userID) {
+            self.drawingUsers.append(userID)
         }
-        else {
-            self.callMode = .stream
+
+        // If they are the selected user, change the UI
+        if userID == self.selectedUser {
+            //updateFrameFor(mode: .draw)
+            
+            //placeLocalVideoViewInRemoteContainer()
+            
+        }
+        // If they are current user, enter draw mode
+        else if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID, userID == currentUserID {
+            self.isDrawing = true
+            showDropDown()
+            UIView.animate(withDuration: 0.25, animations: {
+                self.drawButton.backgroundColor = UIColor.dgMergeMode()
+                self.statusBar.backgroundColor = UIColor.dgMergeMode()
+                self.statusBarBackButton.setTitle("Cancel", for: .normal)
+                self.statusBarBackButton.alpha = 1
+            })
+            
+            if self.jotVC == nil {
+                self.jotVC = JotViewController()
+                self.jotVC?.delegate = self
+                self.jotVC?.view.boundInside(container: self.remoteVideoViewContainer)
+                self.jotVC?.view.backgroundColor = .clear
+                self.jotVC?.drawingContainer.backgroundColor = .clear
+                self.jotVC?.view.alpha = 1.0
+                self.jotVC?.didMove(toParentViewController: self)
+                self.jotVC?.state = .drawing
+                self.jotVC?.drawingColor = self.drawColor
+                self.jotVC?.drawingStrokeWidth = self.drawSize
+                self.jotVC?.textColor = self.drawColor
+                self.jotVC?.initialTextInsets = UIEdgeInsets(top: UIScreen.main.bounds.size.height / 2, left: 0, bottom: 0, right: 0)
+                self.jotVC?.textEditingInsets = UIEdgeInsets(top: UIScreen.main.bounds.size.height / 2, left: 0, bottom: 0, right: 0)
+            }
+            
         }
         
         if let jot = self.jotVC {
-            jot.view.removeFromSuperview()
-            self.jotVC = nil
+            self.remoteVideoViewContainer.bringSubview(toFront: jot.view)
         }
         
-        if let flat = self.flattenedImageView {
-            flat.removeFromSuperview()
-            self.flattenedImageView = nil
+    }
+    
+    func drawEndRequest() {
+        
+        // Update the UI to indicate we are switching to Draw Mode
+        
+        // Send the Draw Request to each other user
+        let drawEndMessage = QBChatMessage()
+        drawEndMessage.text = "drawEnd"
+        drawEndMessage.senderID = DGStreamCore.instance.currentUser?.userID?.uintValue ?? 0
+        drawEndMessage.recipientID = self.selectedUser.uintValue
+        
+        QBChat.instance.sendSystemMessage(drawEndMessage) { (error) in
+            print("Sent Draw End System Message With \(error?.localizedDescription ?? "No Error")")
         }
         
-        self.endScreenCapture()
+        // Wait for the callback in drawEndAccepted()
+        self.drawEndWith(userID: DGStreamCore.instance.currentUser?.userID ?? 0)
+    }
+    
+    func drawEndAcceptedWith(userID: NSNumber) {
+        
+        // Check if all other users have accepted (later)
+        let currentUserID = DGStreamCore.instance.currentUser?.userID ?? NSNumber(value: 0)
+        
+        drawEndWith(userID: currentUserID)
+        
+        // Remove alert and show container
+        self.remoteVideoViewContainer.alpha = 1
+    }
+    
+    func drawFailedWith(errorMessage: String) {
+        
+    }
+    
+    func drawEndWith(userID: NSNumber) {
+        
+        if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID, userID == currentUserID {
+            
+            self.hideDropDown(animated: true)
+            
+            UIView.animate(withDuration: 0.18) {
+                self.drawButton.backgroundColor = UIColor.dgBlueDark()
+                if self.callMode != .merge || self.callMode != .board {
+                    self.statusBar.backgroundColor = UIColor.dgStreamMode()
+                    self.statusBarBackButton.alpha = 0
+                    
+                    self.paletteButtonContainer.alpha = 0
+                    self.paletteTextButtonContainer.alpha = 0
+                }
+            }
+            
+            self.isDrawing = false
+            
+            if let jot = self.jotVC {
+                jot.view.removeFromSuperview()
+                self.jotVC = nil
+            }
+            
+            if let flat = self.localDrawImageView {
+                flat.removeFromSuperview()
+                self.localDrawImageView = nil
+            }
+            
+            if let flat = self.remoteDrawImageView, !self.drawingUsers.contains(self.selectedUser) && !self.whiteBoardUsers.contains(self.selectedUser) {
+                flat.removeFromSuperview()
+                self.remoteDrawImageView = nil
+            }
+            
+        }
+        else {
+            if let flat = self.remoteDrawImageView {
+                flat.removeFromSuperview()
+                self.remoteDrawImageView = nil
+            }
+        }
+        
+        if let index = self.drawingUsers.index(of: userID) {
+            self.drawingUsers.remove(at: index)
+        }
+        
     }
     
     func sendDrawing() {
         if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID, let jot = self.jotVC, let snapshot = jot.renderImage(), let fileID = UUID().uuidString.components(separatedBy: "-").first {
-            
-            let frozenImage = QBCOCustomObject()
-            frozenImage.className = "FrozenImage"
-            frozenImage.createdAt = Date()
-            frozenImage.userID = currentUserID.uintValue
-            frozenImage.id = fileID
-            
-            let imageFile = QBCOFile()
-            if let imageData = UIImagePNGRepresentation(snapshot) {
-                
-                imageFile.contentType = "image/jpeg"
-                imageFile.data = imageData
-                imageFile.name = "image"
-                
-                let fields:NSMutableDictionary = NSMutableDictionary()
-                fields.setObject(imageFile, forKey: "image" as NSCopying)
-                
-                frozenImage.fields = fields
-            }
-            else {
-                return
-            }
-            
-            QBRequest.createObject(frozenImage, successBlock: { (response, object) in
-                
-                QBRequest.uploadFile(imageFile, className: "DrawImage", objectID: object?.id ?? "", fileFieldName: "image", successBlock: { (response, uploadInfo) in
-                    if response.isSuccess {
-                        print("DID UPLOAD IMAGE")
-                    }
-                }, statusBlock: { (response, status) in
-                    
-                }, errorBlock: { (error) in
-                    print("DID FAIL TO UPLOAD IMAGE \(error.error?.error?.localizedDescription ?? "ERROR")")
-                })
-                
-                if response.isSuccess, let object = object, let objectID = object.id {
-                    print("Uploaded File")
-                    DGStreamNotification.freeze(with: objectID, for: [self.selectedUser], with: { (success, errorMessage) in
-                        if success {
-                            print("Sent Push!")
-                        }
-                        else if let message = errorMessage {
-                            print(message)
-                        }
-                    })
-                }
-                else if let responseError = response.error, let error = responseError.error {
-                    print("Upload Failed with error \(error.localizedDescription)")
-                }
-            }, errorBlock: { (response) in
-                if let responseError = response.error, let error = responseError.error {
-                    print("Upload Failed with error \(error.localizedDescription)")
-                }
-            })
-            
+            self.localDrawImageView?.mergeImagesWith(newImage: snapshot)
+            self.drawOperationQueue.addDrawing(snapshot: snapshot, fromCurrentUser: currentUserID, toUsers: [self.selectedUser], withFileID: fileID)
         }
     }
     
-    func deviceOrientationDidChange() {
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.20) {
-            
-            self.dropDown.frame = self.dropDownContainer.frame
-            
-            if self.callMode == .merge {
-                
-                if self.localVideoView != nil {
-                    self.localVideoView?.removeFromSuperview()
-                    self.localVideoView = nil
-                }
-                
-                self.localVideoView = DGStreamVideoView(layer: self.cameraCapture.previewLayer, frame: self.remoteVideoViewContainer.bounds)
-                self.localVideoView?.boundInside(container: self.remoteVideoViewContainer)
-                
-                if self.isHelper {
-                    self.localVideoView?.alpha = 0.45
-                    
-                    if let remoteView = self.videoViewWith(userID: self.selectedUser) as? QBRTCRemoteVideoView {
-                        remoteView.alpha = 1.0
-                    }
-
-                }
-                else {
-                    self.localVideoView?.alpha = 1.0
-                    
-                    if let remoteView = self.videoViewWith(userID: self.selectedUser) as? QBRTCRemoteVideoView {
-                        remoteView.alpha = 0.45
-                    }
-                    
-                    self.remoteVideoViewContainer.sendSubview(toBack: self.localVideoView!)
-
-                }
-                
-                self.localVideoView?.updateOrientationIfNeeded()
-                self.localVideoView?.videoLayer.videoGravity = AVLayerVideoGravityResize
+    func drawWithImage(data: Data) {
+        if let image = UIImage(data: data) {
+            if self.remoteDrawImageView == nil {
+                self.remoteDrawImageView = UIImageView(frame: self.remoteVideoViewContainer.bounds)
+                self.remoteDrawImageView?.image = UIImage(color: .clear, size: self.remoteVideoViewContainer.bounds.size)
+                self.remoteDrawImageView?.boundInside(container: self.remoteVideoViewContainer)
             }
-            else {
-                self.localVideoView?.videoLayer.videoGravity = AVLayerVideoGravityResizeAspect
+            self.remoteVideoViewContainer.bringSubview(toFront: self.remoteDrawImageView!)
+            if let jot = self.jotVC {
+                self.remoteVideoViewContainer.bringSubview(toFront: jot.view)
             }
+            //self.flattenedImageView?.mergeImagesWith(newImage: image)
+            self.remoteDrawImageView?.mergeImagesWith(newImage: image)
         }
-        
     }
     
 }
 
 //MARK:- White Board Mode
 extension DGStreamCallViewController {
-    func user(userID: NSNumber, joinedWhiteBoardSession sessionID: String) {
-        print("joinedWhiteBoardSession")
-        
-        if let session = self.whiteBoardSessions.filter({ (session) -> Bool in
-            return session.sessionID == sessionID
-        }).first {
-            session.userIDs.append(userID)
-            if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID, session.userIDs.contains(currentUserID) {
-                if let videoView = self.videoViewWith(userID: userID) {
-                    
-                    // stack user's videoView under draw view
-                    videoView.alpha = 0.5
-                    
-                }
-            }
-        }
-        else {
-            let session = DGStreamWhiteBoardSession()
-            session.sessionID = sessionID
-            session.userIDs = [userID]
-            self.whiteBoardSessions.append(session)
-        }
-        
-    }
     
-    func user(userID: NSNumber, exitedWhiteBoardSession sessionID: String) {
-        if let session = self.whiteBoardSessions.filter({ (session) -> Bool in
-            return session.sessionID == sessionID
-        }).first {
+    func startWhiteBoardFor(userID: NSNumber) {
+        
+        if userID == DGStreamCore.instance.currentUser?.userID ?? 0 {
+            
+            let whiteboardStartMessage = QBChatMessage()
+            whiteboardStartMessage.text = "whiteboardStart"
+            whiteboardStartMessage.senderID = userID.uintValue
+            whiteboardStartMessage.recipientID = self.selectedUser.uintValue
+            
+            QBChat.instance.sendSystemMessage(whiteboardStartMessage, completion: { (error) in
+                print("Sent White Board System Message With \(error?.localizedDescription ?? "No Error")")
+            })
             
         }
-    }
-    
-    func startWhiteBoard() {
         
         DispatchQueue.main.async {
             
-            UIView.animate(withDuration: 0.18) {
-                self.whiteBoardButtonContainer.backgroundColor = UIColor.dgMergeMode()
-                self.statusBar.backgroundColor = UIColor.dgMergeMode()
-                self.statusBarBackButton.alpha = 1
+            if !self.whiteBoardUsers.contains(userID) {
+                self.whiteBoardUsers.append(userID)
+            }
+            
+            if userID == DGStreamCore.instance.currentUser?.userID ?? 0 || userID == self.selectedUser, self.whiteBoardView == nil {
+                self.whiteBoardView = UIView(frame: self.remoteVideoViewContainer.bounds)
+                self.whiteBoardView?.tag = 1999
+                self.whiteBoardView?.backgroundColor = .white
+                self.whiteBoardView?.boundInside(container: self.remoteVideoViewContainer)
+                self.layoutRemoteViewHeirarchy()
+            }
+            
+            if userID == DGStreamCore.instance.currentUser?.userID ?? 0 {
+                self.showDropDown()
                 
-                self.paletteButtonContainer.alpha = 1
-                self.paletteTextButtonContainer.alpha = 1
-            }
-            
-            var otherUsersIDs:[NSNumber] = []
-            var isJoiningSelectedUserWhiteBoard = false
-            
-            // Add new session or update existing session with current user
-            if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID {
-                if let session = self.whiteBoardSessions.filter({ (session) -> Bool in
-                    return session.userIDs.contains(self.selectedUser)
-                }).first {
-                    isJoiningSelectedUserWhiteBoard = true
-                    otherUsersIDs = session.userIDs
-                    session.userIDs.append(currentUserID)
-                    DGStreamNotification.joinWhiteBoardSession(session.sessionID, forUser: currentUserID, sendToUsers: [self.selectedUser], with: { (success, errorMessage) in
-                        
-                    })
+                UIView.animate(withDuration: 0.18) {
+                    self.whiteBoardButton.backgroundColor = UIColor.dgMergeMode()
+                    self.statusBar.backgroundColor = UIColor.dgMergeMode()
+                    self.drawButton.backgroundColor = UIColor.dgMergeMode()
+                    self.drawButton.isEnabled = false
+                    self.mergeButton.isEnabled = false
+                    self.statusBarBackButton.alpha = 1
+                    
+                    self.paletteButtonContainer.alpha = 1
+                    self.paletteTextButtonContainer.alpha = 1
                 }
-                else {
-                    let session = DGStreamWhiteBoardSession()
-                    session.sessionID = UUID().uuidString.components(separatedBy: "-")[0]
-                    session.userIDs = [currentUserID]
-                    self.whiteBoardSessions.append(session)
-                    DGStreamNotification.joinWhiteBoardSession(session.sessionID, forUser: currentUserID, sendToUsers: [self.selectedUser], with: { (success, errorMessage) in
-                        
-                    })
+                
+                // Add current user's draw view on top off stack
+                if self.jotVC == nil {
+                    self.jotVC = JotViewController()
+                    self.jotVC?.delegate = self
+                    self.jotVC?.view.boundInside(container: self.remoteVideoViewContainer)
+                    self.jotVC?.view.backgroundColor = .clear
+                    self.jotVC?.drawingContainer.backgroundColor = .clear
+                    self.jotVC?.view.alpha = 1.0
+                    self.jotVC?.didMove(toParentViewController: self)
+                    self.jotVC?.state = .drawing
+                    self.jotVC?.drawingColor = self.drawColor
+                    self.jotVC?.textColor = self.drawColor
+                    self.jotVC?.drawingStrokeWidth = self.drawSize
+                    self.jotVC?.initialTextInsets = UIEdgeInsets(top: UIScreen.main.bounds.size.height / 2, left: 0, bottom: 0, right: 0)
+                    self.jotVC?.textEditingInsets = UIEdgeInsets(top: UIScreen.main.bounds.size.height / 2, left: 0, bottom: 0, right: 0)
                 }
+                
+                self.callMode = .board
+                
             }
+        
+        }
+        
+    }
+    
+    func endWhiteBoardFor(userID: NSNumber) {
+        
+        if userID == DGStreamCore.instance.currentUser?.userID ?? 0 {
             
-            // Update frame of container to be white square
-            self.remoteVideoViewContainer.alpha = 0
-            //updateFrameFor(mode: .board)
-            self.remoteVideoViewContainer.backgroundColor = .white
+            let whiteboardEndMessage = QBChatMessage()
+            whiteboardEndMessage.text = "whiteboardEnd"
+            whiteboardEndMessage.senderID = userID.uintValue
+            whiteboardEndMessage.recipientID = self.selectedUser.uintValue
             
-            // Stack all included userIDs' videoView on top of container
-            for userID in otherUsersIDs {
-                if let videoView = self.videoViewWith(userID: userID) as? QBRTCRemoteVideoView{
-                    videoView.boundInside(container: self.remoteVideoViewContainer)
-                    videoView.setSize(self.remoteVideoViewContainer.bounds.size)
-                    videoView.alpha = 0.5
+            QBChat.instance.sendSystemMessage(whiteboardEndMessage, completion: { (error) in
+                print("Sent Whiteboard End System Message With \(error?.localizedDescription ?? "No Error")")
+            })
+            
+        }
+        
+        if userID == self.selectedUser, !self.drawingUsers.contains(self.selectedUser), let remote = self.remoteDrawImageView {
+            remote.image = UIImage(color: .clear, size: remote.bounds.size)
+        }
+        
+        if let index = self.whiteBoardUsers.index(of: userID) {
+            self.whiteBoardUsers.remove(at: index)
+        }
+        
+        // If other user is not in whiteboard then remove whiteboard
+        if let white = self.whiteBoardView {
+            var shouldRemoveWhiteBoard = true
+            if userID == self.selectedUser && self.callMode == .board {
+                shouldRemoveWhiteBoard = false
+            }
+            else if self.whiteBoardUsers.contains(selectedUser) {
+                shouldRemoveWhiteBoard = false
+            }
+            if shouldRemoveWhiteBoard {
+                white.removeFromSuperview()
+                self.whiteBoardView = nil
+                //self.layoutRemoteViewHeirarchy()
+            }
+        }
+        
+        if userID == DGStreamCore.instance.currentUser?.userID ?? 0 {
+            UIView.animate(withDuration: 0.18) {
+                self.whiteBoardButton.backgroundColor = UIColor.dgBlueDark()
+                if self.isDrawing == false {
+                    self.drawButton.backgroundColor = UIColor.dgBlueDark()
+                    self.statusBar.backgroundColor = UIColor.dgStreamMode()
+                    self.statusBarBackButton.alpha = 0
+                    
+                    self.paletteButtonContainer.alpha = 0
+                    self.paletteTextButtonContainer.alpha = 0
                 }
             }
             
             // Add current user's draw view on top off stack
-            self.jotVC = JotViewController()
-            self.jotVC?.delegate = self
-            self.jotVC?.view.boundInside(container: self.remoteVideoViewContainer)
-            self.jotVC?.view.backgroundColor = .clear
-            self.jotVC?.drawingContainer.backgroundColor = .clear
-            self.jotVC?.view.alpha = 0.5
-            self.jotVC?.didMove(toParentViewController: self)
-            self.jotVC?.state = .drawing
-            self.jotVC?.drawingColor = UIColor.red
-            self.jotVC?.textColor = UIColor.red
-            self.jotVC?.initialTextInsets = UIEdgeInsets(top: UIScreen.main.bounds.size.height / 2, left: 0, bottom: 0, right: 0)
-            self.jotVC?.textEditingInsets = UIEdgeInsets(top: UIScreen.main.bounds.size.height / 2, left: 0, bottom: 0, right: 0)
-            
-            // Hide selected user video
-            if let selectedUserVideo = self.videoViewWith(userID: self.selectedUser), isJoiningSelectedUserWhiteBoard == false {
-                selectedUserVideo.alpha = 0
-            }
-            
-            self.remoteVideoViewContainer.alpha = 1
-            
-            self.captureScreen(screenView: self.remoteVideoViewContainer)
-            
-            self.callMode = .board
-        }
-        
-    }
-    
-    func endWhiteBoard() {
-        
-        UIView.animate(withDuration: 0.18) {
-            self.whiteBoardButtonContainer.backgroundColor = UIColor.dgBlueDark()
-            self.statusBar.backgroundColor = UIColor.dgStreamMode()
-            self.statusBarBackButton.alpha = 0
-            
-            self.paletteButtonContainer.alpha = 0
-            self.paletteTextButtonContainer.alpha = 0
-        }
-        
-        var otherUsersIDs:[NSNumber] = []
-        
-        // Add new session or update existing session with current user
-        if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID {
-            if let session = self.whiteBoardSessions.filter({ (session) -> Bool in
-                return session.userIDs.contains(self.selectedUser)
-            }).first {
-                otherUsersIDs = session.userIDs
-                if let index = session.userIDs.index(of: currentUserID) {
-                    session.userIDs.remove(at: index)
-                }
-                DGStreamNotification.exitWhiteBoardSession(session.sessionID, forUser: currentUserID, sendToUsers: [self.selectedUser], with: { (success, errorMessage) in
-                    
-                })
-            }
-        }
-        
-        // Remove all included userIDs' videoView on top of container
-        for userID in otherUsersIDs {
-            if let videoView = self.videoViewWith(userID: userID) as? QBRTCRemoteVideoView {
-                if userID != selectedUser {
-                    videoView.alpha = 1
-                    videoView.removeFromSuperview()
+            if let jot = self.jotVC, self.isDrawing == false {
+                jot.view.removeFromSuperview()
+                self.jotVC = nil
+                if let local = self.localDrawImageView {
+                    local.image = UIImage(color: .clear, size: self.remoteVideoViewContainer.bounds.size)
                 }
             }
+            
+            // Set new mode
+            self.callMode = .stream
         }
-        
-        // Update frame of container to be full screen
-        //updateFrameFor(mode: .stream)
-        self.remoteVideoViewContainer.backgroundColor = .black
-        
-        // Add current user's draw view on top off stack
-        if let jot = self.jotVC {
-            jot.view.removeFromSuperview()
-            self.jotVC = nil
-        }
-        
-        // Show selected user video
-        if let selectedUserVideo = self.videoViewWith(userID: self.selectedUser) {
-            selectedUserVideo.alpha = 1
-        }
-        
-        self.remoteVideoViewContainer.alpha = 1
-        
-        endScreenCapture()
-        
-        // Set new mode
-        self.callMode = .stream
-        
+        self.drawButton.isEnabled = true
+        self.mergeButton.isEnabled = true
     }
     
 }
@@ -1812,19 +1951,13 @@ extension DGStreamCallViewController {
 //MARK:- QBRTCClientDelegate
 extension DGStreamCallViewController: QBRTCClientDelegate {
     public func session(_ session: QBRTCBaseSession, updatedStatsReport report: QBRTCStatsReport, forUserID userID: NSNumber) {
-//        if session == self.session {
-//            let result = report.statsString()
-//            print(result)
-//        }
+
     }
     
     public func session(_ session: QBRTCSession, userDidNotRespond userID: NSNumber) {
         //print("USER \(userID) DID NOT RESPOND")
         DGStreamCore.instance.audioPlayer.stopAllSounds()
         if session == self.session {
-//            self.performUpdate(userID: userID) { (cell) in
-//                cell.connectionState = self.session.connectionState(forUser: userID)
-//            }
             let alert = UIAlertController(title: "No Response", message: nil, preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: { (action: UIAlertAction) in
                 alert.dismiss(animated: true, completion: nil)
@@ -1835,12 +1968,7 @@ extension DGStreamCallViewController: QBRTCClientDelegate {
     }
     
     public func session(_ session: QBRTCSession, acceptedByUser userID: NSNumber, userInfo: [String : String]? = nil) {
-        //print("ACCEPTED BY \(userID)")
-//        if session == self.session {
-//            self.performUpdate(userID: userID) { (cell) in
-//                cell.connectionState = self.session.connectionState(forUser: userID)
-//            }
-//        }
+
     }
     
     public func session(_ session: QBRTCSession, rejectedByUser userID: NSNumber, userInfo: [String : String]? = nil) {
@@ -1848,9 +1976,6 @@ extension DGStreamCallViewController: QBRTCClientDelegate {
         DGStreamCore.instance.audioPlayer.stopAllSounds()
 
         if session == self.session {
-//            self.performUpdate(userID: userID) { (cell) in
-//                cell.connectionState = self.session.connectionState(forUser: userID)
-//            }
             let alert = UIAlertController(title: "Call Rejected", message: nil, preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: { (action: UIAlertAction) in
                 alert.dismiss(animated: true, completion: nil)
@@ -1861,12 +1986,10 @@ extension DGStreamCallViewController: QBRTCClientDelegate {
     }
     
     public func session(_ session: QBRTCSession, hungUpByUser userID: NSNumber, userInfo: [String : String]? = nil) {
-        //print("\(userID) HUNG UP")
-//        if session == self.session {
-//            self.performUpdate(userID: userID) { (cell) in
-//                cell.connectionState = self.session.connectionState(forUser: userID)
-//            }
-//        }
+        if userID == self.selectedUser {
+            self.didOtherUserHangUp = true
+            self.showCallEndedWith(isHungUp: true)
+        }
         DGStreamCore.instance.audioPlayer.stopAllSounds()
     }
     
@@ -1905,12 +2028,7 @@ extension DGStreamCallViewController: QBRTCClientDelegate {
     }
     
     public func session(_ session: QBRTCBaseSession, startedConnectingToUser userID: NSNumber) {
-        //print("STARTED CONNECTING TO \(userID)")
-//        if session == self.session {
-//            self.performUpdate(userID: userID) { (cell) in
-//                cell.connectionState = self.session.connectionState(forUser: userID)
-//            }
-//        }
+
     }
     
     public func session(_ session: QBRTCBaseSession, connectedToUser userID: NSNumber) {
@@ -1936,50 +2054,28 @@ extension DGStreamCallViewController: QBRTCClientDelegate {
             if self.callTimer == nil {
                 self.callTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(refreshCallTime(sender:)), userInfo: nil, repeats: true)
             }
-            
-//            self.performUpdate(userID: userID) { (cell) in
-//                cell.connectionState = self.session.connectionState(forUser: userID)
-//            }
         }
     }
     
     public func session(_ session: QBRTCBaseSession, disconnectedFromUser userID: NSNumber) {
         print("DISCONNECTED FROM \(userID)")
+        if self.didOtherUserHangUp == false && userID == self.selectedUser {
+            self.showCallEndedWith(isHungUp: false)
+        }
         if let index = self.chatVC.chatConversation.userIDs.index(of: userID) {
             self.chatVC.chatConversation.userIDs.remove(at: index)
         }
-//        if session == self.session {
-//            self.performUpdate(userID: userID) { (cell) in
-//                cell.connectionState = self.session.connectionState(forUser: userID)
-//            }
-//        }
-        self.hangUpButtonTapped(self)
+        if let recent = DGStreamCore.instance.lastRecent {
+            recent.duration = self.timeDuration
+            DGStreamManager.instance.dataStore.streamManager(DGStreamManager.instance, store: recent)
+        }
     }
     
     public func session(_ session: QBRTCBaseSession, connectionClosedForUser userID: NSNumber) {
-        //print("CONNECTIONG CLOSED FOR \(userID)")
-//        if session == self.session {
-//            self.performUpdate(userID: userID) { (cell) in
-//                cell.connectionState = self.session.connectionState(forUser: userID)
-//                self.videoViews.removeValue(forKey: userID.uintValue)
-//                cell.set(videoView: nil)
-//            }
-//            let alert = UIAlertController(title: "Session Closed", message: nil, preferredStyle: .alert)
-//            alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: { (action: UIAlertAction) in
-//                alert.dismiss(animated: true, completion: nil)
-//            }))
-//            present(alert, animated: true, completion: nil)
-//        }
     }
     
     public func session(_ session: QBRTCBaseSession, connectionFailedForUser userID: NSNumber) {
         print("CONNECTION FAILED FOR \(userID)")
-//        if session == self.session {
-//            self.performUpdate(userID: userID) { (cell) in
-//                cell.connectionState = self.session.connectionState(forUser: userID)
-//            }
-//        }
-
     }
     
     public func session(_ session: QBRTCBaseSession, didChange state: QBRTCSessionState) {
@@ -1988,11 +2084,6 @@ extension DGStreamCallViewController: QBRTCClientDelegate {
     
     public func session(_ session: QBRTCBaseSession, didChange state: QBRTCConnectionState, forUser userID: NSNumber) {
         printConnection(state: state, for: userID)
-//        if session == self.session {
-//            self.performUpdate(userID: userID) { (cell) in
-//                cell.connectionState = self.session.connectionState(forUser: userID)
-//            }
-//        }
     }
     
     public func didReceiveNewSession(_ session: QBRTCSession, userInfo: [String : String]? = nil) {
@@ -2001,34 +2092,9 @@ extension DGStreamCallViewController: QBRTCClientDelegate {
     
     public func sessionDidClose(_ session: QBRTCSession) {
         print("SESSION CLOSED")
-//        if !self.didHangUp {
-//            if session == self.session {
-//                let alert = UIAlertController(title: "Session Closed", message: nil, preferredStyle: .alert)
-//                alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: { (action: UIAlertAction) in
-//                    alert.dismiss(animated: true, completion: nil)
-//                    self.navigationController?.popViewController(animated: true)
-//                }))
-//                present(alert, animated: true, completion: nil)
-//            }
-//        }
     }
     
     func printSession(state: QBRTCSessionState) {
-//        if state == .closed {
-//            print("|-CLOSED-|")
-//        }
-//        if state == .connected {
-//            print("|-CONNECTED-|")
-//        }
-//        if state == .connecting {
-//            print("|-CONNECTING-|")
-//        }
-//        if state == .new {
-//            print("|-NEW-|")
-//        }
-//        if state == .pending {
-//            print("|-PENDING-|")
-//        }
     }
     
     func printConnection(state: QBRTCConnectionState, for userID: NSNumber) {
@@ -2081,12 +2147,14 @@ extension DGStreamCallViewController: QBRTCClientDelegate {
 extension DGStreamCallViewController: JotViewControllerDelegate {
     public func jotViewController(_ jotViewController: JotViewController!, isEditingText isEditing: Bool) {
         print("IS EDITING \(isEditing)")
+        if let jot = self.jotVC, self.isSettingText {
+            jot.state = .text
+        }
     }
 }
 
 //MARK:- QBRTCAudioSessionDelegate
 extension DGStreamCallViewController: QBRTCAudioSessionDelegate {
-    
 }
 
 //MARK:- DGStreamPhotoSaverDelegate
@@ -2111,67 +2179,84 @@ extension DGStreamCallViewController: DGStreamChatViewControllerDelegate {
     }
 }
 
-extension DGStreamCallViewController: DGStreamDropDownViewControllerDelegate {
+extension DGStreamCallViewController: DGStreamDropDownManagerDelegate {
     
     func startSettingText() {
         self.isSettingText = true
         self.dropDown.hideMenu()
-        self.hideDropDown()
-        self.buttonsContainer.alpha = 0
+        self.hideDropDown(animated: true)
         self.paletteTextButtonContainer.alpha = 0
         self.localVideoViewContainer.alpha = 0
         UIView.animate(withDuration: 0.18) {
-            self.statusBarBackButton.setTitle("Finished", for: .normal)
+            self.statusBarBackButton.alpha = 1
+            self.statusBarBackButton.setTitle("Cancel", for: .normal)
+            self.statusBarDoneButton.alpha = 1
+            self.statusBarDoneButton.setTitle("Done", for: .normal)
         }
     }
     
-    func endSettingText() {
+    func endSettingText(cancelled: Bool) {
         self.isSettingText = false
         self.showDropDown()
-        self.buttonsContainer.alpha = 1
         self.paletteTextButtonContainer.alpha = 1
         self.localVideoViewContainer.alpha = 1
+        
+        if let jot = self.jotVC, self.localDrawImageView == nil {
+            self.localDrawImageView = UIImageView(frame: self.remoteVideoViewContainer.bounds)
+            self.localDrawImageView?.image = UIImage()
+            self.localDrawImageView?.boundInside(container: self.remoteVideoViewContainer)
+            self.remoteVideoViewContainer.bringSubview(toFront: jot.view)
+        }
+        
+        if let jot = self.jotVC {
+            if cancelled {
+                jot.clearText()
+            }
+            else {
+                
+                let stampImage = jot.renderImage()!
+                
+                self.drawOperationQueue.addDrawing(snapshot: stampImage, fromCurrentUser: DGStreamCore.instance.currentUser?.userID ?? 0, toUsers: [self.selectedUser], withFileID: UUID().uuidString.components(separatedBy: "-").first ?? "")
+                
+                self.localDrawImageView?.mergeImagesWith(newImage: stampImage)
+            }
+        }
         
         if let jot = self.jotVC {
             jot.state = .drawing
         }
         
         UIView.animate(withDuration: 0.18) {
+            self.statusBarDoneButton.alpha = 0
             self.statusBarBackButton.setTitle("Cancel", for: .normal)
         }
         
     }
     
-    func dropDownViewController(viewController: DGStreamDropDownViewController, sizeSelected size: String) {
+    func dropDownManager(manager: DGStreamDropDownManager, sizeSelected size: String) {
         if let jot = self.jotVC, let float = UInt(size) {
             self.dropDown.hideMenu()
-            jot.drawingStrokeWidth = CGFloat(float)
+            self.drawSize = CGFloat(float)
+            jot.drawingStrokeWidth = self.drawSize
         }
     }
-    func dropDownViewController(viewController: DGStreamDropDownViewController, colorSelected color: UIColor) {
+    func dropDownManager(manager: DGStreamDropDownManager, colorSelected color: UIColor) {
         if let jot = self.jotVC {
             self.dropDown.hideMenu()
-            jot.drawingColor = color
+            self.drawColor = color
+            jot.drawingColor = self.drawColor
         }
     }
-    func dropDownViewController(viewController: DGStreamDropDownViewController, stampSelected stamp: String) {
+    func dropDownManager(manager: DGStreamDropDownManager, stampSelected stamp: String) {
         
         if let jot = self.jotVC {
             
             if let image = jot.renderImage() {
-                
-                if let flat = self.flattenedImageView {
-                    flat.removeFromSuperview()
-                    self.flattenedImageView = nil
-                }
-                
-                self.flattenedImageView = UIImageView(frame: self.remoteVideoViewContainer.bounds)
-                self.flattenedImageView?.image = image
-                self.flattenedImageView?.boundInside(container: self.remoteVideoViewContainer)
-                self.remoteVideoViewContainer.bringSubview(toFront: jot.view)
-                
+                jot.draw(on: image)
             }
             
+            jot.textColor = self.drawColor
+            jot.fontSize = 250
             jot.textString = stamp
             jot.state = .text
             
@@ -2180,3 +2265,13 @@ extension DGStreamCallViewController: DGStreamDropDownViewControllerDelegate {
         }
     }
 }
+
+extension DGStreamCallViewController: UIGestureRecognizerDelegate {
+    public func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldReceive touch: UITouch) -> Bool {
+        if self.isDrawing == true || self.callMode == .board || self.blackoutView.alpha != 0 {
+            return false
+        }
+        return true
+    }
+}
+

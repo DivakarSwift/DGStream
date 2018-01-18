@@ -8,10 +8,10 @@
 
 import UIKit
 
-enum DGStreamDropDownType {
-    case size
-    case color
-    case stamp
+enum DGStreamDropDownType: Int {
+    case size = 33
+    case color = 44
+    case stamp = 55
 }
 
 protocol DGStreamDropDownViewControllerDelegate {

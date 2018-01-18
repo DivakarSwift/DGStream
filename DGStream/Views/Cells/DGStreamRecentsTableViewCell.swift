@@ -28,15 +28,16 @@ class DGStreamRecentsTableViewCell: UITableViewCell {
         super.awakeFromNib()
         self.contentView.backgroundColor = .clear
         self.backgroundColor = .clear
-        self.numberLabel.backgroundColor = UIColor.dgGreen()
+        self.numberLabel.backgroundColor = UIColor.dgBlueDark()
         self.numberLabel.layer.cornerRadius = self.numberLabel.frame.size.width / 2
         self.numberLabel.textColor = .white
         userImageView.layer.cornerRadius = userImageView.frame.size.width / 2
-        userImageView.backgroundColor = UIColor.dgGray()
+        userImageView.backgroundColor = UIColor.dgBlack()
         abrevLabel.textColor = .white
-        nameLabel.textColor = UIColor.dgGray()
-        dateLabel.textColor = UIColor.dgGray()
-        durationLabel.textColor = UIColor.dgGray()
+        nameLabel.textColor = UIColor.dgBlack()
+        dateLabel.textColor = UIColor.dgBlack()
+        durationLabel.textColor = UIColor.dgBlack()
+        self.userImageView.layer.borderColor = UIColor.dgGray().cgColor
         self.setUpButtons()
     }
 
@@ -53,19 +54,12 @@ class DGStreamRecentsTableViewCell: UITableViewCell {
         if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID, let receiverID = recent.receiverID {
             if receiverID == currentUserID {
                 isIncoming = true
-                if let sender = recent.sender {
-                    otherUser = sender
-                }
-                else if let senderID = recent.senderID, let user = DGStreamCore.instance.getOtherUserWith(userID: senderID) {
+                if let senderID = recent.senderID, let user = DGStreamCore.instance.getOtherUserWith(userID: senderID) {
                     otherUser = user
                 }
-                
             }
             else {
-                if let receiver = recent.receiver {
-                    otherUser = receiver
-                }
-                else if let receiverID = recent.receiverID, let user = DGStreamCore.instance.getOtherUserWith(userID: receiverID) {
+                if let receiverID = recent.receiverID, let user = DGStreamCore.instance.getOtherUserWith(userID: receiverID) {
                     otherUser = user
                 }
             }
@@ -75,7 +69,17 @@ class DGStreamRecentsTableViewCell: UITableViewCell {
             let abrev = NSString(string: username).substring(to: 1)
             self.abrevLabel.text = abrev
             nameLabel.text = username
+            var ringColor:UIColor
+            if user.isOnline {
+                ringColor = UIColor.dgGreen()
+            }
+            else {
+                ringColor = UIColor.dgGray()
+            }
+            self.userImageView.layer.borderColor = ringColor.cgColor
+            self.userImageView.layer.borderWidth = 2.5
         }
+        
         if let date = recent.date {
             let dateFormatter = DateFormatter()
             dateFormatter.timeStyle = .short
@@ -87,6 +91,17 @@ class DGStreamRecentsTableViewCell: UITableViewCell {
             nameLabel.textColor = .red
             dateLabel.textColor = .red
         }
+        else {
+            nameLabel.textColor = UIColor.dgBlack()
+            dateLabel.textColor = UIColor.dgBlack()
+        }
+        
+        if let duration = recent.duration {
+            self.durationLabel.text = "\(duration)m"
+        }
+        else {
+            self.durationLabel.text = ""
+        }
         
         if isIncoming {
             
@@ -96,12 +111,12 @@ class DGStreamRecentsTableViewCell: UITableViewCell {
     
     func setUpButtons() {
         self.videoCallButton.setImage(UIImage.init(named: "video", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
-        self.videoCallButton.backgroundColor = UIColor.dgGreen()
+        self.videoCallButton.backgroundColor = UIColor.dgBlueDark()
         self.videoCallButton.tintColor = UIColor.dgBackground()
         self.videoCallButton.layer.cornerRadius = self.videoCallButton.frame.size.width / 2
         
         self.audioCallButton.setImage(UIImage.init(named: "audio", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
-        self.audioCallButton.backgroundColor = UIColor.dgGreen()
+        self.audioCallButton.backgroundColor = UIColor.dgBlueDark()
         self.audioCallButton.tintColor = UIColor.dgBackground()
         self.audioCallButton.layer.cornerRadius = self.audioCallButton.frame.size.width / 2
     }
@@ -147,6 +162,37 @@ class DGStreamRecentsTableViewCell: UITableViewCell {
             self.numberLabel.alpha = 1
         }
     }
+    
+    func update(user: DGStreamUser, forOnline isOnline: Bool) {
+        if let currentUser = DGStreamCore.instance.currentUser,
+            let currentUserID = currentUser.userID {
+            var otherUserID: NSNumber = 0
+            if let senderID = self.recent.senderID, senderID != currentUserID {
+                otherUserID = senderID
+            }
+            else if let receiverID = self.recent.senderID {
+                otherUserID = receiverID
+            }
+            if let userID = user.userID, userID == otherUserID {
+                if isOnline {
+                    self.setOnline()
+                }
+                else {
+                    self.setOffline()
+                }
+            }
+        }
+    }
+    
+    func setOnline() {
+        self.userImageView.layer.borderColor = UIColor.dgGreen().cgColor
+        self.userImageView.layer.borderWidth = 2.5
+    }
+    
+    func setOffline() {
+        self.userImageView.layer.borderColor = UIColor.dgGray().cgColor
+        self.userImageView.layer.borderWidth = 2.5
+    }
 
     @IBAction func videoCallButtonTapped(_ sender: Any) {
         if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID, let receiverID = self.recent.receiverID, let senderID = self.recent.senderID {
@@ -184,9 +230,24 @@ class DGStreamRecentsTableViewCell: UITableViewCell {
         }
     }
     
+    
+    @IBAction func userButtonTapped(_ sender: Any) {
+        
+        var userID: NSNumber = 0.0
+        if self.recent.senderID == DGStreamCore.instance.currentUser?.userID ?? 0 {
+            userID = self.recent.receiverID!
+        }
+        else {
+            userID = self.recent.senderID!
+        }
+        
+        self.delegate.userButtonTapped(userID: userID)
+    }
+    
     override func prepareForReuse() {
         nameLabel.textColor = UIColor.dgDarkGray()
         dateLabel.textColor = UIColor.dgDarkGray()
         durationLabel.textColor = UIColor.dgDarkGray()
+        self.userImageView.layer.borderColor = UIColor.dgGray().cgColor
     }
 }

@@ -115,16 +115,16 @@ extension DGStreamUsersViewController: UITableViewDelegate {
             // Remove / Add
             if let idx = selectedUsers.index(of: userID) {
                 selectedUsers.remove(at: idx)
-                cell.selectedIndex = 0
-                cell.selectedNumberLabel.text = ""
-                cell.selectedNumberLabel.isHidden = true
+//                cell.selectedIndex = 0
+//                cell.selectedNumberLabel.text = ""
+//                cell.selectedNumberLabel.isHidden = true
             }
             else {
                 selectedUsers.append(userID)
                 let count = selectedUsers.count
-                cell.selectedIndex = count
-                cell.selectedNumberLabel.text = "\(count)"
-                cell.selectedNumberLabel.isHidden = false
+//                cell.selectedIndex = count
+//                cell.selectedNumberLabel.text = "\(count)"
+//                cell.selectedNumberLabel.isHidden = false
             }
             
         }

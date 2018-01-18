@@ -22,18 +22,21 @@ class DGStreamChatPeekCell: UIView {
     
     let kCellLabelPadding:CGFloat = 48
     
-    
     func configureWith(message: DGStreamMessage) {
-        if let user = DGStreamCore.instance.getOtherUserWith(userID: message.senderID), let username = user.username {
+        
+        if message.isSystem {
             
-            self.backgroundColor = .clear
+            if let image = UIImage(named: "info", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil) {
+                self.image.alpha = 0
+                self.abrevLabel.alpha = 0
+                self.imageButton.setImage(image.withRenderingMode(.alwaysTemplate), for: .normal)
+                self.imageButton.backgroundColor = UIColor.dgBlueDark()
+                self.imageButton.tintColor = .white
+                self.imageButton.imageEdgeInsets = UIEdgeInsetsMake(4, 4, 4, 4)
+            }
             
-            self.imageContainer.clipsToBounds = true
-            self.imageContainer.layer.cornerRadius = self.imageContainer.frame.size.width / 2
-            
-            self.messageBubble.backgroundColor = UIColor.dgChatPeekCellBubble()
-            self.messageBubble.clipsToBounds = true
-            self.messageBubble.layer.cornerRadius = 6
+        }
+        else if let user = DGStreamCore.instance.getOtherUserWith(userID: message.senderID), let username = user.username {
             
             if let userImageData = user.image, let userImage = UIImage.init(data: userImageData)  {
                 self.image.image = userImage
@@ -42,19 +45,29 @@ class DGStreamChatPeekCell: UIView {
             else {
                 let abrev = NSString(string: username).substring(to: 1)
                 self.abrevLabel.text = abrev
-                self.image.backgroundColor = .white
+                self.abrevLabel.textColor = .white
             }
             
-            self.image.alpha = 0.5
-            
-            self.label.text = message.message
-            self.label.layoutIfNeeded()
-            
-            if self.label.frame.size.width > (300 - kCellLabelPadding) {
-                self.labelLeadingConstraint.priority = 999
-                self.layoutIfNeeded()
-            }
-            
+        }
+        
+        self.backgroundColor = .clear
+        
+        self.image.backgroundColor = UIColor.dgBlueDark()
+        
+        self.imageContainer.clipsToBounds = true
+        self.imageContainer.layer.cornerRadius = self.imageContainer.frame.size.width / 2
+        
+        self.messageBubble.backgroundColor = UIColor.dgChatPeekCellBubble()
+        self.messageBubble.clipsToBounds = true
+        self.messageBubble.layer.cornerRadius = 6
+        
+        self.label.text = message.message
+        self.label.textColor = .white
+        self.label.layoutIfNeeded()
+        
+        if self.label.frame.size.width > (300 - kCellLabelPadding) {
+            self.labelLeadingConstraint.priority = 999
+            self.layoutIfNeeded()
         }
     }
 }

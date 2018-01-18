@@ -9,58 +9,88 @@
 import UIKit
 
 class DGStreamUserTableViewCell: UITableViewCell {
-
     
-    @IBOutlet weak var nameLabel: UILabel!
+    @IBOutlet weak var title: UILabel!
     
-    @IBOutlet weak var abrevLabel: UILabel!
+    @IBOutlet weak var dateLabel: UILabel!
     
-    @IBOutlet weak var userImageView: UIImageView!
-    
-    @IBOutlet weak var selectedNumberLabel: UILabel!
-    
-    var selectedIndex:Int = 0
+    @IBOutlet weak var durationLabel: UILabel!
     
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
-        self.contentView.backgroundColor = .clear
-        self.backgroundColor = .clear
-        self.backgroundView?.backgroundColor = .clear
-        nameLabel.textColor = UIColor.dgBlack()
-        abrevLabel.textColor = UIColor.dgWhite()
-        self.userImageView.layer.cornerRadius = self.userImageView.frame.width / 2
-        self.userImageView.backgroundColor = .lightGray
-        selectedNumberLabel.layer.cornerRadius = selectedNumberLabel.frame.width / 2
-        selectedNumberLabel.backgroundColor = UIColor.dgDarkGray()
-        selectedNumberLabel.textColor = UIColor.dgWhite()
-        
+        self.title.text = ""
+        self.dateLabel.text = ""
+        self.durationLabel.text = ""
+        self.title.textColor = UIColor.dgBlack()
+        self.dateLabel.textColor = UIColor.dgBlack()
+        self.durationLabel.textColor = UIColor.dgBlack()
     }
     
-    func configureWith(user: DGStreamUser) {
-        if let username = user.username {
-            let abrev = NSString(string: username).substring(to: 1)
-            abrevLabel.text = abrev
-            nameLabel.text = username
-        }
-        else {
-            abrevLabel.text = "?"
+    func configureWith(recent: DGStreamRecent) {
+        
+        if let missed = recent.isMissed, missed == true {
+            self.title.textColor = .red
+            self.dateLabel.textColor = .red
+            self.durationLabel.textColor = .red
         }
         
-        if selectedIndex != 0 {
-            self.selectedNumberLabel.text = "\(selectedIndex)"
-            self.selectedNumberLabel.isHidden = false
+        var isIncoming:Bool = false
+        
+        if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID, let receiverID = recent.receiverID {
+            if receiverID == currentUserID {
+                isIncoming = true
+            }
+        }
+        
+        var titleString = ""
+        if isIncoming {
+            titleString.append("Incoming")
         }
         else {
-            self.selectedNumberLabel.text = ""
-            self.selectedNumberLabel.isHidden = true
+            titleString.append("Outgoing")
         }
+        
+        var audio = false
+        if let isAudio = recent.isAudio {
+            audio = isAudio
+        }
+        
+        if audio {
+            titleString.append(" Audio Call")
+        }
+        else {
+            titleString.append(" Video Call")
+        }
+        
+        self.title.text = titleString
+        
+        if let recentDate = recent.date {
+            let dateFormatter = DateFormatter()
+            dateFormatter.timeStyle = .short
+            dateFormatter.dateStyle = .short
+            self.dateLabel.text = dateFormatter.string(from: recentDate)
+        }
+        
+        if let duration = recent.duration {
+            self.durationLabel.text = "\(duration)m"
+        }
+        
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
 
         // Configure the view for the selected state
+    }
+    
+    override func prepareForReuse() {
+        self.title.text = ""
+        self.dateLabel.text = ""
+        self.durationLabel.text = ""
+        self.title.textColor = UIColor.dgBlack()
+        self.dateLabel.textColor = UIColor.dgBlack()
+        self.durationLabel.textColor = UIColor.dgBlack()
     }
 
 }

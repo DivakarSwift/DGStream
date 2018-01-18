@@ -17,6 +17,7 @@ class DGStreamRecent: NSObject {
     var sender: DGStreamUser?
     var receiver: DGStreamUser?
     var isMissed: Bool?
+    var isAudio: Bool?
     
     class func createDGStreamRecentsFrom(protocols: [DGStreamRecentProtocol]) -> [DGStreamRecent] {
         var recents:[DGStreamRecent] = []
@@ -24,6 +25,8 @@ class DGStreamRecent: NSObject {
             let recent = DGStreamRecent()
             recent.date = proto.dgDate
             recent.isMissed = proto.dgIsMissed
+            recent.duration = proto.dgDuration
+            recent.isAudio = proto.dgIsAudio
             if proto.dgReceiverID != 0 {
                 recent.receiver = DGStreamUser.createDGStreamUserFrom(proto: DGStreamManager.instance.dataSource.streamManager(DGStreamManager.instance, userWithUserID: proto.dgReceiverID)!)
             }
@@ -86,4 +89,21 @@ extension DGStreamRecent: DGStreamRecentProtocol {
         }
     }
     
+    var dgIsAudio: Bool {
+        get {
+            return self.isAudio ?? false
+        }
+        set {
+            self.dgIsAudio = self.isAudio ?? false
+        }
+    }
+    
+    var dgDuration: Double {
+        get {
+            return self.duration ?? 1
+        }
+        set {
+            self.dgDuration = self.duration ?? 1
+        }
+    }
 }

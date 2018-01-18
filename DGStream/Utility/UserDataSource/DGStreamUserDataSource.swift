@@ -129,7 +129,7 @@ extension DGStreamUserDataSource: UITableViewDataSource {
     }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "Cell") as! DGStreamUserTableViewCell
-        cell.configureWith(user: self.usersSortedByLastSeen()[indexPath.row])
+        //cell.configureWith(user: self.usersSortedByLastSeen()[indexPath.row])
         return cell
     }
 }

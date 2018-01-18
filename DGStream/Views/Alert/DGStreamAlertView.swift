@@ -211,19 +211,23 @@ class DGStreamAlertView: UIView {
     }
     
     @IBAction func acceptButtonTapped(_ sender: Any) {
-        if let block = alertBlock {
-            block(true)
-            self.alertBlock = nil
+        DispatchQueue.main.async {
+            if let block = self.alertBlock {
+                block(true)
+                self.alertBlock = nil
+            }
+            self.dismiss()
         }
-        dismiss()
     }
     
     @IBAction func declineButtonTapped(_ sender: Any) {
-        if let block = alertBlock {
-            block(false)
-            self.alertBlock = nil
+        DispatchQueue.main.async {
+            if let block = self.alertBlock {
+                block(false)
+                self.alertBlock = nil
+            }
+            self.dismiss()
         }
-        dismiss()
     }
     
     @IBAction func cancelButtonTapped(_ sender: Any) {

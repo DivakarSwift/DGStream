@@ -41,11 +41,11 @@ class DGStreamScreenCapture: QBRTCVideoCapture {
     }
     
     class func takeScreenshotOf(view: UIView) -> UIImage? {
-        UIGraphicsBeginImageContextWithOptions(view.frame.size, true, 1.0)
+        UIGraphicsBeginImageContextWithOptions(view.frame.size, true, 0.25)
         view.drawHierarchy(in: view.bounds, afterScreenUpdates: false)
         if let image = UIGraphicsGetImageFromCurrentImageContext() {
             UIGraphicsEndImageContext()
-            return DGStreamScreenCapture.imageWithImage(sourceImage: image, scaledToWidth: view.bounds.width)
+            return DGStreamScreenCapture.imageWithImage(sourceImage: image, scaledToWidth: view.bounds.width / 2)
         }
         print("No Screenshot")
         return nil

@@ -19,6 +19,7 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
     @IBOutlet weak var navBarView: UIView!
     @IBOutlet weak var navTitleLabel: UILabel!
     @IBOutlet weak var rightButton: UIButton!
+    @IBOutlet weak var rightButtonAnchorCenterXConstraint: NSLayoutConstraint!
     @IBOutlet weak var userImageView: UIImageView!
     @IBOutlet weak var leftButton: UIButton!
     @IBOutlet weak var tableView: UITableView!
@@ -57,8 +58,19 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
     
         self.emptyLabel.alpha = 0
         
+        self.rightButton.backgroundColor = UIColor.dgBlack()
+        self.rightButton.layer.cornerRadius = self.rightButton.frame.size.width / 2
+        if let user = DGStreamCore.instance.currentUser, let username = user.username {
+            let abrev = NSString(string: username).substring(to: 1)
+            if abrev.characters.count > 0 {
+                self.rightButton.setTitle(abrev, for: .normal)
+                self.rightButton.setTitleColor(.white, for: .normal)
+                self.rightButton.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 20)
+            }
+        }
+        
         self.view.backgroundColor = UIColor.dgBackground()
-        self.blackoutView.backgroundColor = UIColor.dgGreen()
+        self.blackoutView.backgroundColor = UIColor.dgBlueDark()
                 
         // Data
         loadRecents()
@@ -66,7 +78,7 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
         loadConversations()
 
         // Nav Bar
-        self.navBarView.backgroundColor = UIColor.dgGray()
+        self.navBarView.backgroundColor = UIColor.dgBlueDark()
         self.navTitleLabel.textColor = UIColor.dgBackground()
         
         //Table View
@@ -74,22 +86,29 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
         self.tableView.backgroundColor = .clear
         self.tableView.backgroundView?.backgroundColor = .clear
         
-        self.tabBar.backgroundColor = UIColor.dgGreen()
-        self.tabBar.barTintColor = UIColor.dgGreen()
-        self.tabBar.tintColor = UIColor.dgGray()
-        self.tabBar.unselectedItemTintColor = .white
+        self.tabBar.tintColor = UIColor.dgBlueDark()
+        self.tabBar.unselectedItemTintColor = UIColor.dgBlack()
+        self.tabBar.selectedItem = self.tabBar.items?.first
         self.tabBar.delegate = self
         
         self.setUpButtons()
         
         self.tabBar.delegate = self
         
+        NotificationCenter.default.addObserver(self, selector: #selector(self.restartVideoCall(notification:)), name: Notification.Name("RestartVideoCall"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.restartAudioCall(notification:)), name: Notification.Name("RestartAudioCall"), object: nil)
+        
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        self.initialUserImageView.backgroundColor = UIColor.dgGray()
+        DGStreamCore.instance.getOnlineUsers()
+        
+        self.rightButtonAnchorCenterXConstraint.constant = -3.5
+        self.navBarView.layoutIfNeeded()
+        
+        self.initialUserImageView.backgroundColor = UIColor.dgBlack()
         self.initialUserImageView.layer.cornerRadius = self.initialUserImageView.frame.size.width / 2
         
         self.welcomeLabel.textColor = .white
@@ -107,7 +126,13 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
             }
             
             self.welcomeLabel.text = "Welcome \(currentUser.username ?? "Unknown")"
-            self.lastLoggedInLabel.text = "Last Seen \(currentUser.lastSeen ?? Date())"
+            
+            let dateFormatter = DateFormatter()
+            dateFormatter.dateStyle = .short
+            dateFormatter.timeStyle = .short
+            
+            
+            self.lastLoggedInLabel.text = "Last Seen: \(dateFormatter.string(from: Date()))"
         }
         
         self.tableView.reloadData()
@@ -121,11 +146,30 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
+        UIApplication.shared.isStatusBarHidden = true
+        
         if self.blackoutView.isHidden == false {
             showInitialViews()
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.25, execute: {
                 self.animateInitialViews()
             })
+        }
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "DropDown" {
+            
+            var size = CGSize(width: 320, height: 200)
+            if Display.pad {
+                size = CGSize(width: 400, height: 200)
+            }
+            
+            let dropDownVC = segue.destination as! DGStreamUserDropDownViewController
+            dropDownVC.preferredContentSize = size
+            dropDownVC.modalPresentationStyle = .popover
+            dropDownVC.popoverPresentationController!.delegate = self
+            dropDownVC.isModalInPopover = false
+            dropDownVC.delegate = self
         }
     }
     
@@ -147,7 +191,7 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
         let animateImageView = UIImageView(frame: initialRect)
         animateImageView.clipsToBounds = true
         animateImageView.image = self.initialUserImageView.image
-        animateImageView.backgroundColor = .red
+        animateImageView.backgroundColor = UIColor.dgBlack()
         animateImageView.layer.cornerRadius = animateImageView.frame.size.width / 2
         self.blackoutView.addSubview(animateImageView)
     
@@ -160,6 +204,7 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
             self.blackoutView.layoutIfNeeded()
         }) { (f) in
             self.blackoutView.isHidden = true
+            self.rightButton.alpha = 1
         }
     }
 
@@ -171,32 +216,20 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
     func setUpButtons() {
         self.videoCallButton.setImage(UIImage.init(named: "video", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
         self.videoCallButton.tintColor = UIColor.dgBackground()
-        self.videoCallButton.backgroundColor = UIColor.dgGreen()
+        self.videoCallButton.backgroundColor = UIColor.dgBlueDark()
         self.videoCallButton.layer.cornerRadius = self.videoCallButton.frame.size.width / 2
-//        self.videoCallButton.layer.shadowPath = UIBezierPath(roundedRect: self.videoCallButton.frame, cornerRadius: self.videoCallButton.frame.size.width / 2).cgPath
-//        self.videoCallButton.layer.shadowColor = UIColor.black.cgColor
-//        self.videoCallButton.layer.shadowRadius = 10.0
-//        self.videoCallButton.layer.shadowOpacity = 0.75
         self.videoCallButton.alpha = 0
         
         self.audioCallButton.setImage(UIImage.init(named: "audio", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
         self.audioCallButton.tintColor = UIColor.dgBackground()
-        self.audioCallButton.backgroundColor = UIColor.dgGreen()
+        self.audioCallButton.backgroundColor = UIColor.dgBlueDark()
         self.audioCallButton.layer.cornerRadius = self.audioCallButton.frame.size.width / 2
-//        self.audioCallButton.layer.shadowPath = UIBezierPath(roundedRect: self.audioCallButton.frame, cornerRadius: self.audioCallButton.frame.size.width / 2).cgPath
-//        self.audioCallButton.layer.shadowColor = UIColor.black.cgColor
-//        self.audioCallButton.layer.shadowRadius = 6.0
-//        self.audioCallButton.layer.shadowOpacity = 0.75
         self.audioCallButton.alpha = 0
         
         self.messageButton.setImage(UIImage.init(named: "message", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
         self.messageButton.tintColor = UIColor.dgBackground()
-        self.messageButton.backgroundColor = UIColor.dgGreen()
+        self.messageButton.backgroundColor = UIColor.dgBlueDark()
         self.messageButton.layer.cornerRadius = self.messageButton.frame.size.width / 2
-//        self.messageButton.layer.shadowPath = UIBezierPath(roundedRect: self.messageButton.frame, cornerRadius: self.messageButton.frame.size.width / 2).cgPath
-//        self.messageButton.layer.shadowColor = UIColor.black.cgColor
-//        self.messageButton.layer.shadowRadius = 10.0
-//        self.messageButton.layer.shadowOpacity = 0.75
         self.messageButton.alpha = 0
         
         self.leftButton.setTitleColor(UIColor.dgBackground(), for: .normal)
@@ -206,7 +239,7 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
     //MARK:- Load Data
     func loadRecents() {
         if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID {
-            self.recents = DGStreamRecent.createDGStreamRecentsFrom(protocols: DGStreamManager.instance.dataSource.streamManager(DGStreamManager.instance, recentsWithUserID: currentUserID))
+            self.recents = DGStreamRecent.createDGStreamRecentsFrom(protocols: DGStreamManager.instance.dataSource.streamManager(DGStreamManager.instance, recentsWithUserIDs: [currentUserID]))
             print("Loadded Recents \(self.recents.count)")
             if self.recents.count == 0 {
                 self.emptyLabel.text = "No Recents"
@@ -227,14 +260,43 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
     }
 
     func loadConversations() {
-        if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID {
-            self.conversations = DGStreamConversation.createDGStreamConversationsFrom(protocols: DGStreamManager.instance.dataSource.streamManager(DGStreamManager.instance, conversationsWithCurrentUser: currentUserID))
-            print("Loaded Conversations \(self.conversations.count)")
-            if self.conversations.count == 0 {
-                self.emptyLabel.text = "No Messages"
-                self.emptyLabel.alpha = 1
+        
+        let extendedRequest = ["sort_desc" : "last_message_date_sent"]
+        
+        let page = QBResponsePage(limit: 200, skip: 0)
+        
+        QBRequest.dialogs(for: page, extendedRequest: extendedRequest, successBlock: { (response: QBResponse, dialogs: [QBChatDialog]?, dialogsUsersIDs: Set<NSNumber>?, page: QBResponsePage?) -> Void in
+            
+            var chatDialogs:[QBChatDialog] = []
+            
+            if let currentUser = DGStreamCore.instance.currentUser,
+                let currentUserID = currentUser.userID,
+                let dialogs = dialogs {
+                for chatDialog in dialogs {
+                    if let occupantIDs = chatDialog.occupantIDs, occupantIDs.contains(currentUserID), chatDialog.type == .private {
+                        chatDialogs.append(chatDialog)
+                    }
+                }
             }
+            
+            let conversations = DGStreamConversation.createDGStreamConversationsFrom(chatDialogs: chatDialogs)
+            for conversation in conversations {
+                DGStreamManager.instance.dataStore.streamManager(DGStreamManager.instance, store: conversation)
+            }
+            self.conversations = conversations
+            
+        }) { (response: QBResponse) -> Void in
+            
         }
+        
+//        if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID {
+//            self.conversations = DGStreamConversation.createDGStreamConversationsFrom(protocols: DGStreamManager.instance.dataSource.streamManager(DGStreamManager.instance, conversationsWithCurrentUser: currentUserID))
+//            print("Loaded Conversations \(self.conversations.count)")
+//            if self.conversations.count == 0 {
+//                self.emptyLabel.text = "No Messages"
+//                self.emptyLabel.alpha = 1
+//            }
+//        }
     }
     
     func add(conversation: DGStreamConversation) {
@@ -248,29 +310,34 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
     
     func callUsers(userIDs: [NSNumber], for type: QBRTCConferenceType) {
         
-        if DGStreamCore.instance.isReachable {
-            
+        let session = QBRTCClient.instance().createNewSession(withOpponents: userIDs, with: type)
+        print("Session is \(session)")
+        if DGStreamCore.instance.isReachable && session.state == .new {
             if let callVC = UIStoryboard(name: "Call", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamCallViewController, let chatVC = UIStoryboard.init(name: "Chat", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamChatViewController {
                 
-                let conversation = DGStreamConversation()
-                conversation.conversationID = "0"
-                conversation.userIDs = userIDs
-                conversation.type = .callConversation
+                if let proto = DGStreamManager.instance.dataSource.streamManager(DGStreamManager.instance, conversationWithUsers: [DGStreamCore.instance.currentUser?.userID ?? 0, userIDs.first ?? 0]), let conversation = DGStreamConversation.createDGStreamConversationsFrom(protocols: [proto]).first {
+                    conversation.type = .callConversation
+                    chatVC.chatConversation = conversation
+                }
                 
-                chatVC.chatConversation = conversation
                 chatVC.delegate = callVC
                 callVC.chatVC = chatVC
-                callVC.session = QBRTCClient.instance().createNewSession(withOpponents: userIDs, with: type)
+                callVC.session = session
                 callVC.selectedUser = userIDs.first
                 if type == .audio {
                     callVC.isAudioCall = true
                 }
-                DGStreamCore.instance.audioPlayer.ringFor(receiver: false)
-                self.present(callVC, animated: false, completion: {
-                    
-                })
                 
+                DGStreamCore.instance.audioPlayer.ringFor(receiver: false)
+                self.navigationController?.pushViewController(callVC, animated: false)
             }
+        }
+        else {
+            let alert = UIAlertController(title: "Error", message: "Unable to create session.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: { (action: UIAlertAction) in
+                alert.dismiss(animated: true, completion: nil)
+            }))
+            self.present(alert, animated: true, completion: nil)
         }
         
     }
@@ -337,45 +404,66 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
             })
             for (index, userID) in sorted.enumerated() {
                 conversationID.append(userID.stringValue)
-                let i = index + 1
-                if i < userIDs.count {
+                
+                if index < userIDs.count {
                     conversationID.append(",")
                 }
             }
             
-            conversationID = UUID().uuidString.components(separatedBy: "-").first!
+            let dialog = QBChatDialog(dialogID: conversationID, type: .private)
+            dialog.occupantIDs = userIDs
             
-            // Find or create conversation
-            var conversation:DGStreamConversation
-            if let proto = DGStreamManager.instance.dataSource.streamManager(DGStreamManager.instance, conversationsWithID: conversationID) {
-                let foundConversation = DGStreamConversation.createDGStreamConversationFrom(proto: proto)
-                conversation = foundConversation
-            }
-            else {
+            QBRequest.createDialog(dialog, successBlock: { (reponse, chatDialog) in
                 
-                let newConversation = DGStreamConversation()
-                newConversation.conversationID = conversationID
-                newConversation.userIDs = userIDs
-                DGStreamManager.instance.dataStore.streamManager(DGStreamManager.instance, store: newConversation)
-                conversation = newConversation
+                if let conversation = DGStreamConversation.createDGStreamConversationsFrom(chatDialogs: [chatDialog]).first {
+                    let chatVC = UIStoryboard(name: "Chat", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as! DGStreamChatViewController
+                    conversation.conversationID = conversationID
+                    chatVC.chatConversation = conversation
+                    self.navigationController?.pushViewController(chatVC, animated: true)
+                    
+                    let startConversationMessage = QBChatMessage()
+                    startConversationMessage.senderID = UInt(DGStreamCore.instance.currentUser?.userID ?? 0)
+                    startConversationMessage.recipientID = UInt(userIDs.filter({ (userID) -> Bool in
+                        return userID != DGStreamCore.instance.currentUser?.userID ?? 0
+                    }).first ?? 0)
+                    startConversationMessage.text = "System Message"
+                    
+                    QBChat.instance.sendSystemMessage(startConversationMessage, completion: { (error) in
+                        print("Did Send System Message With \(error?.localizedDescription ?? "No Error")")
+                    })
+                    
+                }
+                
+            }, errorBlock: { (errorResponse) in
+                print("Error creating the chat dialog \(errorResponse.error?.error?.localizedDescription ?? "No Error")")
+            })
+        
+        }
+    }
+    
+    func update(user: DGStreamUser, forOnline isOnline: Bool) {
+        for cell in self.tableView.visibleCells {
+            
+            switch self.selectedItem {
+            case .recents:
+                
+                let recentsCell = cell as! DGStreamRecentsTableViewCell
+                recentsCell.update(user: user, forOnline: isOnline)
+                
+                break
+            case .contacts:
+                
+                let contactsCell = cell as! DGStreamContactsTableViewCell
+                contactsCell.update(user: user, forOnline: isOnline)
+                
+                break
+            case .messages:
+                
+                let conversationCell = cell as! DGStreamConversationsTableViewCell
+                conversationCell.update(user: user, forOnline: isOnline)
+                
+                break
             }
-            
-            if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID {
-                DGStreamNotification.conversationRequest(for: conversationID, from: currentUserID, to: userIDs.first!, containingUserIDs: userIDs, with: { (success, errorMessage) in
-                    if success {
-                        
-                    }
-                    else {
-                        
-                    }
-                })
-            }
-            
-            
-            let chatVC = UIStoryboard(name: "Chat", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as! DGStreamChatNavigationController
-            chatVC.chatConversation = conversation
-            
-            self.navigationController?.pushViewController(chatVC, animated: true)
         }
     }
     
@@ -499,6 +587,13 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
         }
     }
     
+    @IBAction func rightButtonTapped(_ sender: Any) {
+//        if let userVC = UIStoryboard(name: "User", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamUserViewController, let currentUser = DGStreamCore.instance.currentUser {
+//            userVC.user = currentUser
+//            self.present(userVC, animated: true, completion: nil)
+//        }
+    }
+    
     @IBAction func videoCallButtonTapped(_ sender: Any) {
         callUsers(userIDs: getSelectedUsers(), for: .video)
     }
@@ -553,14 +648,6 @@ extension DGStreamTabBarViewController: UITableViewDelegate, UITableViewDataSour
         }
     }
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-//        switch selectedItem {
-//        case .recents:
-//            return 70
-//        case .contacts:
-//            return 70
-//        case .messages:
-//            return 70
-//        }
         return 70
     }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -608,6 +695,7 @@ extension DGStreamTabBarViewController: UITableViewDelegate, UITableViewDataSour
         case .messages:
             let cell = tableView.dequeueReusableCell(withIdentifier: "ConversationsCell") as! DGStreamConversationsTableViewCell
             cell.configureWith(conversation: conversations[indexPath.row])
+            cell.delegate = self
             return cell
         }
     }
@@ -644,11 +732,17 @@ extension DGStreamTabBarViewController: UITabBarDelegate {
 extension DGStreamTabBarViewController: DGStreamTableViewCellDelegate {
     func streamCallButtonTappedWith(userID: NSNumber, type: QBRTCConferenceType, cellIndex: Int, buttonFrame: CGRect) {
         
+        let username = DGStreamCore.instance.currentUser?.username ?? "Unknown"
+        
+        DGStreamNotification.backgroundCall(from: DGStreamCore.instance.currentUser?.userID ?? 0, fromUsername: username, to: [userID]) { (success, errorMessage) in
+            
+        }
+        
         if let cell = tableView.cellForRow(at: IndexPath(row: cellIndex, section: 0)) {
             let convertedRect = cell.contentView.convert(buttonFrame, to: self.view)
             
             let expander = TransitionButton(frame: convertedRect)
-            expander.backgroundColor = UIColor.dgGreen()
+            expander.backgroundColor = UIColor.dgBlueDark()
             expander.cornerRadius = buttonFrame.size.width / 2
             self.view.addSubview(expander)
             expander.stopAnimation(animationStyle: .expand, revertAfterDelay: 0.5, completion: {
@@ -659,5 +753,45 @@ extension DGStreamTabBarViewController: DGStreamTableViewCellDelegate {
             
             self.callUsers(userIDs: [userID], for: type)
         }
+    }
+    func userButtonTapped(userID:NSNumber) {
+        if let userVC = UIStoryboard(name: "User", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamUserViewController {
+            userVC.user = DGStreamCore.instance.getOtherUserWith(userID: userID)!
+            self.present(userVC, animated: true, completion: nil)
+        }
+    }
+}
+
+extension DGStreamTabBarViewController {
+    func restartVideoCall(notification: Notification) {
+        let userID = notification.object as? NSNumber
+        callUsers(userIDs: [userID!], for: .video)
+    }
+    func restartAudioCall(notification: Notification) {
+        let userID = notification.object as? NSNumber
+        callUsers(userIDs: [userID!], for: .audio)
+    }
+}
+
+extension DGStreamTabBarViewController: DGStreamUserDropDownViewControllerDelegate {
+    
+    func userButtonTapped() {
+        
+    }
+    
+    func logoutTapped() {
+        QBChat.instance.disconnect { (error) in
+            QBRequest.logOut(successBlock: { (response) in
+                self.dismiss(animated: false, completion: nil)
+            }) { (errorResponse) in
+                
+            }
+        }
+    }
+}
+
+extension DGStreamTabBarViewController: UIPopoverPresentationControllerDelegate {
+    func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
+        return .none
     }
 }

@@ -18,10 +18,21 @@ class DGStreamDropDownCollectionViewCell: UICollectionViewCell {
         label.layer.cornerRadius = label.frame.size.width / 2
         
         label.backgroundColor = color
-        label.textColor = UIColor.dgGray()
+        label.textColor = UIColor.dgBlack()
+        
+        var font:UIFont
+        if let title = title, let _ = UInt(title) {
+            print("Title is number!")
+            font = UIFont.systemFont(ofSize: 36)
+        }
+        else {
+            print("Title is not a number!")
+            font = UIFont.systemFont(ofSize: 42)
+        }
         
         if let title = title {
             label.text = title
+            label.font = font
         }
         
     }

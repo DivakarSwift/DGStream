@@ -15,6 +15,7 @@ class DGStreamMessage: NSObject {
     var receiverID: NSNumber!
     var conversationID: String!
     var delivered: Date!
+    var isSystem: Bool = false
     
     class func createDGStreamMessageFrom(proto: DGStreamMessageProtocol) -> DGStreamMessage {
         let message = DGStreamMessage()
@@ -36,7 +37,21 @@ class DGStreamMessage: NSObject {
     }
     
     class func createQuickbloxMessageFrom(message: DGStreamMessage) -> QBChatMessage {
+        
+        let sortedIDs = [message.receiverID, message.senderID].sorted { (first, second) -> Bool in
+            return first.uintValue < second.uintValue
+        }
+        
+        var dialogID = ""
+        for sortedID in sortedIDs {
+            dialogID.append(sortedID.stringValue)
+        }
+        
+        let customParam = NSMutableDictionary()
+        customParam.setObject("1", forKey: "send_to_chat" as NSCopying)
+        
         let quickbloxMessage = QBChatMessage()
+        quickbloxMessage.customParameters = customParam
         quickbloxMessage.dialogID = message.conversationID
         quickbloxMessage.createdAt = Date()
         quickbloxMessage.id = message.id

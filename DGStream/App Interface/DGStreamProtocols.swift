@@ -36,6 +36,8 @@ public protocol DGStreamRecentProtocol {
     var dgReceiverID: NSNumber { get }
     var dgDate: Date { get }
     var dgIsMissed: Bool { get }
+    var dgIsAudio: Bool { get }
+    var dgDuration: Double { get }
 }
 
 public protocol DGStreamContactProtocol {

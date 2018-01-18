@@ -38,7 +38,7 @@ extension UIColor {
         return UIColor(red: (39/255.0), green: (100/255.0), blue: (156/255.0), alpha: 1.0)
     }
     class func dgChatPeekCellBubble() -> UIColor {
-        return UIColor(red: (39/255.0), green: (100/255.0), blue: (156/255.0), alpha: 0.25)
+        return UIColor(red: (39/255.0), green: (100/255.0), blue: (156/255.0), alpha: 0.75)
     }
     class func dgBlueMedium() -> UIColor {
         return UIColor(red: (61/255.0), green: (174/255.0), blue: (235/255.0), alpha: 1.0)

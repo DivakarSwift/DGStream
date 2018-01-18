@@ -34,6 +34,29 @@ class DGStreamConversation: NSObject {
         conversation.userIDs = proto.dgUserIDs
         return conversation
     }
+    
+    class func createDGStreamConversationsFrom(chatDialogs: [QBChatDialog]) -> [DGStreamConversation] {
+        var conversations:[DGStreamConversation] = []
+        for chatDialog in chatDialogs {
+            let conversation = DGStreamConversation()
+            conversation.conversationID = chatDialog.id!
+            if chatDialog.type == .group {
+                conversation.type = .groupConversation
+            }
+            else {
+                conversation.type = .privateConversation
+            }
+            var userIDs:[NSNumber] = []
+            if let occupantsIDs = chatDialog.occupantIDs {
+                for occupantID in occupantsIDs {
+                    userIDs.append(occupantID)
+                }
+            }
+            conversation.userIDs = userIDs
+            conversations.append(conversation)
+        }
+        return conversations
+    }
 }
 
 extension DGStreamConversation: DGStreamConversationProtocol {
