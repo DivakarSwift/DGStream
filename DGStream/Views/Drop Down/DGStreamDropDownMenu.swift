@@ -33,6 +33,8 @@ open class DGStreamDropDownMenu: UIView, DGStreamDropDownMenuDelegate {
     internal var buttonlabelFontColors: YNFontColor?
     internal var buttonlabelFonts: YNFont?
     
+    internal var formerDropDownView: UIView?
+    
     internal var _dropDownViews: [UIView]?
     internal var dropDownViews: [UIView]? {
         get {
@@ -348,6 +350,13 @@ open class DGStreamDropDownMenu: UIView, DGStreamDropDownMenuDelegate {
             let dropDownView = dropDownView else { return }
         
         dropDownView.isHidden = false
+        
+        if let former = self.formerDropDownView {
+            former.removeFromSuperview()
+            self.formerDropDownView = nil
+        }
+        
+        self.formerDropDownView = dropDownView
         
         self.addSubview(dropDownView)
         self.sendSubview(toBack: dropDownView)

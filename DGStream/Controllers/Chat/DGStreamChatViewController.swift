@@ -73,9 +73,8 @@ class DGStreamChatViewController: UIViewController {
         self.textView.layer.borderColor = UIColor.dgBlack().cgColor
         self.textView.layer.borderWidth = 0.5
         self.textView.textColor = UIColor.lightGray
-        let placeholderText = "Message..."
-        self.textView.text = placeholderText
-        self.sendButton.setTitleColor(.white, for: .normal)
+        self.sendButton.setTitleColor(.lightGray, for: .normal)
+        self.sendButton.isEnabled = false
 
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(notification:)), name: Notification.Name.UIKeyboardWillShow, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardDidShow), name: Notification.Name.UIKeyboardDidShow, object: nil)
@@ -100,6 +99,7 @@ class DGStreamChatViewController: UIViewController {
     }
     
     func loadData() {
+        print("LOAD DATA")
         if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID {
             for userID in self.chatConversation.userIDs {
                 if userID != currentUserID, let user = DGStreamCore.instance.getOtherUserWith(userID: userID), let username = user.username {
@@ -237,7 +237,7 @@ extension DGStreamChatViewController {
 
         if let info = notification.userInfo {
 
-            let textBarHeight:CGFloat = 44
+            let textBarHeight:CGFloat = 50
             let keyboardHeight:CGFloat = 0
 
             var duration:Double = 0.25
@@ -253,12 +253,13 @@ extension DGStreamChatViewController {
             textBarBottomConstraint.constant = keyboardHeight
             textBarHeightConstraint.constant = textBarHeight
             messengerContainerBottomConstraint.constant = textBarHeight
-
-            UIView.animate(withDuration: duration, animations: {
+            
+            UIView.animate(withDuration: duration, delay: 0.0, options: options, animations: {
                 self.view.layoutIfNeeded()
-            }, completion: { (finished) in
+            }, completion: { (f) in
                 self.messengerView.scrollToLastMessage(animated: true)
             })
+
         }
     }
 
@@ -305,14 +306,17 @@ extension DGStreamChatViewController: UITextViewDelegate {
     }
 
     public func textViewDidEndEditing(_ textView: UITextView) {
-        textView.textColor = .lightGray
-        textView.text = "Message..."
+        
     }
 
     public func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
         if(text == "\n") {
             sendChatMessageWith(text: textView.text)
             return false
+        }
+        else {
+            self.sendButton.setTitleColor(.white, for: .normal)
+            self.sendButton.isEnabled = true
         }
         return true
     }
@@ -379,8 +383,11 @@ extension DGStreamChatViewController: UITextViewDelegate {
     }
 
     func sendChatMessageWith(text: String) {
-        textView.resignFirstResponder()
-        if let user = DGStreamCore.instance.currentUser, let currentUserID = user.userID {
+        self.textView.resignFirstResponder()
+        self.sendButton.isEnabled = false
+        self.sendButton.setTitleColor(.lightGray, for: .normal)
+
+        if let user = DGStreamCore.instance.currentUser, let currentUserID = user.userID, !self.textView.text.isEmpty {
 
             var receivers: [NSNumber] = []
             if let userIDs = self.chatConversation.userIDs {
@@ -403,6 +410,8 @@ extension DGStreamChatViewController: UITextViewDelegate {
             }
             addChat(message: chatMessage)
         }
+        
+        self.textView.text = ""
     }
     
 }

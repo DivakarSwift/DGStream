@@ -36,10 +36,10 @@ class DGStreamUserOperation: Operation {
 
                 if page.currentPage * page.perPage >= page.totalEntries {
                     // Last page
-                    self.delegate.userOperationDidFinishLastPageWith(users: DGStreamUser.usersFrom(users: users ?? []))
+                    self.delegate.userOperationDidFinishLastPageWith(users: DGStreamUser.usersFrom(users: users))
                 }
                 else {
-                    self.delegate.userOperationDidFinishPageWith(users: DGStreamUser.usersFrom(users: users ?? []))
+                    self.delegate.userOperationDidFinishPageWith(users: DGStreamUser.usersFrom(users: users))
                 }
                 
             }

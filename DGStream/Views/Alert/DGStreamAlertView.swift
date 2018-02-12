@@ -15,6 +15,7 @@ enum AlertMode {
     case incomingAudioCall
     case incomingVideoCall
     case mergeRequest
+    case mergeDeclined
     case mergeCancelled
     case shareRequest
     case shareCancelled
@@ -115,6 +116,21 @@ class DGStreamAlertView: UIView {
             break
             
         case .mergeCancelled:
+            break
+            
+        case .mergeDeclined:
+            
+            DispatchQueue.main.async {
+                self.nameLabel.text = fromUsername
+                self.alertMessageLabel.text = message ?? "declined to merge."
+                self.alertMessageLabel.isHidden = false
+                self.acceptButton.isHidden = true
+                self.declineButton.isHidden = true
+                self.cancelButton.isHidden = false
+                
+                self.cancelButton.setTitle("OK", for: .normal)
+            }
+            
             break
             
         case .mergeRequest:

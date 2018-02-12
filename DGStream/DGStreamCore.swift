@@ -134,10 +134,10 @@ class DGStreamCore: NSObject {
     
     func loginWith(user: DGStreamUser, completion: @escaping LoginCompletion) {
         
-        if self.isAuthorized {
-            self.connectToChat()
-            return
-        }
+//        if self.isAuthorized {
+//            self.connectToChat()
+//            return
+//        }
         
         if let username = user.username, let password = user.password {
             QBRequest.logIn(withUserLogin: username, password: password, successBlock: { (response, qbU4ser) in
@@ -152,6 +152,7 @@ class DGStreamCore: NSObject {
                     self.loginCompletion = completion
                     self.currentUser = loggedInDGUser
                     self.getAllUsers()
+                    self.connectToChatWith(user: qbU4ser)
                 }
                 else {
                     completion(false, "No QB User.")
@@ -170,7 +171,9 @@ class DGStreamCore: NSObject {
     func getAllUsers() {
         
         // If there is connection check against Quickblox to find possible new users
-        if DGStreamCore.instance.isReachable {
+        if DGStreamCore.instance.isReachable,
+            let currentUser = self.currentUser,
+            let currentUserID = currentUser.userID {
             DGStreamUserOperationQueue().getUsersWith(tags: ["dev"]) { (success, errorMessage, users) in
                 print("Downloaded And Saving All Users \(users)")
                 self.allUsers = users
@@ -180,7 +183,17 @@ class DGStreamCore: NSObject {
                     if let userID = u.userID, let _ = DGStreamManager.instance.dataSource.streamManager(DGStreamManager.instance, userWithUserID: userID) {
                         // User Exists
                     }
-                    else {
+                    else if let userID = u.userID {
+                        
+                        let dialog = QBChatDialog(dialogID: nil, type: .private)
+                        dialog.occupantIDs = [currentUserID, userID]
+                        
+                        QBRequest.createDialog(dialog, successBlock: { (response, chatDialogs) in
+                            print("CREATE DIALOG WITH USER \(userID) \(response.isSuccess)")
+                        }, errorBlock: { (errorResponse) in
+                            
+                        })
+                        
                         // User Doesn't Exist
                         DGStreamManager.instance.dataStore.streamManager(DGStreamManager.instance, store: u)
                         
@@ -190,8 +203,6 @@ class DGStreamCore: NSObject {
                     }
                     
                 }
-                
-                self.connectToChat()
                 
             }
         }
@@ -228,84 +239,80 @@ class DGStreamCore: NSObject {
     }
     
     //MARK:- Chat
-    func connectToChat() {
-        if let currentUser = self.currentUser {
-            currentUser.password = "dataglance"
-            let user = currentUser.asQuickbloxUser()
-            QBChat.instance.connect(with: user) { (error) in
-                if error != nil {
-                    self.isAuthorized = false
-                    if let completion = self.loginCompletion {
-                        completion(false, "Unable to connect to chat.")
-                    }
+    func connectToChatWith(user: QBUUser) {
+        QBChat.instance.connect(with: user) { (error) in
+            if error != nil {
+                self.isAuthorized = false
+                if let completion = self.loginCompletion {
+                    completion(false, "Unable to connect to chat.")
                 }
-                else {
+            }
+            else {
+                
+                self.onlineDialog = QBChatDialog(dialogID: "5a55347ba28f9a7ed1f1fd45", type: .publicGroup)
+                self.onlineDialog.name = "online"
+                self.onlineDialog.userID = self.currentUser?.userID?.uintValue ?? 0
+                
+                QBRequest.createDialog(self.onlineDialog, successBlock: { (response, dialog) in
                     
-                    self.onlineDialog = QBChatDialog(dialogID: "5a55347ba28f9a7ed1f1fd45", type: .publicGroup)
-                    self.onlineDialog.name = "online"
-                    self.onlineDialog.userID = self.currentUser?.userID?.uintValue ?? 0
-                    
-                    QBRequest.createDialog(self.onlineDialog, successBlock: { (response, dialog) in
+                    self.onlineDialog.join(completionBlock: { (error) in
                         
-                        self.onlineDialog.join(completionBlock: { (error) in
-                            
-                            print("DID JOIN WITH \(error?.localizedDescription ?? "No Error")")
-                            
-                            // User Came Online
-                            self.onlineDialog.onJoinOccupant = {(userID: UInt) in
-                                if let user = self.getOtherUserWith(userID: NSNumber(value: userID)) {
-                                    user.isOnline = true
-                                    if let tabVC = self.presentedViewController as? DGStreamTabBarViewController {
-                                        tabVC.update(user: user, forOnline: true)
-                                    }
+                        print("DID JOIN WITH \(error?.localizedDescription ?? "No Error")")
+                        
+                        // User Came Online
+                        self.onlineDialog.onJoinOccupant = {(userID: UInt) in
+                            if let user = self.getOtherUserWith(userID: NSNumber(value: userID)) {
+                                user.isOnline = true
+                                if let tabVC = self.presentedViewController as? DGStreamTabBarViewController {
+                                    tabVC.update(user: user, forOnline: true)
                                 }
                             }
-                            
-                            // User Went Offline
-                            self.onlineDialog.onLeaveOccupant = {(userID: UInt) in
-                                if let user = self.getOtherUserWith(userID: NSNumber(value: userID)) {
-                                    user.isOnline = false
-                                    if let tabVC = self.presentedViewController as? DGStreamTabBarViewController {
-                                        tabVC.update(user: user, forOnline: false)
-                                    }
+                        }
+                        
+                        // User Went Offline
+                        self.onlineDialog.onLeaveOccupant = {(userID: UInt) in
+                            if let user = self.getOtherUserWith(userID: NSNumber(value: userID)) {
+                                user.isOnline = false
+                                if let tabVC = self.presentedViewController as? DGStreamTabBarViewController {
+                                    tabVC.update(user: user, forOnline: false)
                                 }
                             }
+                        }
+                        
+                        // Get Currently Online Users
+                        self.onlineDialog.requestOnlineUsers(completionBlock: { (userIDs, error) in
                             
-                            // Get Currently Online Users
-                            self.onlineDialog.requestOnlineUsers(completionBlock: { (userIDs, error) in
-                                
-                                if let userIDs = userIDs as? [NSNumber] {
-                                    print("REQUESTED USER IDS \(userIDs)")
-                                    for userID in userIDs {
-                                        if let user = self.getOtherUserWith(userID: userID) {
-                                            user.isOnline = true
-                                            if let tabVC = self.presentedViewController as? DGStreamTabBarViewController {
-                                                tabVC.update(user: user, forOnline: true)
-                                            }
+                            if let userIDs = userIDs as? [NSNumber] {
+                                print("REQUESTED USER IDS \(userIDs)")
+                                for userID in userIDs {
+                                    if let user = self.getOtherUserWith(userID: userID) {
+                                        user.isOnline = true
+                                        if let tabVC = self.presentedViewController as? DGStreamTabBarViewController {
+                                            tabVC.update(user: user, forOnline: true)
                                         }
                                     }
                                 }
-                                else {
-                                    print("REQUESTED USER IDS WITH NO IDS")
-                                }
-                                
-                                self.isAuthorized = true
-                                if let completion = self.loginCompletion {
-                                    completion(true, "")
-                                }
-                                
-                            })
+                            }
+                            else {
+                                print("REQUESTED USER IDS WITH NO IDS")
+                            }
+                            
+                            self.isAuthorized = true
+                            if let completion = self.loginCompletion {
+                                completion(true, "")
+                            }
                             
                         })
                         
-                    }, errorBlock: { (errorResponse) in
-                        self.isAuthorized = false
-                        if let completion = self.loginCompletion {
-                            completion(false, "Unable To Connect To Online Server")
-                        }
                     })
+                    
+                }, errorBlock: { (errorResponse) in
+                    self.isAuthorized = false
+                    if let completion = self.loginCompletion {
+                        completion(false, "Unable To Connect To Online Server")
+                    }
+                })
                 
-                }
             }
         }
     }
@@ -530,6 +537,13 @@ extension DGStreamCore: QBChatDelegate {
                 mergeRequestView.configureFor(mode: .mergeRequest, fromUsername: fromUsername, message: "", isWaiting: false)
                 
                 DispatchQueue.main.async {
+                    
+                    if let alertView = callVC.alertView {
+                        alertView.dismiss()
+                    }
+                    
+                    callVC.alertView = mergeRequestView
+                    
                     mergeRequestView.presentWithin(viewController: callVC, fromUsername: fromUsername, block: { (accepted) in
                         if accepted {
                             
@@ -578,7 +592,13 @@ extension DGStreamCore: QBChatDelegate {
             }
             // MERGE DECLINED
             else if text.hasPrefix("mergeDeclined"), let callVC = self.presentedViewController as? DGStreamCallViewController {
-//                callVC.view.subviews
+                if let alertView = callVC.alertView {
+                    var fromUsername = ""
+                    if let fromUser = self.getOtherUserWith(userID: senderID), let username = fromUser.username {
+                        fromUsername = username
+                    }
+                    alertView.configureFor(mode: .mergeDeclined, fromUsername: fromUsername, message: "declined to merge.", isWaiting: false)
+                }
             }
             // MERGE END
             else if text.hasPrefix("mergeEnd"), let callVC = self.presentedViewController as? DGStreamCallViewController {
@@ -768,7 +788,7 @@ extension DGStreamCore: QBRTCClientDelegate {
                 fromUserID = otherUserID
             }
             
-            if let vc = self.presentedViewController, vc is DGStreamCallViewController == false, self.alertView == nil, let incomingCallView = UINib(nibName: "DGStreamAlertView", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiate(withOwner: self, options: nil).first as? DGStreamAlertView {
+            if let vc = self.presentedViewController, self.alertView == nil, let incomingCallView = UINib(nibName: "DGStreamAlertView", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiate(withOwner: self, options: nil).first as? DGStreamAlertView {
                 
                 var mode:AlertMode = .incomingVideoCall
                 if session.conferenceType == .audio {
@@ -800,12 +820,28 @@ extension DGStreamCore: QBRTCClientDelegate {
                         self.lastRecent = recent
                         DGStreamManager.instance.dataStore.streamManager(DGStreamManager.instance, store: recent)
                         
-                        
-                        if let callVC = UIStoryboard(name: "Call", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamCallViewController, let chatVC = UIStoryboard.init(name: "Chat", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamChatViewController {
+                        // CALL VC
+                        if vc is DGStreamCallViewController, let callVC = UIStoryboard(name: "Call", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamCallViewController, let chatVC = UIStoryboard.init(name: "Chat", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamChatViewController {
                             
-                            if let proto = DGStreamManager.instance.dataSource.streamManager(DGStreamManager.instance, conversationWithUsers: [DGStreamCore.instance.currentUser?.userID ?? 0, fromUserID]), let conversation = DGStreamConversation.createDGStreamConversationsFrom(protocols: [proto]).first {
-                                conversation.type = .callConversation
-                                chatVC.chatConversation = conversation
+                            NotificationCenter.default.post(name: Notification.Name("AcceptIncomingCall"), object: session)
+                        }
+                        // TAB BAR
+                        else if let tabBarVC = vc as? DGStreamTabBarViewController, let callVC = UIStoryboard(name: "Call", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamCallViewController, let chatVC = UIStoryboard.init(name: "Chat", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamChatViewController {
+                            
+                            print("GETTING CONVERSATION WITH \(fromUserID)")
+                            
+                            print("Total conversations \(tabBarVC.conversations.count)")
+                            
+                            for c in tabBarVC.conversations {
+                                print("\(c.conversationID) | \(c.userIDs)")
+                                if c.userIDs.contains(fromUserID) {
+                                    let proto = DGStreamConversation.createDGStreamConversationFrom(proto: c)
+                                    let newConversation = DGStreamConversation.createDGStreamConversationFrom(proto: proto)
+                                    newConversation.type = .callConversation
+                                    chatVC.chatConversation = newConversation
+                                    print("SET NEW CONVERSATION")
+                                    break
+                                }
                             }
                             
                             chatVC.delegate = callVC
@@ -824,25 +860,28 @@ extension DGStreamCore: QBRTCClientDelegate {
                             else {
                                 vc.present(callVC, animated: true, completion: nil)
                             }
-                                                        
+                            
+                        }
+                        else {
+                            
                         }
                         
                     }
                     else {
                         session.rejectCall(nil)
                         
-                        let recent = DGStreamRecent()
-                        recent.date = Date()
-                        recent.duration = 0.0
-                        recent.isMissed = true
-                        recent.receiver = DGStreamCore.instance.currentUser
-                        recent.receiverID = currentUserID
-                        recent.recentID = UUID().uuidString
-                        recent.sender = DGStreamCore.instance.getOtherUserWith(userID: fromUserID)
-                        recent.senderID = fromUserID
-                        recent.isAudio = session.conferenceType == .audio
-                        
-                        DGStreamManager.instance.dataStore.streamManager(DGStreamManager.instance, store: recent)
+//                        let recent = DGStreamRecent()
+//                        recent.date = Date()
+//                        recent.duration = 0.0
+//                        recent.isMissed = true
+//                        recent.receiver = DGStreamCore.instance.currentUser
+//                        recent.receiverID = currentUserID
+//                        recent.recentID = UUID().uuidString
+//                        recent.sender = DGStreamCore.instance.getOtherUserWith(userID: fromUserID)
+//                        recent.senderID = fromUserID
+//                        recent.isAudio = session.conferenceType == .audio
+//
+//                        DGStreamManager.instance.dataStore.streamManager(DGStreamManager.instance, store: recent)
                     }
                 })
             }

@@ -141,6 +141,7 @@ extension DGStreamDropDownManager: UICollectionViewDelegate, UICollectionViewDat
 extension DGStreamDropDownManager {
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         if keyPath == "frame" {
+            
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.20, execute: {
                 
                 if let size = self.sizeCollectionView {
@@ -162,6 +163,7 @@ extension DGStreamDropDownManager {
                 }
                 
             })
+            
         }
     }
 }

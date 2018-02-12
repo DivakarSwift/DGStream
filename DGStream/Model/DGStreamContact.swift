@@ -11,6 +11,7 @@ import UIKit
 class DGStreamContact: NSObject {
     var userID: NSNumber?
     var user: DGStreamUser?
+    var lastContact: Date?
     
     class func createDGStreamContactFrom(user: DGStreamUser) -> DGStreamContact {
         let contact = DGStreamContact()
@@ -25,6 +26,9 @@ class DGStreamContact: NSObject {
             let contact = DGStreamContact()
             if let protoUser = DGStreamManager.instance.dataSource.streamManager(DGStreamManager.instance, userWithUserID: proto.dgUserID) {
                 contact.user = DGStreamUser.createDGStreamUserFrom(proto: protoUser)
+            }
+            if let recent = DGStreamRecent.createDGStreamRecentsFrom(protocols: DGStreamManager.instance.dataSource.streamManager(DGStreamManager.instance, recentsWithUserIDs: [proto.dgUserID, DGStreamCore.instance.currentUser?.userID ?? 0])).first {
+                contact.lastContact = recent.date
             }
             contact.userID = proto.dgUserID
             contacts.append(contact)

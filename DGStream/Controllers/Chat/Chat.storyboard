@@ -103,10 +103,10 @@
                                 </constraints>
                             </view>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="b8n-BE-whT">
-                                <rect key="frame" x="0.0" y="623" width="375" height="44"/>
+                                <rect key="frame" x="0.0" y="617" width="375" height="50"/>
                                 <subviews>
-                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" text="Message..." translatesAutoresizingMaskIntoConstraints="NO" id="Ihs-pJ-qLk">
-                                        <rect key="frame" x="50" y="8" width="275" height="28"/>
+                                    <textView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" translatesAutoresizingMaskIntoConstraints="NO" id="Ihs-pJ-qLk">
+                                        <rect key="frame" x="50" y="8" width="275" height="34"/>
                                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                         <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="14"/>
                                         <textInputTraits key="textInputTraits" autocapitalizationType="sentences" returnKeyType="send"/>
@@ -115,14 +115,14 @@
                                         </connections>
                                     </textView>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="DqG-zb-PWW">
-                                        <rect key="frame" x="325" y="0.0" width="50" height="44"/>
+                                        <rect key="frame" x="325" y="0.0" width="50" height="50"/>
                                         <state key="normal" title="Send"/>
                                         <connections>
                                             <action selector="sendButtonTapped:" destination="Xvf-ae-VJO" eventType="touchUpInside" id="S5R-Pc-sV2"/>
                                         </connections>
                                     </button>
                                     <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="kFl-nW-kGK">
-                                        <rect key="frame" x="0.0" y="0.0" width="50" height="44"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="50" height="50"/>
                                         <state key="normal" image="capture"/>
                                     </button>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="jAY-1p-dN4">
@@ -133,7 +133,7 @@
                                         </constraints>
                                     </view>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="oo2-Mu-Gu5">
-                                        <rect key="frame" x="0.0" y="43" width="375" height="1"/>
+                                        <rect key="frame" x="0.0" y="49" width="375" height="1"/>
                                         <color key="backgroundColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                         <constraints>
                                             <constraint firstAttribute="height" constant="0.5" id="IUg-8G-Rl0"/>
@@ -147,7 +147,7 @@
                                     <constraint firstItem="Ihs-pJ-qLk" firstAttribute="top" secondItem="b8n-BE-whT" secondAttribute="top" constant="8" id="67h-eA-ro7"/>
                                     <constraint firstAttribute="bottom" secondItem="DqG-zb-PWW" secondAttribute="bottom" id="CxR-xg-bcY"/>
                                     <constraint firstItem="Ihs-pJ-qLk" firstAttribute="leading" secondItem="kFl-nW-kGK" secondAttribute="trailing" id="Hzd-uo-sHz"/>
-                                    <constraint firstAttribute="height" constant="44" id="Jcz-YE-MOp"/>
+                                    <constraint firstAttribute="height" constant="50" id="Jcz-YE-MOp"/>
                                     <constraint firstItem="kFl-nW-kGK" firstAttribute="leading" secondItem="b8n-BE-whT" secondAttribute="leading" id="MdD-nM-JO2"/>
                                     <constraint firstItem="kFl-nW-kGK" firstAttribute="top" secondItem="b8n-BE-whT" secondAttribute="top" id="TdM-EM-sIX"/>
                                     <constraint firstItem="DqG-zb-PWW" firstAttribute="top" secondItem="b8n-BE-whT" secondAttribute="top" id="YIa-9T-Mbh"/>

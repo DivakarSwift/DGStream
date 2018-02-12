@@ -18,6 +18,7 @@ class DGStreamRecentsTableViewCell: UITableViewCell {
     
     @IBOutlet weak var audioCallButton: UIButton!
     @IBOutlet weak var videoCallButton: UIButton!
+    @IBOutlet weak var messageButton: UIButton!
     @IBOutlet weak var numberLabel: UILabel!
     
     var delegate: DGStreamTableViewCellDelegate!
@@ -40,15 +41,35 @@ class DGStreamRecentsTableViewCell: UITableViewCell {
         self.userImageView.layer.borderColor = UIColor.dgGray().cgColor
         self.setUpButtons()
     }
+    
+//    func configureWith(contact: DGStreamContact, delegate: DGStreamTableViewCellDelegate) {
+//        self.delegate = delegate
+//        
+//        self.numberLabel.alpha = 0
+//        
+//        if let user = contact.user, let username = user.username {
+//            let abrev = NSString(string: username).substring(to: 1)
+//            self.abrevLabel.text = abrev
+//            self.nameLabel.text = username
+//        }
+//        
+//        if let date = contact.lastContact {
+//            let dateFormatter = DateFormatter()
+//            dateFormatter.timeStyle = .short
+//            dateFormatter.dateStyle = .short
+//            self.dateLabel.text = dateFormatter.string(from: date)
+//        }
+//        
+//    }
 
     func configureWith(recent: DGStreamRecent, delegate: DGStreamTableViewCellDelegate) {
-        
+
         self.delegate = delegate
-        
+
         self.recent = recent
-        
+
         self.numberLabel.alpha = 0
-        
+
         var isIncoming: Bool = false
         var otherUser: DGStreamUser?
         if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID, let receiverID = recent.receiverID {
@@ -64,7 +85,7 @@ class DGStreamRecentsTableViewCell: UITableViewCell {
                 }
             }
         }
-        
+
         if let user = otherUser, let username = user.username {
             let abrev = NSString(string: username).substring(to: 1)
             self.abrevLabel.text = abrev
@@ -79,14 +100,14 @@ class DGStreamRecentsTableViewCell: UITableViewCell {
             self.userImageView.layer.borderColor = ringColor.cgColor
             self.userImageView.layer.borderWidth = 2.5
         }
-        
+
         if let date = recent.date {
             let dateFormatter = DateFormatter()
             dateFormatter.timeStyle = .short
             dateFormatter.dateStyle = .short
             dateLabel.text = dateFormatter.string(from: date)
         }
-        
+
         if let isMissed = recent.isMissed, isMissed == true {
             nameLabel.textColor = .red
             dateLabel.textColor = .red
@@ -95,18 +116,18 @@ class DGStreamRecentsTableViewCell: UITableViewCell {
             nameLabel.textColor = UIColor.dgBlack()
             dateLabel.textColor = UIColor.dgBlack()
         }
-        
+
         if let duration = recent.duration {
             self.durationLabel.text = "\(duration)m"
         }
         else {
             self.durationLabel.text = ""
         }
-        
+
         if isIncoming {
-            
+
         }
-    
+
     }
     
     func setUpButtons() {
@@ -119,6 +140,11 @@ class DGStreamRecentsTableViewCell: UITableViewCell {
         self.audioCallButton.backgroundColor = UIColor.dgBlueDark()
         self.audioCallButton.tintColor = UIColor.dgBackground()
         self.audioCallButton.layer.cornerRadius = self.audioCallButton.frame.size.width / 2
+        
+        self.messageButton.setImage(UIImage.init(named: "message", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
+        self.messageButton.backgroundColor = UIColor.dgBlueDark()
+        self.messageButton.tintColor = UIColor.dgBackground()
+        self.messageButton.layer.cornerRadius = self.messageButton.frame.size.width / 2
     }
     
     func startSelection(animated: Bool) {
@@ -226,10 +252,24 @@ class DGStreamRecentsTableViewCell: UITableViewCell {
             let button = sender as? UIButton
             let buttonFrame = button?.frame ?? .zero
             
-            self.delegate.streamCallButtonTappedWith(userID: userID ?? NSNumber.init(value: 0), type: .video, cellIndex: self.tag, buttonFrame: buttonFrame)
+            self.delegate.streamCallButtonTappedWith(userID: userID ?? NSNumber.init(value: 0), type: .audio, cellIndex: self.tag, buttonFrame: buttonFrame)
         }
     }
     
+    @IBAction func messageButtonTapped(_ sender: Any) {
+        if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID, let receiverID = self.recent.receiverID, let senderID = self.recent.senderID {
+            
+            var userID: NSNumber?
+            if receiverID != currentUserID {
+                userID = receiverID
+            }
+            else {
+                userID = senderID
+            }
+            
+            self.delegate.messageButtonTappedWith(userID: userID ?? 0)
+        }
+    }
     
     @IBAction func userButtonTapped(_ sender: Any) {
         

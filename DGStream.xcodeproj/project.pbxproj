@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0A13D4A4530A75E898E8A1AC /* Pods_DGStream.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5C803FF8C51C32699B1FE556 /* Pods_DGStream.framework */; };
 		0C08FA3C1F671A6800B03CB2 /* DGStreamCallViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C08FA3B1F671A6800B03CB2 /* DGStreamCallViewController.swift */; };
 		0C08FA3E1F671E9D00B03CB2 /* DGStreamScreenCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C08FA3D1F671E9D00B03CB2 /* DGStreamScreenCapture.swift */; };
 		0C08FA411F67251600B03CB2 /* DispatchExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C08FA401F67251600B03CB2 /* DispatchExtension.swift */; };
@@ -83,6 +82,7 @@
 		0C88A4EB1FBF757D008C5627 /* DGStreamChatPeekView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C88A4EA1FBF757D008C5627 /* DGStreamChatPeekView.swift */; };
 		0C88A4ED1FBF7DBB008C5627 /* DGStreamChatPeekCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C88A4EC1FBF7DBB008C5627 /* DGStreamChatPeekCell.swift */; };
 		0C88A4EF1FBF7DDA008C5627 /* DGStreamChatPeekCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0C88A4EE1FBF7DDA008C5627 /* DGStreamChatPeekCell.xib */; };
+		0C91351220118A7500928F59 /* NMessenger.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0C69222320113D220061AB76 /* NMessenger.framework */; };
 		0CA5168D1FF58043006B536E /* DGStreamDrawOperationQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CA5168C1FF58043006B536E /* DGStreamDrawOperationQueue.swift */; };
 		0CA5168F1FF5807D006B536E /* DGStreamDrawOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CA5168E1FF5807D006B536E /* DGStreamDrawOperation.swift */; };
 		0CA6CD5D1F8C06000061D3D9 /* DGStreamGreenScreenCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CA6CD5C1F8C06000061D3D9 /* DGStreamGreenScreenCapture.swift */; };
@@ -1003,7 +1003,6 @@
 		0CD79AC41F74A87C0034D2B4 /* GreenScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = GreenScreen.storyboard; sourceTree = "<group>"; };
 		0CD79AC71F74ABA30034D2B4 /* greenScreen.fsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = greenScreen.fsh; sourceTree = "<group>"; };
 		0CD79AC81F74ABA30034D2B4 /* greenScreen.vsh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.glsl; path = greenScreen.vsh; sourceTree = "<group>"; };
-		5C803FF8C51C32699B1FE556 /* Pods_DGStream.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_DGStream.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		74F4356033D6B7160D0C6EA7 /* Pods-DGStream.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DGStream.debug.xcconfig"; path = "Pods/Target Support Files/Pods-DGStream/Pods-DGStream.debug.xcconfig"; sourceTree = "<group>"; };
 		B779F294D5239BA41E10B464 /* Pods-DGStream.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-DGStream.release.xcconfig"; path = "Pods/Target Support Files/Pods-DGStream/Pods-DGStream.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -1013,7 +1012,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0A13D4A4530A75E898E8A1AC /* Pods_DGStream.framework in Frameworks */,
+				0C91351220118A7500928F59 /* NMessenger.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2724,7 +2723,6 @@
 				0C26B6792010500F0057C866 /* jot */,
 				0C39F86220100CA300F63533 /* Masonry */,
 				0C3F96441FCCE5C100FF1C72 /* TransitionButton */,
-				5C803FF8C51C32699B1FE556 /* Pods_DGStream.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -2783,9 +2781,8 @@
 				TargetAttributes = {
 					0C9143C91F58C15D00708198 = {
 						CreatedOnToolsVersion = 8.3;
-						DevelopmentTeam = T4N54C7U83;
 						LastSwiftMigration = 0830;
-						ProvisioningStyle = Automatic;
+						ProvisioningStyle = Manual;
 					};
 				};
 			};
@@ -3140,17 +3137,13 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Manual;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = T4N54C7U83;
+				DEVELOPMENT_TEAM = "";
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$PODS_CONFIGURATION_BUILD_DIR/jot\"",
-					"\"$PODS_CONFIGURATION_BUILD_DIR/NMessenger\"",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
 				INFOPLIST_FILE = DGStream/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
@@ -3173,17 +3166,14 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CODE_SIGN_STYLE = Automatic;
+				CODE_SIGN_STYLE = Manual;
 				DEFINES_MODULE = YES;
-				DEVELOPMENT_TEAM = T4N54C7U83;
+				DEVELOPMENT_TEAM = "";
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"\"$PODS_CONFIGURATION_BUILD_DIR/jot\"",
-					"\"$PODS_CONFIGURATION_BUILD_DIR/NMessenger\"",
-				);
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				GCC_OPTIMIZATION_LEVEL = 0;
 				INFOPLIST_FILE = DGStream/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
@@ -3193,6 +3183,7 @@
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SKIP_INSTALL = YES;
 				SWIFT_OBJC_BRIDGING_HEADER = "";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 3.0;
 			};
 			name = Release;

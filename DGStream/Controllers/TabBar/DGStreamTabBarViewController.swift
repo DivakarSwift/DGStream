@@ -97,6 +97,7 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
         
         NotificationCenter.default.addObserver(self, selector: #selector(self.restartVideoCall(notification:)), name: Notification.Name("RestartVideoCall"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(self.restartAudioCall(notification:)), name: Notification.Name("RestartAudioCall"), object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(self.acceptIncomingCall(notification:)), name: Notification.Name("AcceptIncomingCall"), object: nil)
         
     }
     
@@ -154,6 +155,7 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
                 self.animateInitialViews()
             })
         }
+    
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -205,6 +207,11 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
         }) { (f) in
             self.blackoutView.isHidden = true
             self.rightButton.alpha = 1
+            
+            if self.selectedItem == .recents, self.recents.count == 0 {
+                self.emptyLabel.text = "No Recents"
+                self.emptyLabel.alpha = 1
+            }
         }
     }
 
@@ -241,6 +248,7 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
         if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID {
             self.recents = DGStreamRecent.createDGStreamRecentsFrom(protocols: DGStreamManager.instance.dataSource.streamManager(DGStreamManager.instance, recentsWithUserIDs: [currentUserID]))
             print("Loadded Recents \(self.recents.count)")
+            self.emptyLabel.alpha = 0
             if self.recents.count == 0 {
                 self.emptyLabel.text = "No Recents"
                 self.emptyLabel.alpha = 1
@@ -250,8 +258,9 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
     
     func loadContacts() {
         if let currentUser = DGStreamCore.instance.currentUser, let userID = currentUser.userID {
-            self.contacts = DGStreamContact.createDGStreamContactsFrom(protocols: DGStreamManager.instance.dataSource.streamManager(DGStreamManager.instance, contactsForUserID: userID))
+            self.contacts = DGStreamContact.createDGStreamContactsFrom(protocols: DGStreamManager.instance.dataSource.streamManager(DGStreamManager.instance, contactsForUserID: userID)).reversed()
             print("Loaded Contacts \(self.contacts.count)")
+            self.emptyLabel.alpha = 0
             if self.contacts.count == 0 {
                 self.emptyLabel.text = "No Contacts"
                 self.emptyLabel.alpha = 1
@@ -277,13 +286,35 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
                         chatDialogs.append(chatDialog)
                     }
                 }
+                
+                let conversations = DGStreamConversation.createDGStreamConversationsFrom(chatDialogs: chatDialogs)
+                for conversation in conversations {
+                    DGStreamManager.instance.dataStore.streamManager(DGStreamManager.instance, store: conversation)
+                }
+                self.conversations = conversations.sorted(by: { (first, second) -> Bool in
+                    var firstOtherUsername = ""
+                    for userID in first.userIDs {
+                        if userID != currentUserID, let user = DGStreamCore.instance.getOtherUserWith(userID: userID) {
+                            firstOtherUsername = user.username ?? ""
+                            break
+                        }
+                    }
+                    var secondOtherUsername = ""
+                    for userID in second.userIDs {
+                        if userID != currentUserID, let user = DGStreamCore.instance.getOtherUserWith(userID: userID) {
+                            secondOtherUsername = user.username ?? ""
+                            break
+                        }
+                    }
+                    return firstOtherUsername < secondOtherUsername
+                })
             }
             
-            let conversations = DGStreamConversation.createDGStreamConversationsFrom(chatDialogs: chatDialogs)
-            for conversation in conversations {
-                DGStreamManager.instance.dataStore.streamManager(DGStreamManager.instance, store: conversation)
+            self.emptyLabel.alpha = 0
+            if self.conversations.count == 0 {
+                self.emptyLabel.text = "No Conversations"
+                self.emptyLabel.alpha = 1
             }
-            self.conversations = conversations
             
         }) { (response: QBResponse) -> Void in
             
@@ -315,20 +346,30 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
         if DGStreamCore.instance.isReachable && session.state == .new {
             if let callVC = UIStoryboard(name: "Call", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamCallViewController, let chatVC = UIStoryboard.init(name: "Chat", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamChatViewController {
                 
-                if let proto = DGStreamManager.instance.dataSource.streamManager(DGStreamManager.instance, conversationWithUsers: [DGStreamCore.instance.currentUser?.userID ?? 0, userIDs.first ?? 0]), let conversation = DGStreamConversation.createDGStreamConversationsFrom(protocols: [proto]).first {
-                    conversation.type = .callConversation
-                    chatVC.chatConversation = conversation
+                let otherUserID = userIDs.first!
+                
+                for c in self.conversations {
+                    print("\(c.conversationID) | \(c.userIDs)")
+                    if c.userIDs.contains(otherUserID) {
+                        let proto = DGStreamConversation.createDGStreamConversationFrom(proto: c)
+                        let newConversation = DGStreamConversation.createDGStreamConversationFrom(proto: proto)
+                        newConversation.type = .callConversation
+                        chatVC.chatConversation = newConversation
+                        print("SET NEW CONVERSATION")
+                        break
+                    }
                 }
                 
                 chatVC.delegate = callVC
                 callVC.chatVC = chatVC
                 callVC.session = session
-                callVC.selectedUser = userIDs.first
+                callVC.selectedUser = otherUserID
                 if type == .audio {
                     callVC.isAudioCall = true
                 }
                 
                 DGStreamCore.instance.audioPlayer.ringFor(receiver: false)
+                self.navigationController?.popToViewController(self, animated: false)
                 self.navigationController?.pushViewController(callVC, animated: false)
             }
         }
@@ -340,6 +381,37 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
             self.present(alert, animated: true, completion: nil)
         }
         
+    }
+    
+    func acceptCallWith(session: QBRTCSession) {
+        if let callVC = UIStoryboard(name: "Call", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamCallViewController, let chatVC = UIStoryboard.init(name: "Chat", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamChatViewController {
+            
+            let otherUserID = session.initiatorID
+            
+            for c in self.conversations {
+                print("\(c.conversationID) | \(c.userIDs)")
+                if c.userIDs.contains(otherUserID) {
+                    let proto = DGStreamConversation.createDGStreamConversationFrom(proto: c)
+                    let newConversation = DGStreamConversation.createDGStreamConversationFrom(proto: proto)
+                    newConversation.type = .callConversation
+                    chatVC.chatConversation = newConversation
+                    print("SET NEW CONVERSATION")
+                    break
+                }
+            }
+            
+            chatVC.delegate = callVC
+            callVC.chatVC = chatVC
+            callVC.session = session
+            callVC.selectedUser = otherUserID
+            if session.conferenceType == .audio {
+                callVC.isAudioCall = true
+            }
+            
+            DGStreamCore.instance.audioPlayer.ringFor(receiver: false)
+            self.navigationController?.popToViewController(self, animated: false)
+            self.navigationController?.pushViewController(callVC, animated: false)
+        }
     }
     
     func getSelectedUsers() -> [NSNumber] {
@@ -561,7 +633,12 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
                 recentsCell.selectWith(count: newCount, animate: true)
             }
             else {
-                // Remove
+                // Removef
+                if let index = self.selectedRows.index(where: { (row) -> Bool in
+                    return row.row == indexPath.row
+                }) {
+                    self.selectedRows.remove(at: index)
+                }
             }
         }
         else if let contactsCell = self.tableView.cellForRow(at: indexPath) as? DGStreamContactsTableViewCell {
@@ -606,7 +683,6 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
         messageSelectedUsers()
     }
     
-    
 }
 
 extension DGStreamTabBarViewController: UITableViewDelegate, UITableViewDataSource {
@@ -617,25 +693,22 @@ extension DGStreamTabBarViewController: UITableViewDelegate, UITableViewDataSour
         switch selectedItem {
         case .recents:
             
-            if !self.isSelectingRows {
-                beginSelectingCells()
-            }
-            
-            self.selectRow(indexPath: indexPath)
+//            if !self.isSelectingRows {
+//                beginSelectingCells()
+//            }
+            //self.selectRow(indexPath: indexPath)
             
             break
         case .contacts:
             
-            if !self.isSelectingRows {
-                beginSelectingCells()
-            }
-            
-            self.selectRow(indexPath: indexPath)
+//            if !self.isSelectingRows {
+//                beginSelectingCells()
+//            }
+            //self.selectRow(indexPath: indexPath)
             
             break
         case .messages:
             let conversation = self.conversations[indexPath.row]
-            // Test
             if let int = UInt(conversation.conversationID) {
                 conversation.userIDs = [NSNumber.init(value: int)]
             }
@@ -770,6 +843,25 @@ extension DGStreamTabBarViewController {
     func restartAudioCall(notification: Notification) {
         let userID = notification.object as? NSNumber
         callUsers(userIDs: [userID!], for: .audio)
+    }
+    func messageButtonTappedWith(userID: NSNumber) {
+        if let conversation = self.conversations.filter({ (conversation) -> Bool in
+            return conversation.userIDs.contains(userID)
+        }).first {
+            if let int = UInt(conversation.conversationID) {
+                conversation.userIDs = [NSNumber.init(value: int)]
+            }
+            let chatStoryboard = UIStoryboard(name: "Chat", bundle: Bundle(identifier: "com.dataglance.DGStream"))
+            let chatVC = chatStoryboard.instantiateInitialViewController() as! DGStreamChatViewController
+            chatVC.view.alpha = 1
+            chatVC.chatConversation = conversation
+            self.navigationController?.pushViewController(chatVC, animated: true)
+        }
+    }
+    func acceptIncomingCall(notification: Notification) {
+        if let session = notification.object as? QBRTCSession {
+            acceptCallWith(session: session)
+        }
     }
 }
 

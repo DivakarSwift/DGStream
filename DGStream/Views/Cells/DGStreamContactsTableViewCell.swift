@@ -10,6 +10,7 @@ import UIKit
 
 protocol DGStreamTableViewCellDelegate {
     func streamCallButtonTappedWith(userID: NSNumber, type: QBRTCConferenceType, cellIndex: Int, buttonFrame: CGRect)
+    func messageButtonTappedWith(userID:NSNumber)
     func userButtonTapped(userID: NSNumber)
 }
 
@@ -21,6 +22,7 @@ class DGStreamContactsTableViewCell: UITableViewCell {
     
     @IBOutlet weak var videoCallButton: UIButton!
     @IBOutlet weak var audioCallButton: UIButton!
+    @IBOutlet weak var messageButton: UIButton!
     @IBOutlet weak var numberLabel: UILabel!
     
     var contact: DGStreamContact!
@@ -82,6 +84,11 @@ class DGStreamContactsTableViewCell: UITableViewCell {
         self.audioCallButton.backgroundColor = UIColor.dgBlueDark()
         self.audioCallButton.tintColor = UIColor.dgBackground()
         self.audioCallButton.layer.cornerRadius = self.audioCallButton.frame.size.width / 2
+        
+        self.messageButton.setImage(UIImage.init(named: "message", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
+        self.messageButton.backgroundColor = UIColor.dgBlueDark()
+        self.messageButton.tintColor = UIColor.dgBackground()
+        self.messageButton.layer.cornerRadius = self.messageButton.frame.size.width / 2
     }
     
     func startSelection(animated: Bool) {
@@ -165,6 +172,10 @@ class DGStreamContactsTableViewCell: UITableViewCell {
         if let userID = self.contact.userID {
             self.delegate.streamCallButtonTappedWith(userID: userID, type: .audio, cellIndex: self.tag, buttonFrame: buttonFrame)
         }
+    }
+    
+    @IBAction func messageButtonTapped(_ sender: Any) {
+        self.delegate.messageButtonTappedWith(userID: self.contact.userID ?? 0)
     }
     
     @IBAction func userButtonTapped(_ sender: Any) {
