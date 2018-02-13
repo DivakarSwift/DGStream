@@ -56,7 +56,7 @@ class DGStreamUserHeader: UIView {
                 
             }
             
-            self.tagLabel.text = "Developer"
+            self.tagLabel.text = "Developer (mock)"
             
             if let lastSeen = user.lastSeen {
                 let dateFormatter = DateFormatter()
@@ -65,7 +65,7 @@ class DGStreamUserHeader: UIView {
                 
                 var lastSeenText = ""
                 if Display.pad {
-                    lastSeenText = "Last seen: \(dateFormatter.string(from: lastSeen))"
+                    lastSeenText = "\(NSLocalizedString("Last Seen", bundle: Bundle(identifier: "DGStream")!, comment: "Last Seen <last_seen_date>")): \(dateFormatter.string(from: lastSeen))"
                 }
                 else {
                     lastSeenText = dateFormatter.string(from: lastSeen)
@@ -74,7 +74,7 @@ class DGStreamUserHeader: UIView {
                 self.lastSeenLabel.text = lastSeenText
             }
             else {
-                self.lastSeenLabel.text = "Last seen: Unknown"
+                self.lastSeenLabel.text = "\(NSLocalizedString("Last Seen", bundle: Bundle(identifier: "DGStream")!, comment: "Last Seen <last_seen_date>")): ?"
             }
             
             if userID == currentUserID {

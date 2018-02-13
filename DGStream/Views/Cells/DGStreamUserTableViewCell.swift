@@ -43,27 +43,27 @@ class DGStreamUserTableViewCell: UITableViewCell {
             }
         }
         
-        var titleString = ""
-        if isIncoming {
-            titleString.append("Incoming")
-        }
-        else {
-            titleString.append("Outgoing")
-        }
-        
         var audio = false
         if let isAudio = recent.isAudio {
             audio = isAudio
         }
         
         if audio {
-            titleString.append(" Audio Call")
+            if isIncoming {
+                self.title.text = NSLocalizedString("Incoming audio call...", bundle: Bundle(identifier: "DGStream")!, comment: "")
+            }
+            else {
+                self.title.text = NSLocalizedString("Outgoing audio call...", bundle: Bundle(identifier: "DGStream")!, comment: "")
+            }
         }
         else {
-            titleString.append(" Video Call")
+            if isIncoming {
+                self.title.text = NSLocalizedString("Incoming video call...", bundle: Bundle(identifier: "DGStream")!, comment: "")
+            }
+            else {
+                self.title.text = NSLocalizedString("Outgoing video call...", bundle: Bundle(identifier: "DGStream")!, comment: "")
+            }
         }
-        
-        self.title.text = titleString
         
         if let recentDate = recent.date {
             let dateFormatter = DateFormatter()

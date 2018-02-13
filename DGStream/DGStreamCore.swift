@@ -623,6 +623,12 @@ extension DGStreamCore: QBChatDelegate {
             // WHITE BOARD END
             else if text.hasPrefix("whiteboardEnd"), let callVC = self.presentedViewController as? DGStreamCallViewController {
                 
+                let isDrawingOptionalString = String(describing: message.customParameters["isDrawing"])
+                
+                if isDrawingOptionalString == "Optional(false)" || isDrawingOptionalString == "false" {
+                    callVC.drawEndWith(userID: senderID)
+                }
+                
                 callVC.endWhiteBoardFor(userID: senderID)
                 
                 if let user = DGStreamCore.instance.getOtherUserWith(userID: senderID), let username = user.username {

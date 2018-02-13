@@ -69,7 +69,7 @@ class DGStreamAlertView: UIView {
         case .error:
             
             self.alertTitleLabelContainer.backgroundColor = .red
-            self.alertTitleLabel.text = "Error"
+            self.alertTitleLabel.text = NSLocalizedString("Error", bundle: Bundle(identifier: "DGStream")!, comment: "")
             
             break
             
@@ -78,7 +78,7 @@ class DGStreamAlertView: UIView {
             self.nameLabel.text = fromUsername
             
             self.alertTitleLabelContainer.backgroundColor = UIColor.dgGreen()
-            self.alertTitleLabel.text = "Incoming Audio Call..."
+            self.alertTitleLabel.text = NSLocalizedString("Incoming audio call...", bundle: Bundle(identifier: "DGStream")!, comment: "")
             
             let acceptImage = UIImage(named: "answer", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate)
             let declineImage = UIImage(named: "hangup", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate)
@@ -99,7 +99,7 @@ class DGStreamAlertView: UIView {
             self.nameLabel.text = fromUsername
             
             self.alertTitleLabelContainer.backgroundColor = UIColor.dgGreen()
-            self.alertTitleLabel.text = "Incoming Video Call..."
+            self.alertTitleLabel.text = NSLocalizedString("Incoming video call...", bundle: Bundle(identifier: "DGStream")!, comment: "")
             
             let acceptImage = UIImage(named: "answer", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate)
             let declineImage = UIImage(named: "hangup", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate)
@@ -122,13 +122,13 @@ class DGStreamAlertView: UIView {
             
             DispatchQueue.main.async {
                 self.nameLabel.text = fromUsername
-                self.alertMessageLabel.text = message ?? "declined to merge."
+                self.alertMessageLabel.text = message ?? ""
                 self.alertMessageLabel.isHidden = false
                 self.acceptButton.isHidden = true
                 self.declineButton.isHidden = true
                 self.cancelButton.isHidden = false
                 
-                self.cancelButton.setTitle("OK", for: .normal)
+                self.cancelButton.setTitle(NSLocalizedString("OK", bundle: Bundle(identifier: "DGStream")!, comment: "Acknowledged dismissal"), for: .normal)
             }
             
             break

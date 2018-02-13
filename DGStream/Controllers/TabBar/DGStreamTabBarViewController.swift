@@ -126,14 +126,14 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
                 self.abrevLabel.textColor = .white
             }
             
-            self.welcomeLabel.text = "Welcome \(currentUser.username ?? "Unknown")"
+            self.welcomeLabel.text = "\(NSLocalizedString("Welcome", bundle: Bundle(identifier: "DGStream")!, comment: "Welcome <user_name>")) \(currentUser.username ?? "")"
             
             let dateFormatter = DateFormatter()
             dateFormatter.dateStyle = .short
             dateFormatter.timeStyle = .short
             
             
-            self.lastLoggedInLabel.text = "Last Seen: \(dateFormatter.string(from: Date()))"
+            self.lastLoggedInLabel.text = "\(NSLocalizedString("Last Seen", bundle: Bundle(identifier: "DGStream")!, comment: "Last Seen <last_seen_date>")) \(dateFormatter.string(from: Date()))"
         }
         
         self.tableView.reloadData()
@@ -209,7 +209,7 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
             self.rightButton.alpha = 1
             
             if self.selectedItem == .recents, self.recents.count == 0 {
-                self.emptyLabel.text = "No Recents"
+                self.emptyLabel.text = NSLocalizedString("No Recents", bundle: Bundle(identifier: "DGStream")!, comment: "")
                 self.emptyLabel.alpha = 1
             }
         }
@@ -250,7 +250,7 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
             print("Loadded Recents \(self.recents.count)")
             self.emptyLabel.alpha = 0
             if self.recents.count == 0 {
-                self.emptyLabel.text = "No Recents"
+                self.emptyLabel.text = NSLocalizedString("No Recents", bundle: Bundle(identifier: "DGStream")!, comment: "")
                 self.emptyLabel.alpha = 1
             }
         }
@@ -262,7 +262,7 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
             print("Loaded Contacts \(self.contacts.count)")
             self.emptyLabel.alpha = 0
             if self.contacts.count == 0 {
-                self.emptyLabel.text = "No Contacts"
+                self.emptyLabel.text = NSLocalizedString("No Contacts", bundle: Bundle(identifier: "DGStream")!, comment: "")
                 self.emptyLabel.alpha = 1
             }
         }
@@ -312,22 +312,14 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
             
             self.emptyLabel.alpha = 0
             if self.conversations.count == 0 {
-                self.emptyLabel.text = "No Conversations"
+                self.emptyLabel.text = NSLocalizedString("No Conversations", bundle: Bundle(identifier: "DGStream")!, comment: "")
                 self.emptyLabel.alpha = 1
             }
             
         }) { (response: QBResponse) -> Void in
             
         }
-        
-//        if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID {
-//            self.conversations = DGStreamConversation.createDGStreamConversationsFrom(protocols: DGStreamManager.instance.dataSource.streamManager(DGStreamManager.instance, conversationsWithCurrentUser: currentUserID))
-//            print("Loaded Conversations \(self.conversations.count)")
-//            if self.conversations.count == 0 {
-//                self.emptyLabel.text = "No Messages"
-//                self.emptyLabel.alpha = 1
-//            }
-//        }
+    
     }
     
     func add(conversation: DGStreamConversation) {
@@ -374,8 +366,8 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
             }
         }
         else {
-            let alert = UIAlertController(title: "Error", message: "Unable to create session.", preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: { (action: UIAlertAction) in
+            let alert = UIAlertController(title: NSLocalizedString("Error", bundle: Bundle(identifier: "DGStream")!, comment: ""), message: NSLocalizedString("Unable to create session.", bundle: Bundle(identifier: "DGStream")!, comment: ""), preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", bundle: Bundle(identifier: "DGStream")!, comment: "Acknowledged dismissal"), style: .cancel, handler: { (action: UIAlertAction) in
                 alert.dismiss(animated: true, completion: nil)
             }))
             self.present(alert, animated: true, completion: nil)
@@ -542,7 +534,7 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
     //MARK:- Selecting
     func beginSelectingCells() {
         
-        self.leftButton.setTitle("Cancel", for: .normal)
+        self.leftButton.setTitle(NSLocalizedString("Cancel", bundle: Bundle(identifier: "DGStream")!, comment: "Stop action"), for: .normal)
         
         self.isSelectingRows = true
         
@@ -783,15 +775,15 @@ extension DGStreamTabBarViewController: UITabBarDelegate {
                 switch streamItem {
                 case .recents:
                     loadRecents()
-                    navTitleLabel.text = "Recents"
+                    navTitleLabel.text = NSLocalizedString("Recents", bundle: Bundle(identifier: "DGStream")!, comment: "")
                     break
                 case .contacts:
                     loadContacts()
-                    navTitleLabel.text = "Contacts"
+                    navTitleLabel.text = NSLocalizedString("Contacts", bundle: Bundle(identifier: "DGStream")!, comment: "")
                     break
                 case .messages:
                     loadConversations()
-                    navTitleLabel.text = "Messages"
+                    navTitleLabel.text = NSLocalizedString("Messages", bundle: Bundle(identifier: "DGStream")!, comment: "")
                     break
                 }
                 
@@ -805,7 +797,7 @@ extension DGStreamTabBarViewController: UITabBarDelegate {
 extension DGStreamTabBarViewController: DGStreamTableViewCellDelegate {
     func streamCallButtonTappedWith(userID: NSNumber, type: QBRTCConferenceType, cellIndex: Int, buttonFrame: CGRect) {
         
-        let username = DGStreamCore.instance.currentUser?.username ?? "Unknown"
+        let username = DGStreamCore.instance.currentUser?.username ?? ""
         
         DGStreamNotification.backgroundCall(from: DGStreamCore.instance.currentUser?.userID ?? 0, fromUsername: username, to: [userID]) { (success, errorMessage) in
             

@@ -50,7 +50,7 @@ class DGStreamConversationsTableViewCell: UITableViewCell {
             }
         }
         else {
-            self.nameLabel.text = "Unknown"
+            self.nameLabel.text = ""
         }
     }
     

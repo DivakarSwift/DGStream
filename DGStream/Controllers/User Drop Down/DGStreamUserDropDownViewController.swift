@@ -24,7 +24,7 @@ class DGStreamUserDropDownViewController: UIViewController {
         
         self.isModalInPopover = false
         
-        titles.append("Logout")
+        titles.append(NSLocalizedString("Logout", bundle: Bundle(identifier: "DGStream")!, comment: ""))
 
         // Do any additional setup after loading the view.
         self.tableView.reloadData()

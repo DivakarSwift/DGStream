@@ -131,6 +131,7 @@ public class DGStreamCallViewController: UIViewController {
     var didOtherUserHangUp = false
     
     var localVideoView:DGStreamVideoView?
+    var isCentered:Bool = true
     
     var toolbar: UIToolbar!
     
@@ -228,7 +229,9 @@ public class DGStreamCallViewController: UIViewController {
             if isAudioCall {
                 callModeString = "Audio"
             }
-            self.blackoutLabel.text = "\(callModeString) Calling \(username)..."
+            let callingString = "calling"
+            let combinedString = NSLocalizedString("\(callModeString) \(callingString)", bundle: Bundle(identifier: "DGStream")!, comment: "Video/Audio calling <user_name>...")
+            self.blackoutLabel.text = "\(combinedString) \(username)..."
         }
         
         self.hangUpButton.alpha = 1
@@ -422,6 +425,7 @@ public class DGStreamCallViewController: UIViewController {
                 self.localVideoView?.videoLayer.videoGravity = AVLayerVideoGravityResize
             }
             else {
+                self.localVideoViewContainer.frame = self.frameForLocalVideo(isCenter: self.isCentered)
                 self.localVideoView?.updateOrientationIfNeeded()
                 self.localVideoView?.videoLayer.videoGravity = AVLayerVideoGravityResizeAspectFill
             }
@@ -474,10 +478,11 @@ public class DGStreamCallViewController: UIViewController {
             self.audioCallLabel.textColor = UIColor.dgWhite()
             
             if let user = DGStreamCore.instance.getOtherUserWith(userID: self.selectedUser), let username = user.username {
-                self.audioCallLabel.text = "Audio Call\nwith\n\(username)"
+                let audioCallString = NSLocalizedString("Audio call\nwith", bundle: Bundle(identifier: "DGStream")!, comment: "Audio call with <user_name>... [KEEP \n (enter) between call and with]")
+                self.audioCallLabel.text = "\(audioCallString)\n\(username)"
             }
             else {
-                self.audioCallLabel.text = "In\nAudio Call"
+                self.audioCallLabel.text = NSLocalizedString("In\nAudio Call", bundle: Bundle(identifier: "DGStream")!, comment: "KEEP \n (enter) between In and Audio")
             }
             
             if let audioIndicator = UINib(nibName: "DGStreamAudioIndicator", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiate(withOwner: self, options: nil).first as? DGStreamAudioIndicator {
@@ -488,7 +493,7 @@ public class DGStreamCallViewController: UIViewController {
             
         }
         else {
-            self.session?.localMediaStream.audioTrack.isEnabled = true
+            self.session?.localMediaStream.audioTrack.isEnabled = false
             self.session?.localMediaStream.videoTrack.isEnabled = true
         }
         
@@ -553,7 +558,7 @@ public class DGStreamCallViewController: UIViewController {
     func configureGUI() {
         
         if self.session?.conferenceType == .video {
-            self.session?.localMediaStream.audioTrack.isEnabled = true
+            self.session?.localMediaStream.audioTrack.isEnabled = false
             self.session?.localMediaStream.videoTrack.isEnabled = true
             
             if videoViews.count > 0 {
@@ -731,7 +736,7 @@ public class DGStreamCallViewController: UIViewController {
         self.dropDownManager.configureWith(container: self.dropDownContainer, delegate: self)
         
         var dropDownViews:[UIView] = []
-        let dropDownViewTitles:[String] = ["Size", "Color", "Stamps"]
+        let dropDownViewTitles:[String] = [NSLocalizedString("Size", bundle: Bundle(identifier: "DGStream")!, comment: ""), NSLocalizedString("Color", bundle: Bundle(identifier: "DGStream")!, comment: ""), NSLocalizedString("Stamps", bundle: Bundle(identifier: "DGStream")!, comment: "")]
         
         dropDownViews.append(self.dropDownManager.getDropDownViewFor(type: .size))
         dropDownViews.append(self.dropDownManager.getDropDownViewFor(type: .color))
@@ -775,6 +780,8 @@ public class DGStreamCallViewController: UIViewController {
     }
     
     func frameForLocalVideo(isCenter: Bool) -> CGRect {
+        
+        self.isCentered = isCenter
     
         var wh:CGFloat = 0
         var x: CGFloat = 0
@@ -870,7 +877,7 @@ public class DGStreamCallViewController: UIViewController {
         
         let currentUser = DGStreamCore.instance.currentUser
         
-        var username = "Unknown"
+        var username = ""
         if let currentUsername = currentUser?.username {
             username = currentUsername
         }
@@ -888,17 +895,18 @@ public class DGStreamCallViewController: UIViewController {
         
         var suffix = ""
         if isHungUp {
-            suffix = "Hung Up"
+            suffix = NSLocalizedString("hung up", bundle: Bundle(identifier: "DGStream")!, comment: "<user_name> hung up")
         }
         else {
-            suffix = "Was Disconnected"
+            suffix = NSLocalizedString("was disconnected", bundle: Bundle(identifier: "DGStream")!, comment: "<username> was disconnected")
         }
         
         if let user = DGStreamCore.instance.getOtherUserWith(userID: self.selectedUser), let username = user.username {
             self.blackoutLabel.text = "\(username) \(suffix)"
         }
         else {
-            self.blackoutLabel.text = "The Other User \(suffix)"
+            let otherUserString = NSLocalizedString("The other user", bundle: Bundle(identifier: "DGStream")!, comment: "Default name for the other user in the call other than the current user")
+            self.blackoutLabel.text = "\(otherUserString) \(suffix)"
         }
         
         self.statusBar.backgroundColor = UIColor.dgBlueDark()
@@ -1177,10 +1185,10 @@ public class DGStreamCallViewController: UIViewController {
             // Send push notification that asks the helper to merge with their reality
             if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID, let mergeRequestView = UINib(nibName: "DGStreamAlertView", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiate(withOwner: self, options: nil).first as? DGStreamAlertView {
                 
-                mergeRequestView.configureFor(mode: .mergeRequest, fromUsername: nil, message: "Waiting For Response...",isWaiting: true)
+                mergeRequestView.configureFor(mode: .mergeRequest, fromUsername: nil, message: NSLocalizedString("Waiting For Response...", bundle: Bundle(identifier: "DGStream")!, comment: ""),isWaiting: true)
                 self.alertView = mergeRequestView
                 DGStreamManager.instance.waitingForResponse = .merge
-                mergeRequestView.presentWithin(viewController: self, fromUsername: "Merge", block: { (accepted) in })
+                mergeRequestView.presentWithin(viewController: self, fromUsername: NSLocalizedString("Merge", bundle: Bundle(identifier: "DGStream")!, comment: ""), block: { (accepted) in })
                 
                 let mergeRequestMessage = QBChatMessage()
                 mergeRequestMessage.text = "mergeRequest"
@@ -1514,7 +1522,7 @@ public class DGStreamCallViewController: UIViewController {
             
             self.isHelper = true
             
-            self.statusBarBackButton.setTitle("Cancel", for: .normal)
+            self.statusBarBackButton.setTitle(NSLocalizedString("Cancel", bundle: Bundle(identifier: "DGStream")!, comment: "Stop action"), for: .normal)
             
             UIView.animate(withDuration: 0.18) {
                 self.mergeButton.backgroundColor = UIColor.dgMergeMode()
@@ -1571,7 +1579,7 @@ public class DGStreamCallViewController: UIViewController {
                     config.mode = AVAudioSessionModeVideoChat
                 }
             }
-            self.session?.localMediaStream.audioTrack.isEnabled = true
+            self.session?.localMediaStream.audioTrack.isEnabled = false
             self.session?.localMediaStream.videoTrack.isEnabled = true
             
             self.whiteBoardButton.isEnabled = false
@@ -1640,7 +1648,7 @@ public class DGStreamCallViewController: UIViewController {
         self.cameraCapture.position = .front
         self.session?.localMediaStream.videoTrack.videoCapture = nil
         self.session?.localMediaStream.videoTrack.videoCapture = self.cameraCapture
-        self.session?.localMediaStream.audioTrack.isEnabled = true
+        self.session?.localMediaStream.audioTrack.isEnabled = false
         self.session?.localMediaStream.videoTrack.isEnabled = true
     }
     
@@ -1747,7 +1755,7 @@ public class DGStreamCallViewController: UIViewController {
             UIView.animate(withDuration: 0.25, animations: {
                 self.drawButton.backgroundColor = UIColor.dgMergeMode()
                 self.statusBar.backgroundColor = UIColor.dgMergeMode()
-                self.statusBarBackButton.setTitle("Cancel", for: .normal)
+                self.statusBarBackButton.setTitle(NSLocalizedString("Cancel", bundle: Bundle(identifier: "DGStream")!, comment: "Stop action"), for: .normal)
                 self.statusBarBackButton.alpha = 1
             })
             
@@ -1962,7 +1970,7 @@ extension DGStreamCallViewController {
                 whiteboardEndMessage.text = "whiteboardEnd"
                 whiteboardEndMessage.senderID = userID.uintValue
                 whiteboardEndMessage.recipientID = self.selectedUser.uintValue
-                
+                whiteboardEndMessage.customParameters = ["isDrawing":"\(self.isDrawing)"]
                 QBChat.instance.sendSystemMessage(whiteboardEndMessage, completion: { (error) in
                     print("Sent Whiteboard End System Message With \(error?.localizedDescription ?? "No Error")")
                 })
@@ -2061,7 +2069,7 @@ extension DGStreamCallViewController {
         }
         else {
             user = DGStreamUser()
-            user.username = "Unknown"
+            user.username = ""
             user.userID = userID
             user.id = UUID().uuidString
         }
@@ -2320,9 +2328,9 @@ extension DGStreamCallViewController: DGStreamDropDownManagerDelegate {
         self.localVideoViewContainer.alpha = 0
         UIView.animate(withDuration: 0.18) {
             self.statusBarBackButton.alpha = 1
-            self.statusBarBackButton.setTitle("Cancel", for: .normal)
+            self.statusBarBackButton.setTitle(NSLocalizedString("Cancel", bundle: Bundle(identifier: "DGStream")!, comment: "Stop action"), for: .normal)
             self.statusBarDoneButton.alpha = 1
-            self.statusBarDoneButton.setTitle("Done", for: .normal)
+            self.statusBarDoneButton.setTitle(NSLocalizedString("Done", bundle: Bundle(identifier: "DGStream")!, comment: "Complete action"), for: .normal)
         }
     }
     
@@ -2359,7 +2367,7 @@ extension DGStreamCallViewController: DGStreamDropDownManagerDelegate {
         
         UIView.animate(withDuration: 0.18) {
             self.statusBarDoneButton.alpha = 0
-            self.statusBarBackButton.setTitle("Cancel", for: .normal)
+            self.statusBarBackButton.setTitle(NSLocalizedString("Cancel", bundle: Bundle(identifier: "DGStream")!, comment: "Stop action"), for: .normal)
         }
         
     }

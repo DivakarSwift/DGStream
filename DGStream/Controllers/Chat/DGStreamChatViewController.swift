@@ -203,6 +203,7 @@ extension DGStreamChatViewController {
         if let info = notification.userInfo, let frame = info[UIKeyboardFrameEndUserInfoKey] as? CGRect {
             let keyboardHeight = frame.height
             let textBarHeight:CGFloat = 88
+            let bottomPadding:CGFloat = 34
 
             var duration:Double = 0.25
             if let keyboardAnimationDuration = info[UIKeyboardAnimationDurationUserInfoKey] as? Double {
@@ -216,13 +217,13 @@ extension DGStreamChatViewController {
 
             textBarBottomConstraint.constant = keyboardHeight
             textBarHeightConstraint.constant = textBarHeight
-            messengerContainerBottomConstraint.constant += keyboardHeight
+            messengerContainerBottomConstraint.constant += keyboardHeight + bottomPadding
 
-            UIView.animate(withDuration: duration, animations: {
+            UIView.animate(withDuration: duration, delay: 0.0, options: options, animations: {
                 self.view.layoutIfNeeded()
                 self.messengerView.scrollToLastMessage(animated: true)
-            }, completion: { (finished) in
-
+            }, completion: { (f) in
+                
             })
         }
     }
