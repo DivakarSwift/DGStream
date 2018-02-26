@@ -180,6 +180,11 @@ public class DGStreamCallViewController: UIViewController {
     var whiteBoardUsers:[NSNumber] = []
     var whiteBoardView:UIView?
     
+    var didSignalToRecord = false
+    var recordOrientation: UIInterfaceOrientation = .portrait
+    var recordingTitle: String = ""
+    var documentNumber: String = "01234-56789"
+    
     override public func viewDidLoad() {
         super.viewDidLoad()
         
@@ -225,13 +230,12 @@ public class DGStreamCallViewController: UIViewController {
         self.blackoutButtonContainer.alpha = 0
         
         if let user = DGStreamCore.instance.getOtherUserWith(userID: self.selectedUser), let username = user.username {
-            var callModeString = "Video"
             if isAudioCall {
-                callModeString = "Audio"
+               self.blackoutLabel.text = "\(NSLocalizedString("Audio calling", comment: "Video/Audio calling (user_name)...")) \(username)..."
             }
-            let callingString = "calling"
-            let combinedString = NSLocalizedString("\(callModeString) \(callingString)", bundle: Bundle(identifier: "DGStream")!, comment: "Video/Audio calling <user_name>...")
-            self.blackoutLabel.text = "\(combinedString) \(username)..."
+            else {
+                self.blackoutLabel.text = "\(NSLocalizedString("Video calling", comment: "Video/Audio calling (user_name)...")) \(username)..."
+            }
         }
         
         self.hangUpButton.alpha = 1
@@ -429,6 +433,7 @@ public class DGStreamCallViewController: UIViewController {
                 self.localVideoView?.updateOrientationIfNeeded()
                 self.localVideoView?.videoLayer.videoGravity = AVLayerVideoGravityResizeAspectFill
             }
+            
         }
         
     }
@@ -478,11 +483,11 @@ public class DGStreamCallViewController: UIViewController {
             self.audioCallLabel.textColor = UIColor.dgWhite()
             
             if let user = DGStreamCore.instance.getOtherUserWith(userID: self.selectedUser), let username = user.username {
-                let audioCallString = NSLocalizedString("Audio call\nwith", bundle: Bundle(identifier: "DGStream")!, comment: "Audio call with <user_name>... [KEEP \n (enter) between call and with]")
+                let audioCallString = NSLocalizedString("Audio call with", comment: "Audio call with (user_name)")
                 self.audioCallLabel.text = "\(audioCallString)\n\(username)"
             }
             else {
-                self.audioCallLabel.text = NSLocalizedString("In\nAudio Call", bundle: Bundle(identifier: "DGStream")!, comment: "KEEP \n (enter) between In and Audio")
+                self.audioCallLabel.text = NSLocalizedString("In Audio Call", comment: "")
             }
             
             if let audioIndicator = UINib(nibName: "DGStreamAudioIndicator", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiate(withOwner: self, options: nil).first as? DGStreamAudioIndicator {
@@ -493,7 +498,7 @@ public class DGStreamCallViewController: UIViewController {
             
         }
         else {
-            self.session?.localMediaStream.audioTrack.isEnabled = false
+            self.session?.localMediaStream.audioTrack.isEnabled = true
             self.session?.localMediaStream.videoTrack.isEnabled = true
         }
         
@@ -558,7 +563,7 @@ public class DGStreamCallViewController: UIViewController {
     func configureGUI() {
         
         if self.session?.conferenceType == .video {
-            self.session?.localMediaStream.audioTrack.isEnabled = false
+            self.session?.localMediaStream.audioTrack.isEnabled = true
             self.session?.localMediaStream.videoTrack.isEnabled = true
             
             if videoViews.count > 0 {
@@ -736,7 +741,7 @@ public class DGStreamCallViewController: UIViewController {
         self.dropDownManager.configureWith(container: self.dropDownContainer, delegate: self)
         
         var dropDownViews:[UIView] = []
-        let dropDownViewTitles:[String] = [NSLocalizedString("Size", bundle: Bundle(identifier: "DGStream")!, comment: ""), NSLocalizedString("Color", bundle: Bundle(identifier: "DGStream")!, comment: ""), NSLocalizedString("Stamps", bundle: Bundle(identifier: "DGStream")!, comment: "")]
+        let dropDownViewTitles:[String] = [NSLocalizedString("Size", comment: ""), NSLocalizedString("Color", comment: ""), NSLocalizedString("Stamps", comment: "")]
         
         dropDownViews.append(self.dropDownManager.getDropDownViewFor(type: .size))
         dropDownViews.append(self.dropDownManager.getDropDownViewFor(type: .color))
@@ -871,6 +876,10 @@ public class DGStreamCallViewController: UIViewController {
     }
     
     func startCall() {
+        
+        QBRTCConfig.setDTLSEnabled(true)
+        QBRTCConfig.setDialingTimeInterval(3)
+        
         self.beepTimer = Timer.scheduledTimer(timeInterval: QBRTCConfig.dialingTimeInterval(), target: self, selector: #selector(playCallingSound(sender:)), userInfo: nil, repeats: true)
         
         // Play Calling Sound
@@ -895,17 +904,17 @@ public class DGStreamCallViewController: UIViewController {
         
         var suffix = ""
         if isHungUp {
-            suffix = NSLocalizedString("hung up", bundle: Bundle(identifier: "DGStream")!, comment: "<user_name> hung up")
+            suffix = NSLocalizedString("hung up", comment: "(user_name) hung up")
         }
         else {
-            suffix = NSLocalizedString("was disconnected", bundle: Bundle(identifier: "DGStream")!, comment: "<username> was disconnected")
+            suffix = NSLocalizedString("was disconnected", comment: "(user_name) was disconnected")
         }
         
         if let user = DGStreamCore.instance.getOtherUserWith(userID: self.selectedUser), let username = user.username {
             self.blackoutLabel.text = "\(username) \(suffix)"
         }
         else {
-            let otherUserString = NSLocalizedString("The other user", bundle: Bundle(identifier: "DGStream")!, comment: "Default name for the other user in the call other than the current user")
+            let otherUserString = NSLocalizedString("The other user", comment: "Default name for the other user in the call other than the current user")
             self.blackoutLabel.text = "\(otherUserString) \(suffix)"
         }
         
@@ -941,6 +950,166 @@ public class DGStreamCallViewController: UIViewController {
             self.blackoutView.alpha = 1
             self.blackoutButtonContainer.alpha = 1
         })
+    }
+    
+    // MARK:- Recording
+    
+    func startRemoteRecording() {
+        let orientation:UIInterfaceOrientation = UIApplication.shared.statusBarOrientation
+        var orientationString = ""
+        if orientation == .portrait {
+            orientationString = "portrait"
+        }
+        else if orientation == .landscapeLeft {
+            orientationString = "landscapeLeft"
+        }
+        else if orientation == .landscapeRight {
+            orientationString = "landscapeRight"
+        }
+        else if orientation == .portraitUpsideDown {
+            orientationString = "upsideDown"
+        }
+        
+        let message = QBChatMessage()
+        message.text = "record-\(orientationString)"
+        message.senderID = UInt(DGStreamCore.instance.currentUser?.userID ?? 0)
+        message.recipientID = self.selectedUser.uintValue
+        QBChat.instance.sendSystemMessage(message, completion: { (error) in
+            
+        })
+    }
+    
+    func startRecordingWith(remoteOrientation: UIInterfaceOrientation) {
+        // RECORD
+        // If the device is capable of recording (not low performance) then start recording
+        if UIDevice.current.qbrtc_isLowPerformance == false, let recorder = self.session?.recorder, recorder.state != .active {
+            
+            self.recordingTitle = UUID().uuidString.components(separatedBy: "-").first ?? "0"
+            
+            if remoteOrientation == .portrait {
+                print("RECORDING IN portrait")
+                recorder.setVideoRecording(._90)
+            }
+            else if remoteOrientation == .landscapeLeft {
+                print("RECORDING IN landscapeLeft")
+                recorder.setVideoRecording(._0)
+            }
+            else if remoteOrientation == .landscapeRight {
+                print("RECORDING IN landscapeRight")
+                recorder.setVideoRecording(._180)
+            }
+            else {
+                print("RECORDING IN upsideDown")
+                recorder.setVideoRecording(._270)
+            }
+            
+            recorder.setVideoRecordingWidth(640, height: 480, bitrate: 636528, fps: 30)
+            let recordPath = DGStreamFileManager.recordingPathFor(userID: DGStreamCore.instance.currentUser?.userID ?? 0, withDocumentNumber: self.documentNumber, recordingTitle: self.recordingTitle)
+            recorder.startRecord(withFileURL: URL(fileURLWithPath: recordPath))
+        }
+    }
+    
+    func endRecordingWith(completion: @escaping Completion) {
+        if let recorder = self.session?.recorder, recorder.state == .active {
+            recorder.stopRecord({ (fileURL) in
+                
+                if let url = fileURL {
+                    let avAsset = AVAsset(url: url)
+                    let assetGenerator = AVAssetImageGenerator(asset: avAsset)
+                    assetGenerator.generateCGImagesAsynchronously(forTimes: [kCMTimeZero as NSValue], completionHandler: { (time, image, time2, result, error) in
+                        
+                        if error == nil, let image = image {
+                            let thumbnail = UIImage(cgImage: image)
+                            let thumbnailData = UIImageJPEGRepresentation(thumbnail, 0.5)
+                            DispatchQueue.main.async {
+                                saveRecordingsWith(thumbnail: thumbnailData)
+                                completion()
+                            }
+                        }
+                        else {
+                            DispatchQueue.main.async {
+                                saveRecordingsWith(thumbnail: nil)
+                                completion()
+                            }
+                        }
+                        
+                    })
+                    
+                    func saveRecordingsWith(thumbnail: Data?) {
+                        let date = Date()
+
+                        let recordingCollection = DGStreamRecordingCollection()
+                        recordingCollection.createdBy = DGStreamCore.instance.currentUser?.userID ?? 0
+                        recordingCollection.createdDate = date
+                        recordingCollection.documentNumber = self.documentNumber
+                        recordingCollection.numberOfRecordings = Int16(1)
+                        recordingCollection.thumbnail = thumbnail
+                        recordingCollection.title = self.documentNumber
+                        
+                        let recording = DGStreamRecording()
+                        recording.createdBy = DGStreamCore.instance.currentUser?.userID ?? 0
+                        recording.createdDate = date
+                        recording.documentNumber = self.documentNumber
+                        recording.title = self.recordingTitle
+                        recording.thumbnail = thumbnail
+                        recording.url = "Recordings/\(DGStreamCore.instance.currentUser?.userID ?? 0)/\(self.documentNumber)/\(self.recordingTitle)/"
+                        DGStreamManager.instance.dataStore.streamManager(DGStreamManager.instance, store: recording, into: recordingCollection)
+                    }
+                    
+                }
+            
+            })
+        }
+        else {
+            completion()
+        }
+    }
+    
+    func updateRecordingWith(orientation: UIInterfaceOrientation) {
+        
+//        let orientation = UIApplication.shared.statusBarOrientation
+//        if orientation == .landscapeLeft {
+//            recorder.setVideoRecording(._0)
+//        }
+//        else if orientation == .landscapeRight {
+//            recorder.setVideoRecording(._180)
+//        }
+//        else if orientation == .portrait {
+//            recorder.setVideoRecording(._270)
+//        }
+//        else {
+//            recorder.setVideoRecording(._90)
+//        }
+        
+//        if let recorder = self.session?.recorder {
+//            if (self.oldOrientation == .landscapeLeft && orientation == .landscapeRight) || (self.oldOrientation == .landscapeRight && orientation == .landscapeLeft) {
+//                recorder.setVideoRecording(._180)
+//            }
+//            else if (self.oldOrientation == .portrait && orientation == .portraitUpsideDown) || (self.oldOrientation == .portraitUpsideDown && orientation == .portrait) {
+//                recorder.setVideoRecording(._180)
+//            }
+//            else if self.oldOrientation == .landscapeLeft && orientation == .portrait {
+//                recorder.setVideoRecording(._270)
+//            }
+//            else if self.oldOrientation == .landscapeLeft && orientation == .portraitUpsideDown {
+//                recorder.setVideoRecording(._90)
+//            }
+//            else if self.oldOrientation == .landscapeRight && orientation == .portrait {
+//                recorder.setVideoRecording(._90)
+//            }
+//            else if self.oldOrientation == .landscapeRight && orientation == .portraitUpsideDown {
+//                recorder.setVideoRecording(._270)
+//            }
+//            else if self.oldOrientation == .portrait && orientation == .landscapeLeft {
+//                recorder.setVideoRecording(._90)
+//            }
+//            else if self.oldOrientation == .portrait && orientation == .landscapeRight {
+//                recorder.setVideoRecording(._270)
+//            }
+//        }
+//        
+//        self.oldOrientation = orientation
+        
     }
     
     //MARK:- Timers
@@ -1185,10 +1354,10 @@ public class DGStreamCallViewController: UIViewController {
             // Send push notification that asks the helper to merge with their reality
             if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID, let mergeRequestView = UINib(nibName: "DGStreamAlertView", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiate(withOwner: self, options: nil).first as? DGStreamAlertView {
                 
-                mergeRequestView.configureFor(mode: .mergeRequest, fromUsername: nil, message: NSLocalizedString("Waiting For Response...", bundle: Bundle(identifier: "DGStream")!, comment: ""),isWaiting: true)
+                mergeRequestView.configureFor(mode: .mergeRequest, fromUsername: nil, message: NSLocalizedString("Waiting for response...", comment: ""),isWaiting: true)
                 self.alertView = mergeRequestView
                 DGStreamManager.instance.waitingForResponse = .merge
-                mergeRequestView.presentWithin(viewController: self, fromUsername: NSLocalizedString("Merge", bundle: Bundle(identifier: "DGStream")!, comment: ""), block: { (accepted) in })
+                mergeRequestView.presentWithin(viewController: self, fromUsername: NSLocalizedString("Merge", comment: ""), block: { (accepted) in })
                 
                 let mergeRequestMessage = QBChatMessage()
                 mergeRequestMessage.text = "mergeRequest"
@@ -1212,22 +1381,26 @@ public class DGStreamCallViewController: UIViewController {
     }
     
     @IBAction func hangUpButtonTapped(_ sender: Any) {
-        if let timer = self.callTimer {
-            timer.invalidate()
-            self.callTimer = nil
+        
+        endRecordingWith {
+            if let timer = self.callTimer {
+                timer.invalidate()
+                self.callTimer = nil
+            }
+            if let timer = self.beepTimer {
+                timer.invalidate()
+                self.beepTimer = nil
+            }
+            DGStreamCore.instance.audioPlayer.stopAllSounds()
+            self.didHangUp = true
+            self.session?.hangUp(["hangup" : "hang up"])
+            self.navigationController?.popViewController(animated: false)
+            UIDevice.current.endGeneratingDeviceOrientationNotifications()
+            NotificationCenter.default.removeObserver(self, name: Notification.Name.UIDeviceOrientationDidChange, object: nil)
+            NotificationCenter.default.removeObserver(self, name: Notification.Name.UIKeyboardWillHide, object: nil)
+            NotificationCenter.default.removeObserver(self, name: Notification.Name.UIKeyboardWillShow, object: nil)
         }
-        if let timer = self.beepTimer {
-            timer.invalidate()
-            self.beepTimer = nil
-        }
-        DGStreamCore.instance.audioPlayer.stopAllSounds()
-        self.didHangUp = true
-        self.session?.hangUp(["hangup" : "hang up"])
-        self.navigationController?.popViewController(animated: false)
-        UIDevice.current.endGeneratingDeviceOrientationNotifications()
-        NotificationCenter.default.removeObserver(self, name: Notification.Name.UIDeviceOrientationDidChange, object: nil)
-        NotificationCenter.default.removeObserver(self, name: Notification.Name.UIKeyboardWillHide, object: nil)
-        NotificationCenter.default.removeObserver(self, name: Notification.Name.UIKeyboardWillShow, object: nil)
+    
     }
     
     func freeze(imageData: Data?) {
@@ -1522,7 +1695,7 @@ public class DGStreamCallViewController: UIViewController {
             
             self.isHelper = true
             
-            self.statusBarBackButton.setTitle(NSLocalizedString("Cancel", bundle: Bundle(identifier: "DGStream")!, comment: "Stop action"), for: .normal)
+            self.statusBarBackButton.setTitle(NSLocalizedString("Cancel", comment: "Stop action"), for: .normal)
             
             UIView.animate(withDuration: 0.18) {
                 self.mergeButton.backgroundColor = UIColor.dgMergeMode()
@@ -1579,7 +1752,7 @@ public class DGStreamCallViewController: UIViewController {
                     config.mode = AVAudioSessionModeVideoChat
                 }
             }
-            self.session?.localMediaStream.audioTrack.isEnabled = false
+            self.session?.localMediaStream.audioTrack.isEnabled = true
             self.session?.localMediaStream.videoTrack.isEnabled = true
             
             self.whiteBoardButton.isEnabled = false
@@ -1648,7 +1821,7 @@ public class DGStreamCallViewController: UIViewController {
         self.cameraCapture.position = .front
         self.session?.localMediaStream.videoTrack.videoCapture = nil
         self.session?.localMediaStream.videoTrack.videoCapture = self.cameraCapture
-        self.session?.localMediaStream.audioTrack.isEnabled = false
+        self.session?.localMediaStream.audioTrack.isEnabled = true
         self.session?.localMediaStream.videoTrack.isEnabled = true
     }
     
@@ -1755,7 +1928,7 @@ public class DGStreamCallViewController: UIViewController {
             UIView.animate(withDuration: 0.25, animations: {
                 self.drawButton.backgroundColor = UIColor.dgMergeMode()
                 self.statusBar.backgroundColor = UIColor.dgMergeMode()
-                self.statusBarBackButton.setTitle(NSLocalizedString("Cancel", bundle: Bundle(identifier: "DGStream")!, comment: "Stop action"), for: .normal)
+                self.statusBarBackButton.setTitle(NSLocalizedString("Cancel", comment: "Stop action"), for: .normal)
                 self.statusBarBackButton.alpha = 1
             })
             
@@ -1817,7 +1990,6 @@ public class DGStreamCallViewController: UIViewController {
     }
     
     func drawEndWith(userID: NSNumber) {
-        
         if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID, userID == currentUserID {
             
             self.hideDropDown(animated: true)
@@ -1893,7 +2065,6 @@ public class DGStreamCallViewController: UIViewController {
 extension DGStreamCallViewController {
     
     func startWhiteBoardFor(userID: NSNumber) {
-        
         if userID == DGStreamCore.instance.currentUser?.userID ?? 0 {
             
             let whiteboardStartMessage = QBChatMessage()
@@ -1962,7 +2133,6 @@ extension DGStreamCallViewController {
     }
     
     func endWhiteBoardFor(userID: NSNumber) {
-        
         if self.callMode == .board {
             if userID == DGStreamCore.instance.currentUser?.userID ?? 0 {
                 
@@ -2193,6 +2363,8 @@ extension DGStreamCallViewController: QBRTCClientDelegate {
             if self.callTimer == nil {
                 self.callTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(refreshCallTime(sender:)), userInfo: nil, repeats: true)
             }
+            
+            startRemoteRecording()
         }
     }
     
@@ -2207,6 +2379,9 @@ extension DGStreamCallViewController: QBRTCClientDelegate {
         if let recent = DGStreamCore.instance.lastRecent {
             recent.duration = self.timeDuration
             DGStreamManager.instance.dataStore.streamManager(DGStreamManager.instance, store: recent)
+        }
+        endRecordingWith {
+            
         }
     }
     
@@ -2328,9 +2503,9 @@ extension DGStreamCallViewController: DGStreamDropDownManagerDelegate {
         self.localVideoViewContainer.alpha = 0
         UIView.animate(withDuration: 0.18) {
             self.statusBarBackButton.alpha = 1
-            self.statusBarBackButton.setTitle(NSLocalizedString("Cancel", bundle: Bundle(identifier: "DGStream")!, comment: "Stop action"), for: .normal)
+            self.statusBarBackButton.setTitle(NSLocalizedString("Cancel", comment: "Stop action"), for: .normal)
             self.statusBarDoneButton.alpha = 1
-            self.statusBarDoneButton.setTitle(NSLocalizedString("Done", bundle: Bundle(identifier: "DGStream")!, comment: "Complete action"), for: .normal)
+            self.statusBarDoneButton.setTitle(NSLocalizedString("Done", comment: "Complete action"), for: .normal)
         }
     }
     
@@ -2367,7 +2542,7 @@ extension DGStreamCallViewController: DGStreamDropDownManagerDelegate {
         
         UIView.animate(withDuration: 0.18) {
             self.statusBarDoneButton.alpha = 0
-            self.statusBarBackButton.setTitle(NSLocalizedString("Cancel", bundle: Bundle(identifier: "DGStream")!, comment: "Stop action"), for: .normal)
+            self.statusBarBackButton.setTitle(NSLocalizedString("Cancel", comment: "Stop action"), for: .normal)
         }
         
     }

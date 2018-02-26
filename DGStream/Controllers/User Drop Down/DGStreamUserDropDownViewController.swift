@@ -9,6 +9,7 @@
 import UIKit
 
 protocol DGStreamUserDropDownViewControllerDelegate {
+    func recordingsButtonTapped()
     func logoutTapped()
     func userButtonTapped()
 }
@@ -24,7 +25,8 @@ class DGStreamUserDropDownViewController: UIViewController {
         
         self.isModalInPopover = false
         
-        titles.append(NSLocalizedString("Logout", bundle: Bundle(identifier: "DGStream")!, comment: ""))
+        titles.append(NSLocalizedString("Recordings", comment: ""))
+        titles.append(NSLocalizedString("Logout", comment: ""))
 
         // Do any additional setup after loading the view.
         self.tableView.reloadData()
@@ -40,7 +42,12 @@ class DGStreamUserDropDownViewController: UIViewController {
 extension DGStreamUserDropDownViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         self.dismiss(animated: true, completion: nil)
-        self.delegate.logoutTapped()
+        if indexPath.row == 0 {
+            self.delegate.recordingsButtonTapped()
+        }
+        else {
+            self.delegate.logoutTapped()
+        }
     }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return self.titles.count

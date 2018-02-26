@@ -126,14 +126,13 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
                 self.abrevLabel.textColor = .white
             }
             
-            self.welcomeLabel.text = "\(NSLocalizedString("Welcome", bundle: Bundle(identifier: "DGStream")!, comment: "Welcome <user_name>")) \(currentUser.username ?? "")"
+            self.welcomeLabel.text = "\(NSLocalizedString("Welcome", comment: "Welcome (user_name)")) \(currentUser.username ?? "")"
             
             let dateFormatter = DateFormatter()
             dateFormatter.dateStyle = .short
             dateFormatter.timeStyle = .short
             
-            
-            self.lastLoggedInLabel.text = "\(NSLocalizedString("Last Seen", bundle: Bundle(identifier: "DGStream")!, comment: "Last Seen <last_seen_date>")) \(dateFormatter.string(from: Date()))"
+            self.lastLoggedInLabel.text = "\(NSLocalizedString("Last seen", comment: "Last seen (last_seen_date)")) \(dateFormatter.string(from: Date()))"
         }
         
         self.tableView.reloadData()
@@ -161,9 +160,9 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "DropDown" {
             
-            var size = CGSize(width: 320, height: 200)
+            var size = CGSize(width: 320, height: 250)
             if Display.pad {
-                size = CGSize(width: 400, height: 200)
+                size = CGSize(width: 400, height: 250)
             }
             
             let dropDownVC = segue.destination as! DGStreamUserDropDownViewController
@@ -209,7 +208,7 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
             self.rightButton.alpha = 1
             
             if self.selectedItem == .recents, self.recents.count == 0 {
-                self.emptyLabel.text = NSLocalizedString("No Recents", bundle: Bundle(identifier: "DGStream")!, comment: "")
+                self.emptyLabel.text = NSLocalizedString("No Recents", comment: "")
                 self.emptyLabel.alpha = 1
             }
         }
@@ -250,7 +249,7 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
             print("Loadded Recents \(self.recents.count)")
             self.emptyLabel.alpha = 0
             if self.recents.count == 0 {
-                self.emptyLabel.text = NSLocalizedString("No Recents", bundle: Bundle(identifier: "DGStream")!, comment: "")
+                self.emptyLabel.text = NSLocalizedString("No Recents", comment: "")
                 self.emptyLabel.alpha = 1
             }
         }
@@ -262,14 +261,13 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
             print("Loaded Contacts \(self.contacts.count)")
             self.emptyLabel.alpha = 0
             if self.contacts.count == 0 {
-                self.emptyLabel.text = NSLocalizedString("No Contacts", bundle: Bundle(identifier: "DGStream")!, comment: "")
+                self.emptyLabel.text = NSLocalizedString("No Contacts", comment: "")
                 self.emptyLabel.alpha = 1
             }
         }
     }
 
     func loadConversations() {
-        
         let extendedRequest = ["sort_desc" : "last_message_date_sent"]
         
         let page = QBResponsePage(limit: 200, skip: 0)
@@ -312,7 +310,7 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
             
             self.emptyLabel.alpha = 0
             if self.conversations.count == 0 {
-                self.emptyLabel.text = NSLocalizedString("No Conversations", bundle: Bundle(identifier: "DGStream")!, comment: "")
+                self.emptyLabel.text = NSLocalizedString("No Conversations", comment: "")
                 self.emptyLabel.alpha = 1
             }
             
@@ -366,8 +364,8 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
             }
         }
         else {
-            let alert = UIAlertController(title: NSLocalizedString("Error", bundle: Bundle(identifier: "DGStream")!, comment: ""), message: NSLocalizedString("Unable to create session.", bundle: Bundle(identifier: "DGStream")!, comment: ""), preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", bundle: Bundle(identifier: "DGStream")!, comment: "Acknowledged dismissal"), style: .cancel, handler: { (action: UIAlertAction) in
+            let alert = UIAlertController(title: NSLocalizedString("Error", comment: ""), message: NSLocalizedString("Unable to create session.", comment: ""), preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Acknowledged dismissal"), style: .cancel, handler: { (action: UIAlertAction) in
                 alert.dismiss(animated: true, completion: nil)
             }))
             self.present(alert, animated: true, completion: nil)
@@ -440,7 +438,7 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
     }
     
     func messageSelectedUsers() {
-        
+
         if DGStreamCore.instance.isReachable {
             
             // Get selected users
@@ -506,6 +504,9 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
     }
     
     func update(user: DGStreamUser, forOnline isOnline: Bool) {
+        
+        print("This is where the user is updated offline or online")
+        
         for cell in self.tableView.visibleCells {
             
             switch self.selectedItem {
@@ -533,8 +534,8 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
     
     //MARK:- Selecting
     func beginSelectingCells() {
-        
-        self.leftButton.setTitle(NSLocalizedString("Cancel", bundle: Bundle(identifier: "DGStream")!, comment: "Stop action"), for: .normal)
+
+        self.leftButton.setTitle(NSLocalizedString("Cancel", comment: "Stop action"), for: .normal)
         
         self.isSelectingRows = true
         
@@ -625,7 +626,7 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
                 recentsCell.selectWith(count: newCount, animate: true)
             }
             else {
-                // Removef
+                // Remove
                 if let index = self.selectedRows.index(where: { (row) -> Bool in
                     return row.row == indexPath.row
                 }) {
@@ -679,7 +680,6 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
 
 extension DGStreamTabBarViewController: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
         tableView.deselectRow(at: indexPath, animated: true)
         
         switch selectedItem {
@@ -775,15 +775,15 @@ extension DGStreamTabBarViewController: UITabBarDelegate {
                 switch streamItem {
                 case .recents:
                     loadRecents()
-                    navTitleLabel.text = NSLocalizedString("Recents", bundle: Bundle(identifier: "DGStream")!, comment: "")
+                    navTitleLabel.text = NSLocalizedString("Recents", comment: "")
                     break
                 case .contacts:
                     loadContacts()
-                    navTitleLabel.text = NSLocalizedString("Contacts", bundle: Bundle(identifier: "DGStream")!, comment: "")
+                    navTitleLabel.text = NSLocalizedString("Contacts", comment: "")
                     break
                 case .messages:
                     loadConversations()
-                    navTitleLabel.text = NSLocalizedString("Messages", bundle: Bundle(identifier: "DGStream")!, comment: "")
+                    navTitleLabel.text = NSLocalizedString("Messages", comment: "")
                     break
                 }
                 
@@ -858,6 +858,10 @@ extension DGStreamTabBarViewController {
 }
 
 extension DGStreamTabBarViewController: DGStreamUserDropDownViewControllerDelegate {
+    
+    func recordingsButtonTapped() {
+        self.performSegue(withIdentifier: "collections", sender: nil)
+    }
     
     func userButtonTapped() {
         

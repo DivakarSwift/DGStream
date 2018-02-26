@@ -43,3 +43,21 @@ public protocol DGStreamRecentProtocol {
 public protocol DGStreamContactProtocol {
     var dgUserID: NSNumber { get }
 }
+
+public protocol DGStreamRecordingCollectionProtocol {
+    var dgDocumentNumber: String { get }
+    var dgTitle: String { get }
+    var dgNumberOfRecordings: Int16 { get }
+    var dgThumbnail: Data? { get }
+    var dgCreatedDate: Date { get }
+    var dgCreatedBy: NSNumber { get }
+}
+
+public protocol DGStreamRecordingProtocol {
+    var dgDocumentNumber: String { get }
+    var dgTitle: String { get }
+    var dgURL: String { get }
+    var dgThumbnail: Data? { get }
+    var dgCreatedDate: Date { get }
+    var dgCreatedBy: NSNumber { get }
+}

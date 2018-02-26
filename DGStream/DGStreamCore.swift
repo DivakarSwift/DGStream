@@ -169,7 +169,7 @@ class DGStreamCore: NSObject {
     }
     
     func getAllUsers() {
-        
+
         // If there is connection check against Quickblox to find possible new users
         if DGStreamCore.instance.isReachable,
             let currentUser = self.currentUser,
@@ -235,7 +235,7 @@ class DGStreamCore: NSObject {
     func getOtherUserWith(username: String) -> DGStreamUser? {
         return self.allUsers.filter { (user) -> Bool in
             return user.username == username
-            }.first
+        }.first
     }
     
     //MARK:- Chat
@@ -335,7 +335,14 @@ class DGStreamCore: NSObject {
         }
     }
     
-    // Remote Notifications
+    //MARK:- Screen Share
+    func share(screen: UIViewController) {
+        if let callVC = self.presentedViewController as? DGStreamCallViewController {
+            callVC.captureScreen(screenView: screen.view)
+        }
+    }
+    
+    //MARK:- Remote Notifications
     func registerForRemoteNotifications() {
         let app = UIApplication.shared
         app.registerForRemoteNotifications()
@@ -376,7 +383,7 @@ extension DGStreamCore: QBChatDelegate {
         print("Did Connect To Chat!")
     }
     func chatDidReconnect() {
-        
+
     }
     func chatDidAccidentallyDisconnect() {
         print("Did Acceidentally Disconnect From Chat!")
@@ -416,15 +423,36 @@ extension DGStreamCore: QBChatDelegate {
         
     }
     func chatDidReceiveSystemMessage(_ message: QBChatMessage) {
-        
+
         if let text = message.text {
             
             let senderID = NSNumber(value: message.senderID)
             
             print("\n\nDID RECEIVE SYSTEM MESSAGE\n\(text)\nFrom \(senderID)\n\n")
             
+            // RECORD
+            if text.hasPrefix("record"),
+                let callVC = self.presentedViewController as? DGStreamCallViewController {
+                let splice = text.components(separatedBy: "-")
+                let orientationString = splice[1]
+                print(orientationString)
+                var orientation:UIInterfaceOrientation = .portrait
+                if orientationString == "portrait" {
+                    orientation = .portrait
+                }
+                else if orientationString == "landscapeLeft" {
+                    orientation = .landscapeLeft
+                }
+                else if orientationString == "landscapeRight" {
+                    orientation = .landscapeRight
+                }
+                else if orientationString == "upsideDown" {
+                    orientation = .portraitUpsideDown
+                }
+                callVC.startRecordingWith(remoteOrientation: orientation)
+            }
             // DRAW START
-            if text.hasPrefix("drawStart") {
+            else if text.hasPrefix("drawStart") {
                 if let callVC = self.presentedViewController as? DGStreamCallViewController {
                     callVC.setDrawUserWith(userID: senderID)
                     if let user = self.getOtherUserWith(userID: senderID), let username = user.username {
@@ -782,7 +810,7 @@ extension DGStreamCore: QBRTCClientDelegate {
     
     public func didReceiveNewSession(_ session: QBRTCSession, userInfo: [String : String]? = nil) {
         print("DID RECEIVE NEW SESSION")
-        
+
         if let currentUser = self.currentUser, let currentUserID = currentUser.userID {
             var fromUsername = "Unknown"
             var fromUserID: NSNumber = NSNumber(value: 0)
@@ -896,7 +924,7 @@ extension DGStreamCore: QBRTCClientDelegate {
     }
     
     public func sessionDidClose(_ session: QBRTCSession) {
-//        print("SESSION CLOSED")
+
     }
     
 }

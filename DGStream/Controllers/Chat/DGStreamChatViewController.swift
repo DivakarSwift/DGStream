@@ -289,8 +289,8 @@ extension DGStreamChatViewController: UITableViewDataSource {
             cellIdentifier = "SelfCell"
         }
         else {
-                cellIdentifier = "Cell"
-            }
+            cellIdentifier = "Cell"
+        }
 
             let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as! DGStreamChatTableViewCell
             cell.configureWith(chatMessage: chatMessage)
@@ -343,7 +343,7 @@ extension DGStreamChatViewController: UITextViewDelegate {
             // Play Outgoing Sound
         }
 
-        textNode.bubbleConfiguration = DGStreamChatBubble() as! BubbleConfigurationProtocol
+        textNode.bubbleConfiguration = DGStreamChatBubble() as BubbleConfigurationProtocol
 
         let messageNode = MessageNode(content: textNode)
         messageNode.isIncomingMessage = isIncomingMessage

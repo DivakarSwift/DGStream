@@ -50,18 +50,18 @@ class DGStreamUserTableViewCell: UITableViewCell {
         
         if audio {
             if isIncoming {
-                self.title.text = NSLocalizedString("Incoming audio call...", bundle: Bundle(identifier: "DGStream")!, comment: "")
+                self.title.text = NSLocalizedString("Incoming audio call...", comment: "")
             }
             else {
-                self.title.text = NSLocalizedString("Outgoing audio call...", bundle: Bundle(identifier: "DGStream")!, comment: "")
+                self.title.text = NSLocalizedString("Outgoing audio call...", comment: "")
             }
         }
         else {
             if isIncoming {
-                self.title.text = NSLocalizedString("Incoming video call...", bundle: Bundle(identifier: "DGStream")!, comment: "")
+                self.title.text = NSLocalizedString("Incoming video call...", comment: "")
             }
             else {
-                self.title.text = NSLocalizedString("Outgoing video call...", bundle: Bundle(identifier: "DGStream")!, comment: "")
+                self.title.text = NSLocalizedString("Outgoing video call...", comment: "")
             }
         }
         

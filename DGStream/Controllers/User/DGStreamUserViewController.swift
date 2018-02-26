@@ -26,7 +26,7 @@ class DGStreamUserViewController: UIViewController {
         // Do any additional setup after loading the view.
         
         self.navBarView.backgroundColor = UIColor.dgBlueDark()
-        self.backButton.setTitle(NSLocalizedString("Back", bundle: Bundle(identifier: "DGStream")!, comment: "Return to previous screen"), for: .normal)
+        self.backButton.setTitle(NSLocalizedString("Back", comment: "Return to previous screen"), for: .normal)
         self.backButton.setTitleColor(.white, for: .normal)
         
         loadRecents()
@@ -80,7 +80,7 @@ extension DGStreamUserViewController: UITableViewDataSource, UITableViewDelegate
         if section == 1 {
             let label = UILabel(frame: CGRect(x: 0, y: 0, width: tableView.bounds.size.width, height: 40))
             label.backgroundColor = UIColor.dgBlueDark()
-            label.text = NSLocalizedString("Recent Activity", bundle: Bundle(identifier: "DGStream")!, comment: "")
+            label.text = NSLocalizedString("Recent Activity", comment: "")
             label.textAlignment = .center
             label.textColor = .white
             label.font = UIFont(name: "HelveticaNeue-Bold", size: 22)

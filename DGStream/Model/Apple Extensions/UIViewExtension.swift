@@ -71,3 +71,55 @@ extension UIView {
         return returnConstraints
     }
 }
+
+extension UIView {
+    
+    func boundTabBarAtBottomOf(container: UIView) {
+        container.addSubview(self)
+        self.translatesAutoresizingMaskIntoConstraints = false
+        let left = NSLayoutConstraint(item: self, attribute: .left, relatedBy: .equal, toItem: container, attribute: .left, multiplier: 1.0, constant: 0.0)
+        let bottom = NSLayoutConstraint(item: self, attribute: .bottom, relatedBy: .equal, toItem: container, attribute: .bottom, multiplier: 1.0, constant: 0.0)
+        let right = NSLayoutConstraint(item: self, attribute: .right, relatedBy: .equal, toItem: container, attribute: .right, multiplier: 1.0, constant: 0.0)
+        container.addConstraints([left, bottom, right])
+        container.layoutIfNeeded()
+    }
+    
+    func boundInCenterOf(container: UIView, hw: CGFloat) {
+        if superview != container {
+            container.addSubview(self)
+        }
+        self.translatesAutoresizingMaskIntoConstraints = false
+        let width = NSLayoutConstraint(item: self, attribute: .width, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1.0, constant: hw)
+        let height = NSLayoutConstraint(item: self, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1.0, constant: hw)
+        let centerX = NSLayoutConstraint(item: self, attribute: .centerX, relatedBy: .equal, toItem: container, attribute: .centerX, multiplier: 1.0, constant: 0.0)
+        let centerY = NSLayoutConstraint(item: self, attribute: .centerY, relatedBy: .equal, toItem: container, attribute: .centerY, multiplier: 1.0, constant: 0.0)
+        container.addConstraints([centerX, centerY])
+        container.layoutIfNeeded()
+        self.addConstraints([width, height])
+        self.layoutIfNeeded()
+    }
+    
+    //    func boundCanvasInCenterOf(container: UIView, squareHW: CGFloat) -> NSLayoutConstraint {
+    //        container.addSubview(self)
+    //        self.translatesAutoresizingMaskIntoConstraints = false
+    //        let width = NSLayoutConstraint(item: self, attribute: .width, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1.0, constant: squareHW)
+    //        let height = NSLayoutConstraint(item: self, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1.0, constant: squareHW)
+    //        let centerX = NSLayoutConstraint(item: self, attribute: .centerX, relatedBy: .equal, toItem: container, attribute: .centerX, multiplier: 1.0, constant: 0.0)
+    //        let centerY = NSLayoutConstraint(item: self, attribute: .centerY, relatedBy: .equal, toItem: container, attribute: .centerY, multiplier: 1.0, constant: 0.0)
+    //        container.addConstraints([centerX, centerY])
+    //        container.layoutIfNeeded()
+    //        self.addConstraints([width, height])
+    //
+    //        return centerY
+    //    }
+    
+}
+
+extension UIView {
+    // Call as: subview.boundInside(superView)
+    func boundInside(_ superView: UIView){
+        self.translatesAutoresizingMaskIntoConstraints = false
+        superView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|-0-[subview]-0-|", options: NSLayoutFormatOptions.directionLeadingToTrailing, metrics:nil, views:["subview":self]))
+        superView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|-0-[subview]-0-|", options: NSLayoutFormatOptions.directionLeadingToTrailing, metrics:nil, views:["subview":self]))
+    }
+}

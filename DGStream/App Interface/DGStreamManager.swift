@@ -11,11 +11,7 @@ import Quickblox
 import QuickbloxWebRTC
 
 public protocol DGStreamManagerDataSource {
-    
-    // Recent
     func streamManager(_ manager: DGStreamManager, recentsWithUserIDs userIDs: [NSNumber]) -> [DGStreamRecentProtocol]
-    
-    // Contacts
     func streamManager(_ manager: DGStreamManager, contactsForUserID userID: NSNumber) -> [DGStreamContactProtocol]
     
     // Conversation
@@ -23,12 +19,13 @@ public protocol DGStreamManagerDataSource {
     func streamManager(_ manager: DGStreamManager, conversationsWithCurrentUser userID: NSNumber) -> [DGStreamConversationProtocol]
     func streamManager(_ manager: DGStreamManager, conversationWithUsers userIDs: [NSNumber]) -> DGStreamConversationProtocol?
     
-    // Message
     func streamManager(_ manager: DGStreamManager, messagesWithConversationID conversationID: String) -> [DGStreamMessageProtocol]
     
-    // User
     func streamManager(_ manager: DGStreamManager, userWithUserID userID: NSNumber) -> DGStreamUserProtocol?
     func streamManager(_ manager: DGStreamManager, usersExceptUserID: NSNumber) -> [DGStreamUserProtocol]
+    
+    func streamManager(_ manager: DGStreamManager, recordingCollectionsForUserID userID: NSNumber) -> [DGStreamRecordingCollectionProtocol]
+    func streamManager(_ manager: DGStreamManager, recordingsForUserID userID:NSNumber, documentNumber: String, title: String?) -> [DGStreamRecordingProtocol]
 }
 
 public protocol DGStreamManagerDataStore {
@@ -37,18 +34,24 @@ public protocol DGStreamManagerDataStore {
     func streamManager(_ manager: DGStreamManager, store conversation: DGStreamConversationProtocol)
     func streamManager(_ manager: DGStreamManager, store recent: DGStreamRecentProtocol)
     func streamManager(_ manager: DGStreamManager, store contact: DGStreamContactProtocol)
+    func streamManager(_ manager: DGStreamManager, store recording: DGStreamRecordingProtocol, into collection: DGStreamRecordingCollectionProtocol)
+}
+
+public protocol DGStreamManagerDelegate {
+    func screenToShare() -> UIViewController?
 }
 
 public class DGStreamManager: NSObject {
     
     public static let instance = DGStreamManager()
     var parentViewController: UIViewController?
-    var presentedViewController: UIViewController?
+    var frameworkContainer: UIView!
     
     var waitingForResponse:CallMode = .stream
     
     var dataStore: DGStreamManagerDataStore!
     var dataSource: DGStreamManagerDataSource!
+    var delegate: DGStreamManagerDelegate?
     
     var notification:DGBeaconNotification!
     
@@ -77,7 +80,6 @@ public class DGStreamManager: NSObject {
         if let viewController = sdkStoryboard.instantiateInitialViewController() {
             viewController.modalTransitionStyle = .crossDissolve
             parent.present(viewController, animated: true, completion: nil)
-            parentViewController = parent
         }
     }
     
@@ -92,5 +94,26 @@ public class DGStreamManager: NSObject {
 //        if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID {
 //            
 //        }
+    }
+
+}
+
+// MARK:- Screen Sharing
+extension DGStreamManager {
+    func beginScreenShare() {
+        if let delegate = self.delegate,
+            let screen = delegate.screenToShare() {
+            
+            // Fade out framework to display the application
+            UIView.animate(withDuration: 0.25, animations: {
+                self.frameworkContainer.alpha = 0
+            })
+            
+            // Share this screen's view
+            DGStreamCore.instance.share(screen: screen)
+        }
+    }
+    func returnToFramework() {
+        // When the button is tapped within the application to return to call
     }
 }

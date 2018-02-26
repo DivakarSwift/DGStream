@@ -69,7 +69,7 @@ class DGStreamAlertView: UIView {
         case .error:
             
             self.alertTitleLabelContainer.backgroundColor = .red
-            self.alertTitleLabel.text = NSLocalizedString("Error", bundle: Bundle(identifier: "DGStream")!, comment: "")
+            self.alertTitleLabel.text = NSLocalizedString("Error", comment: "")
             
             break
             
@@ -78,7 +78,7 @@ class DGStreamAlertView: UIView {
             self.nameLabel.text = fromUsername
             
             self.alertTitleLabelContainer.backgroundColor = UIColor.dgGreen()
-            self.alertTitleLabel.text = NSLocalizedString("Incoming audio call...", bundle: Bundle(identifier: "DGStream")!, comment: "")
+            self.alertTitleLabel.text = NSLocalizedString("Incoming audio call...", comment: "")
             
             let acceptImage = UIImage(named: "answer", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate)
             let declineImage = UIImage(named: "hangup", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate)
@@ -99,7 +99,7 @@ class DGStreamAlertView: UIView {
             self.nameLabel.text = fromUsername
             
             self.alertTitleLabelContainer.backgroundColor = UIColor.dgGreen()
-            self.alertTitleLabel.text = NSLocalizedString("Incoming video call...", bundle: Bundle(identifier: "DGStream")!, comment: "")
+            self.alertTitleLabel.text = NSLocalizedString("Incoming video call...", comment: "")
             
             let acceptImage = UIImage(named: "answer", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate)
             let declineImage = UIImage(named: "hangup", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate)
@@ -128,7 +128,7 @@ class DGStreamAlertView: UIView {
                 self.declineButton.isHidden = true
                 self.cancelButton.isHidden = false
                 
-                self.cancelButton.setTitle(NSLocalizedString("OK", bundle: Bundle(identifier: "DGStream")!, comment: "Acknowledged dismissal"), for: .normal)
+                self.cancelButton.setTitle(NSLocalizedString("OK", comment: "Acknowledged dismissal"), for: .normal)
             }
             
             break
@@ -174,19 +174,14 @@ class DGStreamAlertView: UIView {
         }
         
         if isWaiting {
-            
             self.alertMessageLabel.isHidden = false
-            self.alertMessageLabel.text = "Waiting For Response..."
-            
             self.acceptButton.isHidden = true
             self.declineButton.isHidden = true
             self.cancelButton.isHidden = false
         }
         else {
-            
             self.alertMessageLabel.isHidden = true
             self.alertMessageLabel.text = ""
-            
             self.acceptButton.isHidden = false
             self.declineButton.isHidden = false
             self.cancelButton.isHidden = true
