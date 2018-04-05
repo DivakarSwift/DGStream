@@ -19,7 +19,6 @@ class DGStreamRecordingCollectionsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        // Do any additional setup after loading the view.
         self.navBar.backgroundColor = UIColor.dgBlueDark()
         self.navBarTitle.text = "Recording Collections"
         self.navBarBackButton.setTitle("Back", for: .normal)
@@ -27,6 +26,7 @@ class DGStreamRecordingCollectionsViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        DGStreamCore.instance.presentedViewController = self
         self.loadRecordingCollections()
     }
     

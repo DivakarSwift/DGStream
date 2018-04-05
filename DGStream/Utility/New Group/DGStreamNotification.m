@@ -44,25 +44,25 @@
 
 +(void)backgroundCallFrom:(NSNumber *)fromUserID fromUsername:(NSString *)username to:(NSArray *)toUserIDs with:(void (^)(bool, NSString *))completion {
     
-    NSMutableString* mutableUserIDs = [[NSMutableString alloc] initWithString:@""];
-    NSUInteger index = 0;
-    NSUInteger count = toUserIDs.count;
-    for (NSNumber* uID in toUserIDs) {
-        NSString *string = uID.stringValue;
-        [mutableUserIDs appendString:string];
-        index += 1;
-        if (index < count) {
-            [mutableUserIDs appendString:@","];
-        }
-    }
+//    NSMutableString* mutableUserIDs = [[NSMutableString alloc] initWithString:@""];
+//    NSUInteger index = 0;
+//    NSUInteger count = toUserIDs.count;
+//    for (NSNumber* uID in toUserIDs) {
+//        NSString *string = uID.stringValue;
+//        [mutableUserIDs appendString:string];
+//        index += 1;
+//        if (index < count) {
+//            [mutableUserIDs appendString:@","];
+//        }
+//    }
     
-    [QBRequest sendPushWithText:[NSString stringWithFormat:@"Incoming Call From %@", username] toUsers:mutableUserIDs successBlock:^(QBResponse * _Nonnull response, NSArray<QBMEvent *> * _Nullable events) {
-        NSLog(@"SUCCESSFULLY PUSHED");
-        completion(YES, @"");
-    } errorBlock:^(QBError * _Nonnull error) {
-        NSLog(@"FAILED TO PUSH WITH ERROR %@", error.error.localizedDescription);
-        completion(NO, error.error.localizedDescription);
-    }];
+//    [QBRequest sendPushWithText:[NSString stringWithFormat:@"Incoming Call From %@", username] toUsers:mutableUserIDs successBlock:^(QBResponse * _Nonnull response, NSArray<QBMEvent *> * _Nullable events) {
+//        NSLog(@"SUCCESSFULLY PUSHED");
+//        completion(YES, @"");
+//    } errorBlock:^(QBError * _Nonnull error) {
+//        NSLog(@"FAILED TO PUSH WITH ERROR %@", error.error.localizedDescription);
+//        completion(NO, error.error.localizedDescription);
+//    }];
 }
 
 @end

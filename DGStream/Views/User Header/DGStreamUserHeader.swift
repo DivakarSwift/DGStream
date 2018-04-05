@@ -8,12 +8,16 @@
 
 import UIKit
 
+protocol DGStreamUserHeaderDelegate {
+    func userImageButtonTapped()
+}
+
 class DGStreamUserHeader: UIView {
 
-    @IBOutlet weak var userImageButton: UIButton!
+    var userImageButton: UIButton!
     
-    @IBOutlet weak var abrevLabel: UILabel!
-    
+    @IBOutlet weak var userImageButtonContainer: UIView!
+        
     @IBOutlet weak var detailContainer: UIView!
     
     @IBOutlet weak var nameLabel: UILabel!
@@ -25,6 +29,8 @@ class DGStreamUserHeader: UIView {
     @IBOutlet weak var sendBuzzButton: UIButton!
     
     @IBOutlet weak var addFavoriteButton: UIButton!
+    
+    var delegate: DGStreamUserHeaderDelegate!
     
     func configureWith(user: DGStreamUser) {
         
@@ -40,19 +46,39 @@ class DGStreamUserHeader: UIView {
         self.sendBuzzButton.setTitleColor(UIColor.dgBlueDark(), for: .normal)
         self.addFavoriteButton.setTitleColor(UIColor.dgBlueDark(), for: .normal)
         
-        self.userImageButton.layer.cornerRadius = self.userImageButton.frame.size.width / 2
-        self.userImageButton.clipsToBounds = true
-        self.userImageButton.backgroundColor = UIColor.dgBlack()
-        
         if let currentUser = DGStreamCore.instance.currentUser,
             let currentUserID = currentUser.userID,
             let userID = user.userID {
             
-            if let username = user.username {
+            if let imageData = user.image,
+                let image = UIImage(data: imageData) {
+                
+                self.userImageButton = UIButton(type: .custom)
+                self.userImageButton.boundInside(container: self.userImageButtonContainer)
+                self.userImageButton.setImage(image, for: .normal)
+                if userID == currentUserID {
+                    self.userImageButton.addTarget(self, action: #selector(self.userImageTapped(_:)), for: .touchUpInside)
+                }
+                self.userImageButton.layer.cornerRadius = self.userImageButton.frame.size.width / 2
+                self.userImageButton.clipsToBounds = true
+                self.userImageButton.backgroundColor = UIColor.dgBlack()
+                self.userImageButton.contentMode = .scaleAspectFill
+                
+            }
+            else if let username = user.username {
                 self.nameLabel.text = username
                 
                 let abrev = NSString(string: username).substring(to: 1)
-                self.abrevLabel.text = abrev
+                self.userImageButton = UIButton(type: .custom)
+                self.userImageButton.boundInside(container: self.userImageButtonContainer)
+                self.userImageButton.setTitle(abrev, for: .normal)
+                if userID == currentUserID {
+                    self.userImageButton.addTarget(self, action: #selector(self.userImageTapped(_:)), for: .touchUpInside)
+                }
+                self.userImageButton.layer.cornerRadius = self.userImageButton.frame.size.width / 2
+                self.userImageButton.clipsToBounds = true
+                self.userImageButton.backgroundColor = UIColor.dgBlack()
+                self.userImageButton.titleLabel?.font = UIFont(name: "HelveticaNueue-Bold", size: 70)
                 
             }
             
@@ -85,6 +111,11 @@ class DGStreamUserHeader: UIView {
             }
             
         }
+    }
+    
+    
+    @IBAction func userImageTapped(_ sender: Any) {
+        self.delegate.userImageButtonTapped()
     }
     
     @IBAction func sendBuzzButtonTapped(_ sender: Any) {

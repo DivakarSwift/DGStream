@@ -52,6 +52,9 @@ class DGStreamCore: NSObject {
     
     var onlineDialog: QBChatDialog!
     
+    var didRegister: Bool = false
+    var didStartReachability = false
+    
     override init() {
         super.init()
     }
@@ -71,9 +74,12 @@ class DGStreamCore: NSObject {
     
     //MARK:- App Events
     func registerForAppDelegateNotifications() {
-        NotificationCenter.default.addObserver(self, selector: #selector(willEnterForeground), name: Notification.Name.UIApplicationWillEnterForeground, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(willExit), name: Notification.Name.UIApplicationWillTerminate, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(willExit), name: Notification.Name.UIApplicationDidEnterBackground, object: nil)
+        if self.didRegister == false {
+            self.didRegister = true
+            NotificationCenter.default.addObserver(self, selector: #selector(willEnterForeground), name: Notification.Name.UIApplicationWillEnterForeground, object: nil)
+            NotificationCenter.default.addObserver(self, selector: #selector(willExit), name: Notification.Name.UIApplicationWillTerminate, object: nil)
+            NotificationCenter.default.addObserver(self, selector: #selector(willExit), name: Notification.Name.UIApplicationDidEnterBackground, object: nil)
+        }
     }
     
     func unregisterForAppDelegateNotifications() {
@@ -98,20 +104,22 @@ class DGStreamCore: NSObject {
     
     //MARK:- Reachability
     func startReachability() {
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(reachabilityChanged), name: ReachabilityChangedNotification, object: nil)
-        
-        do {
-            try reachability.startNotifier()
+        if didStartReachability == false {
+            self.didStartReachability = true
+            NotificationCenter.default.addObserver(self, selector: #selector(reachabilityChanged), name: ReachabilityChangedNotification, object: nil)
             
-        }
-        catch let error { print("Reachability Error \(error.localizedDescription)") }
-        
-        if reachability.currentReachabilityStatus != .notReachable {
-            isReachable = true
-        }
-        else {
-            isReachable = false
+            do {
+                try reachability.startNotifier()
+                
+            }
+            catch let error { print("Reachability Error \(error.localizedDescription)") }
+            
+            if reachability.currentReachabilityStatus != .notReachable {
+                isReachable = true
+            }
+            else {
+                isReachable = false
+            }
         }
     }
     
@@ -134,15 +142,17 @@ class DGStreamCore: NSObject {
     
     func loginWith(user: DGStreamUser, completion: @escaping LoginCompletion) {
         
-//        if self.isAuthorized {
-//            self.connectToChat()
-//            return
-//        }
-        
-        if let username = user.username, let password = user.password {
-            QBRequest.logIn(withUserLogin: username, password: password, successBlock: { (response, qbU4ser) in
+        if self.isAuthorized {
+            self.connectToChatWith(user: user.asQuickbloxUser())
+            return
+        }
+
+        if let username = user.username {
+            QBRequest.logIn(withUserLogin: username, password: "dataglance", successBlock: { (response, qbU4ser) in
                 
                 if let loggedInDGUser = DGStreamUser.fromQuickblox(user: qbU4ser) {
+                    
+                    loggedInDGUser.password = user.password
                 
                     // Store User
                     DGStreamManager.instance.dataStore.streamManager(DGStreamManager.instance, store: loggedInDGUser)
@@ -151,8 +161,9 @@ class DGStreamCore: NSObject {
                     self.registerForRemoteNotifications()
                     self.loginCompletion = completion
                     self.currentUser = loggedInDGUser
-                    self.getAllUsers()
-                    self.connectToChatWith(user: qbU4ser)
+                    self.getAllUsers {
+                        self.connectToChatWith(user: qbU4ser)
+                    }
                 }
                 else {
                     completion(false, "No QB User.")
@@ -168,7 +179,7 @@ class DGStreamCore: NSObject {
         }
     }
     
-    func getAllUsers() {
+    func getAllUsers(completion: @escaping () -> Void) {
 
         // If there is connection check against Quickblox to find possible new users
         if DGStreamCore.instance.isReachable,
@@ -204,10 +215,11 @@ class DGStreamCore: NSObject {
                     
                 }
                 
+                completion()
+                
             }
         }
         else {
-            
             // Not online, gather from CoreData
             if let currentUser = self.currentUser, let currentUserID = currentUser.userID {
                 var all:[DGStreamUser] = []
@@ -218,6 +230,7 @@ class DGStreamCore: NSObject {
                 }
                 self.allUsers = all
             }
+            completion()
         }
     
     }
@@ -240,6 +253,7 @@ class DGStreamCore: NSObject {
     
     //MARK:- Chat
     func connectToChatWith(user: QBUUser) {
+        print("connectToChatWith \(user.login ?? "No Login") \(user.password ?? "No Password")")
         QBChat.instance.connect(with: user) { (error) in
             if error != nil {
                 self.isAuthorized = false
@@ -328,10 +342,50 @@ class DGStreamCore: NSObject {
     }
     
     func sendChat(message: DGStreamMessage) {
-        QBRequest.createMessage(DGStreamMessage.createQuickbloxMessageFrom(message: message), successBlock: { (response, chatMessage) in
-            print("Successfully created chat message \(response.isSuccess)")
-        }) { (errorResponse) in
-            print("Error sending chat message \(errorResponse.error?.error?.localizedDescription ?? "No Error")")
+        DGStreamMessage.createQuickbloxMessageFrom(message: message) { (chatMessage) in
+            if let chatMessage = chatMessage {
+                QBRequest.createMessage( chatMessage, successBlock: { (response, chatMessage) in
+                    print("Successfully created chat message \(response.isSuccess)")
+                }) { (errorResponse) in
+                    print("Error sending chat message \(errorResponse.error?.error?.localizedDescription ?? "No Error")")
+                }
+            }
+            else {
+                // Error
+            }
+        }
+    }
+    
+    func sendUser(image: UIImage) {
+        if let currentUser = self.currentUser, let currentUserID = currentUser.userID, let imageData = UIImagePNGRepresentation(image), let fileID = NSString.init(string: UUID().uuidString).components(separatedBy: "-").first {
+            
+            QBRequest.tUploadFile(imageData, fileName: fileID, contentType: "image/png", isPublic: true, successBlock: { (response, blob) in
+                
+                _ = self.allUsers.filter({ (user) -> Bool in
+                    return user.isOnline == true
+                })
+                
+                let userImageMessage = QBChatMessage()
+                userImageMessage.text = "updateUserImage"
+                userImageMessage.senderID = currentUserID.uintValue
+                userImageMessage.recipientID = 0
+                
+                let uploadedFileID: UInt = blob.id
+                let attachment: QBChatAttachment = QBChatAttachment()
+                attachment.type = "image"
+                attachment.id = String(uploadedFileID)
+                userImageMessage.attachments = [attachment]
+                
+                QBChat.instance.sendSystemMessage(userImageMessage, completion: { (error) in
+                    print("Sent Freeze System Message With \(error?.localizedDescription ?? "No Error")")
+                })
+                
+            }, statusBlock: { (request, status) in
+                
+            }, errorBlock: { (response) in
+                
+            })
+            
         }
     }
     
@@ -389,14 +443,16 @@ extension DGStreamCore: QBChatDelegate {
         print("Did Acceidentally Disconnect From Chat!")
     }
     func chatDidReceive(_ message: QBChatMessage) {
-                
         // Create Message
-        let createdMessage = DGStreamMessage.createDGStreamMessageFrom(chatMessage: message)
-        
         if let chatVC = DGStreamCore.instance.chatViewController {
-            chatVC.didReceive(message: createdMessage)
+//            DGStreamMessage.createReceivedMessageFrom(chatMessage: message) { (createdMessage) in
+//                chatVC.didReceive(message: createdMessage)
+//            }
+            let operation = DGStreamChatOperationQueue()
+            operation.getMessageNodesFor(messages: [message]) { (nodes) in
+                chatVC.messengerView.addMessages(nodes, scrollsToMessage: true)
+            }
         }
-        
     }
     func chatDidFail(withStreamError error: Error?) {
         
@@ -431,7 +487,7 @@ extension DGStreamCore: QBChatDelegate {
             print("\n\nDID RECEIVE SYSTEM MESSAGE\n\(text)\nFrom \(senderID)\n\n")
             
             // RECORD
-            if text.hasPrefix("record"),
+            if text.hasPrefix("orientationUpdate"),
                 let callVC = self.presentedViewController as? DGStreamCallViewController {
                 let splice = text.components(separatedBy: "-")
                 let orientationString = splice[1]
@@ -449,7 +505,10 @@ extension DGStreamCore: QBChatDelegate {
                 else if orientationString == "upsideDown" {
                     orientation = .portraitUpsideDown
                 }
-                callVC.startRecordingWith(remoteOrientation: orientation)
+                callVC.updateRecordingWith(orientation: orientation)
+            }
+            else if text.hasPrefix("orientationRequest"), let callVC = self.presentedViewController as? DGStreamCallViewController {
+                callVC.sendOrientationUpdateTo(userID: senderID)
             }
             // DRAW START
             else if text.hasPrefix("drawStart") {
@@ -484,7 +543,7 @@ extension DGStreamCore: QBChatDelegate {
                         if let id = attachment.id, let attachmentID = UInt(id) {
                             
                             QBRequest.downloadFile(withID: attachmentID, successBlock: { (response, data) in
-                                callVC.drawWithImage(data: data)
+                                callVC.drawWithImage(data: data, fromUserID: senderID)
                             }, statusBlock: { (request, status) in
                                 
                             }, errorBlock: { (response) in
@@ -810,13 +869,22 @@ extension DGStreamCore: QBRTCClientDelegate {
     
     public func didReceiveNewSession(_ session: QBRTCSession, userInfo: [String : String]? = nil) {
         print("DID RECEIVE NEW SESSION")
+        
+        var fromUsername = "Unknown"
+        var fromUserID: NSNumber = NSNumber(value: 0)
+        if let info = userInfo, let username = info["username"] {
+            fromUsername = username
+        }
+        
+//        if let presented = self.presentedViewController {
+//            let alert = UIAlertController(title: "didReceiveNewSession", message: "From: \(fromUsername)", preferredStyle: .alert)
+//            alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: { (action: UIAlertAction) in
+//                alert.dismiss(animated: true, completion: nil)
+//            }))
+//            presented.present(alert, animated: true, completion: nil)
+//        }
 
         if let currentUser = self.currentUser, let currentUserID = currentUser.userID {
-            var fromUsername = "Unknown"
-            var fromUserID: NSNumber = NSNumber(value: 0)
-            if let info = userInfo, let username = info["username"] {
-                fromUsername = username
-            }
             
             if let otherUser = self.getOtherUserWith(username: fromUsername), let otherUserID = otherUser.userID {
                 fromUserID = otherUserID

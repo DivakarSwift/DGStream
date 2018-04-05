@@ -36,7 +36,7 @@ public class DGStreamUser: NSObject {
     func asQuickbloxUser() -> QBUUser {
         let user = QBUUser()
         user.login = username
-        user.password = password
+        user.password = "dataglance"
         if let id = self.userID {
             user.id = id.uintValue
         }

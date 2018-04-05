@@ -87,18 +87,18 @@ class DGStreamRecentsTableViewCell: UITableViewCell {
         }
 
         if let user = otherUser, let username = user.username {
-            let abrev = NSString(string: username).substring(to: 1)
-            self.abrevLabel.text = abrev
             nameLabel.text = username
-            var ringColor:UIColor
             if user.isOnline {
-                ringColor = UIColor.dgGreen()
+                self.userImageView.layer.borderColor = UIColor.dgGreen().cgColor
+                self.userImageView.layer.borderWidth = 2.5
+            }
+            if let imageData = user.image, let image = UIImage(data: imageData) {
+                self.userImageView.image = image
             }
             else {
-                ringColor = UIColor.dgGray()
+                let abrev = NSString(string: username).substring(to: 1)
+                self.abrevLabel.text = abrev
             }
-            self.userImageView.layer.borderColor = ringColor.cgColor
-            self.userImageView.layer.borderWidth = 2.5
         }
 
         if let date = recent.date {
@@ -216,8 +216,7 @@ class DGStreamRecentsTableViewCell: UITableViewCell {
     }
     
     func setOffline() {
-        self.userImageView.layer.borderColor = UIColor.dgGray().cgColor
-        self.userImageView.layer.borderWidth = 2.5
+        self.userImageView.layer.borderWidth = 0.0
     }
 
     @IBAction func videoCallButtonTapped(_ sender: Any) {
@@ -289,5 +288,10 @@ class DGStreamRecentsTableViewCell: UITableViewCell {
         dateLabel.textColor = UIColor.dgDarkGray()
         durationLabel.textColor = UIColor.dgDarkGray()
         self.userImageView.layer.borderColor = UIColor.dgGray().cgColor
+        self.userImageView.image = nil
+        self.nameLabel.text = ""
+        dateLabel.text = ""
+        durationLabel.text = ""
+        self.userImageView.layer.borderWidth = 0.0
     }
 }

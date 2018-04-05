@@ -18,8 +18,9 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
     
     @IBOutlet weak var navBarView: UIView!
     @IBOutlet weak var navTitleLabel: UILabel!
-    @IBOutlet weak var rightButton: UIButton!
-    @IBOutlet weak var rightButtonAnchorCenterXConstraint: NSLayoutConstraint!
+    var rightButton: UIButton!
+    @IBOutlet weak var rightButtonAnchorView: UIView!
+    
     @IBOutlet weak var userImageView: UIImageView!
     @IBOutlet weak var leftButton: UIButton!
     @IBOutlet weak var tableView: UITableView!
@@ -33,7 +34,6 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
     @IBOutlet weak var videoCallButton: UIButton!
     @IBOutlet weak var audioCallButton: UIButton!
     @IBOutlet weak var messageButton: UIButton!
-    
     
     @IBOutlet weak var initialUserImageViewContainer: UIView!
     @IBOutlet weak var blackoutView: UIView!
@@ -58,14 +58,40 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
     
         self.emptyLabel.alpha = 0
         
-        self.rightButton.backgroundColor = UIColor.dgBlack()
-        self.rightButton.layer.cornerRadius = self.rightButton.frame.size.width / 2
         if let user = DGStreamCore.instance.currentUser, let username = user.username {
-            let abrev = NSString(string: username).substring(to: 1)
-            if abrev.characters.count > 0 {
+            
+            self.rightButton = UIButton(type: .custom)
+            self.rightButton.alpha = 0
+            let frame = CGRect(x: 714, y: 10, width: 44, height: 44)
+            self.rightButton.frame = frame
+            self.rightButton.backgroundColor = UIColor.dgBlack()
+            self.rightButton.layer.cornerRadius = self.rightButton.frame.size.width / 2
+            self.rightButton.clipsToBounds = true
+            self.rightButton.addTarget(self, action: #selector(rightButtonTapped(_:)), for: .touchUpInside)
+            self.rightButton.contentMode = .scaleAspectFill
+            self.rightButton.imageView?.contentMode = .scaleAspectFill
+            self.rightButton.titleLabel?.font = UIFont(name: "HelveticaNueue-Bold", size: 14)
+            
+            self.navBarView.addSubview(self.rightButton)
+            self.rightButton.translatesAutoresizingMaskIntoConstraints = false
+            
+            let top = NSLayoutConstraint(item: self.rightButton, attribute: .top, relatedBy: .equal, toItem: self.navBarView, attribute: .top, multiplier: 1.0, constant: 10)
+            let right = NSLayoutConstraint(item: self.rightButton, attribute: .right, relatedBy: .equal, toItem: self.navBarView, attribute: .right, multiplier: 1.0, constant: -10)
+            let width = NSLayoutConstraint(item: self.rightButton, attribute: .width, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1.0, constant: 44)
+            let height = NSLayoutConstraint(item: self.rightButton, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1.0, constant: 44)
+            
+            self.rightButton.addConstraints([width, height])
+            self.navBarView.addConstraints([top, right])
+            
+            self.navBarView.layoutIfNeeded()
+            self.rightButton.layoutIfNeeded()
+            
+            if let imageData = user.image, let image = UIImage(data: imageData) {
+                self.rightButton.setImage(image, for: .normal)
+            }
+            else {
+                let abrev = NSString(string: username).substring(to: 1)
                 self.rightButton.setTitle(abrev, for: .normal)
-                self.rightButton.setTitleColor(.white, for: .normal)
-                self.rightButton.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 20)
             }
         }
         
@@ -106,7 +132,6 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
         
         DGStreamCore.instance.getOnlineUsers()
         
-        self.rightButtonAnchorCenterXConstraint.constant = -3.5
         self.navBarView.layoutIfNeeded()
         
         self.initialUserImageView.backgroundColor = UIColor.dgBlack()
@@ -137,10 +162,6 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
         
         self.tableView.reloadData()
         DGStreamCore.instance.presentedViewController = self
-    }
-    
-    func viewTapped() {
-        
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -175,6 +196,15 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
     }
     
     func showInitialViews() {
+        
+        if let currentUser = DGStreamCore.instance.currentUser,
+            let imageData = currentUser.image,
+            let image = UIImage(data: imageData) {
+            self.initialUserImageView.clipsToBounds = true
+            self.initialUserImageView.contentMode = .scaleAspectFill
+            self.initialUserImageView.image = image
+        }
+        
         UIView.animate(withDuration: 0.25) {
             self.initialUserImageViewContainer.alpha = 1
             self.welcomeLabel.alpha = 1
@@ -192,8 +222,9 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
         let animateImageView = UIImageView(frame: initialRect)
         animateImageView.clipsToBounds = true
         animateImageView.image = self.initialUserImageView.image
-        animateImageView.backgroundColor = UIColor.dgBlack()
+        animateImageView.backgroundColor = .red
         animateImageView.layer.cornerRadius = animateImageView.frame.size.width / 2
+        animateImageView.contentMode = .scaleAspectFill
         self.blackoutView.addSubview(animateImageView)
     
         UIView.animate(withDuration: 1.25, animations: {
@@ -206,7 +237,7 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
         }) { (f) in
             self.blackoutView.isHidden = true
             self.rightButton.alpha = 1
-            
+            animateImageView.removeFromSuperview()
             if self.selectedItem == .recents, self.recents.count == 0 {
                 self.emptyLabel.text = NSLocalizedString("No Recents", comment: "")
                 self.emptyLabel.alpha = 1
@@ -333,7 +364,14 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
         
         let session = QBRTCClient.instance().createNewSession(withOpponents: userIDs, with: type)
         print("Session is \(session)")
-        if DGStreamCore.instance.isReachable && session.state == .new {
+        if session == nil {
+            let alert = UIAlertController(title: NSLocalizedString("Error", comment: ""), message: NSLocalizedString("Unable to create session.", comment: ""), preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Acknowledged dismissal"), style: .cancel, handler: { (action: UIAlertAction) in
+                alert.dismiss(animated: true, completion: nil)
+            }))
+            self.present(alert, animated: true, completion: nil)
+        }
+        else if DGStreamCore.instance.isReachable && session.state == .new {
             if let callVC = UIStoryboard(name: "Call", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamCallViewController, let chatVC = UIStoryboard.init(name: "Chat", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamChatViewController {
                 
                 let otherUserID = userIDs.first!
@@ -662,6 +700,7 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
 //            userVC.user = currentUser
 //            self.present(userVC, animated: true, completion: nil)
 //        }
+        self.performSegue(withIdentifier: "DropDown", sender: nil)
     }
     
     @IBAction func videoCallButtonTapped(_ sender: Any) {
@@ -865,6 +904,52 @@ extension DGStreamTabBarViewController: DGStreamUserDropDownViewControllerDelega
     
     func userButtonTapped() {
         
+        func presentActionsheet() {
+            let alert = UIAlertController(title: "", message: "Choose Source", preferredStyle: .actionSheet)
+            alert.popoverPresentationController?.sourceView = self.view
+            alert.popoverPresentationController?.sourceRect = self.rightButtonAnchorView.frame
+            alert.addAction(UIAlertAction(title: "Camera", style: .default, handler: { (action: UIAlertAction) in
+                guard UIImagePickerController.isSourceTypeAvailable(.camera) else {
+                    print("This device doesn't have a camera.")
+                    return
+                }
+                
+                let photoPicker = UIImagePickerController()
+                photoPicker.sourceType = .camera
+                photoPicker.delegate = self
+                photoPicker.modalPresentationStyle = .custom
+                self.present(photoPicker, animated: true) {
+                    
+                }
+            }))
+            alert.addAction(UIAlertAction(title: "Library", style: .default, handler: { (action: UIAlertAction) in
+                guard UIImagePickerController.isSourceTypeAvailable(.savedPhotosAlbum) else {
+                    print("This device doesn't have a camera.")
+                    return
+                }
+                
+                let photoPicker = UIImagePickerController()
+                photoPicker.sourceType = .savedPhotosAlbum
+                photoPicker.delegate = self
+                photoPicker.modalPresentationStyle = .custom
+                self.present(photoPicker, animated: true) {
+                    
+                }
+            }))
+            self.present(alert, animated: true) {
+                
+            }
+        }
+        
+        if let presentedViewController = self.presentedViewController {
+            presentedViewController.dismiss(animated: true, completion: {
+                presentActionsheet()
+            })
+        }
+        else {
+            presentActionsheet()
+        }
+    
     }
     
     func logoutTapped() {
@@ -876,6 +961,124 @@ extension DGStreamTabBarViewController: DGStreamUserDropDownViewControllerDelega
             }
         }
     }
+}
+
+extension DGStreamTabBarViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        
+    }
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+        
+        defer {
+            picker.dismiss(animated: true)
+        }
+        
+        print(info)
+        // get the image
+        guard let image = info[UIImagePickerControllerOriginalImage] as? UIImage else {
+            return
+        }
+        
+        let newWidth = image.size.width / 2
+        let newHeight = image.size.height / 2
+        
+        let smallerImage = UIImage.resizeImage(image: image, targetSize: CGSize(width: newWidth, height: newHeight))
+        
+        // do something with it
+        self.sendUser(image: smallerImage)
+    }
+    
+    func sendUser(image: UIImage) {
+        
+        if let currentUser = DGStreamCore.instance.currentUser,
+            let currentUserID = currentUser.userID,
+            let fileID = UUID().uuidString.components(separatedBy: "-").first {
+            
+            func uploadUserImage(userID: NSNumber, fileID: String) {
+                
+                print("UPLOADING USER IMAGE")
+                
+                let userImage = QBCOCustomObject()
+                userImage.className = "UserImage"
+                userImage.createdAt = Date()
+                userImage.userID = userID.uintValue
+                userImage.id = fileID
+                
+                let imageFile = QBCOFile()
+                if let imageData = UIImagePNGRepresentation(image) {
+                    
+                    imageFile.contentType = "image/png"
+                    imageFile.data = imageData
+                    imageFile.name = "image"
+                    
+                    let fields:NSMutableDictionary = NSMutableDictionary()
+                    fields.setObject(imageFile, forKey: "image" as NSCopying)
+                    
+                    userImage.fields = fields
+                }
+                else {
+                    
+                }
+                
+                QBRequest.createObject(userImage, successBlock: { (response, object) in
+                    
+                    QBRequest.uploadFile(imageFile, className: "UserImage", objectID: object?.id ?? "", fileFieldName: "image", successBlock: { (response, uploadInfo) in
+                        
+                        if response.isSuccess, let object = object, let objectID = object.id {
+                            print("SUCCESSFULLY UPLOADED USER IMAGE")
+                            currentUser.image = UIImagePNGRepresentation(image)
+                            self.rightButton.setImage(image, for: .normal)
+                        }
+                        else if let responseError = response.error, let error = responseError.error {
+                            print("Upload Failed with error \(error.localizedDescription)")
+                            //self.delegate.drawOperationFailedWith(errorMessage: "Failed To Create Image Object")
+                        }
+                        else {
+                            //self.delegate.drawOperationFailedWith(errorMessage: "Failed To Create Image Object")
+                        }
+                        
+                    }, statusBlock: { (response, status) in
+                        
+                    }, errorBlock: { (error) in
+                        print("DID FAIL TO UPLOAD IMAGE \(error.error?.error?.localizedDescription ?? "ERROR")")
+                        // self.delegate.drawOperationFailedWith(errorMessage: "Failed To Upload Image")
+                    })
+                    
+                }, errorBlock: { (response) in
+                    if let responseError = response.error, let error = responseError.error {
+                        print("Upload Failed with error \(error.localizedDescription)")
+                    }
+                    //self.delegate.drawOperationFailedWith(errorMessage: "Failed To Create Image Object")
+                })
+                
+            }
+            
+            let extendedRequest = NSMutableDictionary()
+            extendedRequest.setObject(currentUser.userID?.uintValue ?? 0, forKey: "user_id" as NSCopying)
+            
+            QBRequest.objects(withClassName: "UserImage", extendedRequest: extendedRequest, successBlock: { (response, objects, responsePage) in
+                
+                // Already Exists, Delete
+                if let object = objects?.first, let objectID = object.id {
+                    QBRequest.deleteObject(withID: objectID, className: "UserImage", successBlock: { (response) in
+                        uploadUserImage(userID: currentUserID, fileID: fileID)
+                    }, errorBlock: { (errorResponse) in
+                        uploadUserImage(userID: currentUserID, fileID: fileID)
+                    })
+                }
+                else {
+                    // Doesn't Already Exist, Create
+                    uploadUserImage(userID: currentUserID, fileID: fileID)
+                }
+
+            }, errorBlock: { (errorResponse) in
+                
+            })
+            
+        }
+        
+    }
+    
 }
 
 extension DGStreamTabBarViewController: UIPopoverPresentationControllerDelegate {

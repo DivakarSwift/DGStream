@@ -33,19 +33,22 @@ class DGStreamConversationsTableViewCell: UITableViewCell {
         if let userIDs = conversation.userIDs {
             for userID in userIDs {
                 if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID, userID != currentUserID, let user = DGStreamCore.instance.getOtherUserWith(userID: userID), let username = user.username {
-                    let abrev = NSString(string: username).substring(to: 1)
-                    self.abrevLabel.text = abrev
+    
                     self.nameLabel.text = username
                     
-                    var ringColor:UIColor
                     if user.isOnline {
-                        ringColor = UIColor.dgGreen()
+                        self.userImageView.layer.borderColor = UIColor.dgGreen().cgColor
+                        self.userImageView.layer.borderWidth = 2.5
+                    }
+                    
+                    if let imageData = user.image, let image = UIImage(data: imageData) {
+                        self.userImageView.image = image
                     }
                     else {
-                        ringColor = UIColor.dgGray()
+                        let abrev = NSString(string: username).substring(to: 1)
+                        self.abrevLabel.text = abrev
                     }
-                    self.userImageView.layer.borderColor = ringColor.cgColor
-                    self.userImageView.layer.borderWidth = 2.5
+                    
                 }
             }
         }
@@ -76,8 +79,7 @@ class DGStreamConversationsTableViewCell: UITableViewCell {
     }
     
     func setOffline() {
-        self.userImageView.layer.borderColor = UIColor.dgGray().cgColor
-        self.userImageView.layer.borderWidth = 2.5
+        self.userImageView.layer.borderWidth = 0.0
     }
     
     @IBAction func userButtonTapped(_ sender: Any) {
@@ -87,6 +89,14 @@ class DGStreamConversationsTableViewCell: UITableViewCell {
         }.first!
         
         self.delegate.userButtonTapped(userID: userID)
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        self.abrevLabel.text = ""
+        self.nameLabel.text = ""
+        self.userImageView.image = nil
+        self.userImageView.layer.borderWidth = 0.0
     }
     
 }

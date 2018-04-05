@@ -17,6 +17,7 @@ FOUNDATION_EXPORT const unsigned char DGStreamVersionString[];
 // In this header, you should import all the public headers of your framework using statements like #import <DGStream/PublicHeader.h>
 
 #import <DGStream/DGStreamNotification.h>
-
+#import <DGStream/DGStreamRecorderMerge.h>
 #import <DGStream/DGStreamPhotoSaver.h>
+#import <DGStream/DGStreamRecordingWriter.h>
 

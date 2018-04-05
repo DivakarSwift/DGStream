@@ -43,21 +43,23 @@ class DGStreamVideoView: UIView {
     
     override func willMove(toSuperview newSuperview: UIView?) {
         super.willMove(toSuperview: newSuperview)
-        self.updateOrientationIfNeeded()
+        _ = self.updateOrientationIfNeeded()
     }
     
     func didPressSwitchCamera(sender: UIButton) {
         
     }
     
-    func updateOrientationIfNeeded() {
+    func updateOrientationIfNeeded() -> AVCaptureVideoOrientation? {
         if let previewLayerConnection = self.videoLayer.connection {
             let interfaceOrientation = UIApplication.shared.statusBarOrientation
             let videoOrientation = AVCaptureVideoOrientation(rawValue: interfaceOrientation.rawValue)
             
             if previewLayerConnection.isVideoOrientationSupported && previewLayerConnection.videoOrientation != videoOrientation {
                 previewLayerConnection.videoOrientation = videoOrientation!
+                return videoOrientation
             }
         }
+        return nil
     }
 }

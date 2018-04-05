@@ -21,14 +21,6 @@
             <rect key="frame" x="0.0" y="0.0" width="420" height="200"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="8X3-R2-Y36">
-                    <rect key="frame" x="20" y="20" width="120" height="120"/>
-                    <color key="backgroundColor" red="1" green="0.5" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
-                    <constraints>
-                        <constraint firstAttribute="width" constant="120" id="Zif-yw-8GR"/>
-                        <constraint firstAttribute="height" constant="120" id="fjK-Cl-r4w"/>
-                    </constraints>
-                </button>
                 <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="l8g-kB-KTg">
                     <rect key="frame" x="160" y="20" width="240" height="120"/>
                     <subviews>
@@ -101,45 +93,40 @@
                         <action selector="sendBuzzButtonTapped:" destination="iN0-l3-epB" eventType="touchUpInside" id="gH4-yO-JX7"/>
                     </connections>
                 </button>
-                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="rDs-aF-H20">
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="8yz-rX-jdg">
                     <rect key="frame" x="20" y="20" width="120" height="120"/>
+                    <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     <constraints>
-                        <constraint firstAttribute="height" constant="120" id="NfL-Ak-Zfa"/>
-                        <constraint firstAttribute="width" constant="120" id="Y1c-jZ-p8w"/>
+                        <constraint firstAttribute="width" constant="120" id="O8U-9J-CB9"/>
+                        <constraint firstAttribute="height" constant="120" id="plP-nW-e6P"/>
                     </constraints>
-                    <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="65"/>
-                    <color key="textColor" red="1" green="1" blue="1" alpha="1" colorSpace="calibratedRGB"/>
-                    <nil key="highlightedColor"/>
-                </label>
+                </view>
             </subviews>
             <color key="backgroundColor" red="1" green="1" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
             <constraints>
                 <constraint firstItem="vUN-kp-3ea" firstAttribute="bottom" secondItem="W4I-vV-eCN" secondAttribute="bottom" constant="8" id="5AA-7E-edM"/>
+                <constraint firstItem="8yz-rX-jdg" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" constant="20" id="8DL-2K-dcJ"/>
                 <constraint firstItem="W4I-vV-eCN" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" constant="-100" id="8h7-wm-mt3"/>
-                <constraint firstItem="rDs-aF-H20" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="20" id="AWU-zg-lk1"/>
                 <constraint firstItem="vUN-kp-3ea" firstAttribute="trailing" secondItem="l8g-kB-KTg" secondAttribute="trailing" constant="20" id="CkY-HL-Myp"/>
-                <constraint firstItem="rDs-aF-H20" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" constant="20" id="J2c-Gb-IH6"/>
                 <constraint firstItem="W4I-vV-eCN" firstAttribute="width" secondItem="NBa-9R-BsS" secondAttribute="width" id="K70-Vg-8Ic"/>
-                <constraint firstItem="l8g-kB-KTg" firstAttribute="height" secondItem="8X3-R2-Y36" secondAttribute="height" id="LKU-uy-F1Q"/>
-                <constraint firstItem="l8g-kB-KTg" firstAttribute="leading" secondItem="8X3-R2-Y36" secondAttribute="trailing" constant="20" id="Unw-MT-57J"/>
                 <constraint firstItem="vUN-kp-3ea" firstAttribute="bottom" secondItem="NBa-9R-BsS" secondAttribute="bottom" constant="8" id="VIc-hD-GVt"/>
                 <constraint firstItem="NBa-9R-BsS" firstAttribute="centerX" secondItem="iN0-l3-epB" secondAttribute="centerX" constant="100" id="dci-eV-kcm"/>
-                <constraint firstItem="8X3-R2-Y36" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" constant="20" id="fqh-Wi-w6L"/>
+                <constraint firstItem="8yz-rX-jdg" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="20" id="dkd-di-T4o"/>
+                <constraint firstItem="l8g-kB-KTg" firstAttribute="height" secondItem="8yz-rX-jdg" secondAttribute="height" id="kiB-nP-sHQ"/>
                 <constraint firstItem="l8g-kB-KTg" firstAttribute="top" secondItem="vUN-kp-3ea" secondAttribute="top" constant="20" id="l4r-kV-udg"/>
                 <constraint firstItem="W4I-vV-eCN" firstAttribute="height" secondItem="NBa-9R-BsS" secondAttribute="height" id="orb-MR-LU3"/>
-                <constraint firstItem="8X3-R2-Y36" firstAttribute="leading" secondItem="vUN-kp-3ea" secondAttribute="leading" constant="20" id="vga-Lh-dfY"/>
+                <constraint firstItem="l8g-kB-KTg" firstAttribute="leading" secondItem="8yz-rX-jdg" secondAttribute="trailing" constant="20" id="rcI-Fj-TEe"/>
             </constraints>
             <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
             <viewLayoutGuide key="safeArea" id="vUN-kp-3ea"/>
             <connections>
-                <outlet property="abrevLabel" destination="rDs-aF-H20" id="d3V-Yr-3ps"/>
                 <outlet property="addFavoriteButton" destination="NBa-9R-BsS" id="oEF-D5-Dq1"/>
                 <outlet property="detailContainer" destination="l8g-kB-KTg" id="JgT-Zq-BP5"/>
                 <outlet property="lastSeenLabel" destination="3JV-3a-zp1" id="7fx-Ua-axg"/>
                 <outlet property="nameLabel" destination="crp-JK-58i" id="ldv-7I-oIx"/>
                 <outlet property="sendBuzzButton" destination="W4I-vV-eCN" id="bkP-Qg-LZn"/>
                 <outlet property="tagLabel" destination="JNo-oO-nUZ" id="bNX-2n-It3"/>
-                <outlet property="userImageButton" destination="8X3-R2-Y36" id="oti-K6-CGA"/>
+                <outlet property="userImageButtonContainer" destination="8yz-rX-jdg" id="qwb-7a-mPI"/>
             </connections>
             <point key="canvasLocation" x="57" y="-180"/>
         </view>

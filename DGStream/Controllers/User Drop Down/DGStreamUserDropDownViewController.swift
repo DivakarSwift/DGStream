@@ -60,6 +60,7 @@ extension DGStreamUserDropDownViewController: UITableViewDelegate, UITableViewDa
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         if let userHeader = UINib(nibName: "UserHeader", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiate(withOwner: self, options: nil).first as? DGStreamUserHeader, let currentUser = DGStreamCore.instance.currentUser {
             userHeader.configureWith(user: currentUser)
+            userHeader.delegate = self
             return userHeader
         }
         return nil
@@ -69,5 +70,11 @@ extension DGStreamUserDropDownViewController: UITableViewDelegate, UITableViewDa
     }
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         return 150
+    }
+}
+
+extension DGStreamUserDropDownViewController: DGStreamUserHeaderDelegate {
+    func userImageButtonTapped() {
+        self.delegate.userButtonTapped()
     }
 }

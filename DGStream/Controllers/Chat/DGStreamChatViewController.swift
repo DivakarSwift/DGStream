@@ -36,9 +36,9 @@ class DGStreamChatViewController: UIViewController {
     var messengerView:NMessenger!
     @IBOutlet weak var messengerContainer: UIView!
     
-    var chatMessages:[DGStreamMessage] = []
     var chatConversation:DGStreamConversation!
     var isKeyboardShown = false
+    var didLoadData = false
     
     var delegate: DGStreamChatViewControllerDelegate!
     
@@ -75,6 +75,9 @@ class DGStreamChatViewController: UIViewController {
         self.textView.textColor = UIColor.lightGray
         self.sendButton.setTitleColor(.lightGray, for: .normal)
         self.sendButton.isEnabled = false
+        
+        self.photoButton.setImage(UIImage.init(named: "capture", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
+        self.photoButton.tintColor = .white
 
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(notification:)), name: Notification.Name.UIKeyboardWillShow, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardDidShow), name: Notification.Name.UIKeyboardDidShow, object: nil)
@@ -83,6 +86,7 @@ class DGStreamChatViewController: UIViewController {
 
         self.messengerView = NMessenger(frame: self.messengerContainer.bounds)
         self.messengerView.boundInside(container: self.messengerContainer)
+        self.messengerView.delegate = self
         
         self.activityIndicator.color = UIColor.dgBlack()
         self.activityIndicator.startAnimating()
@@ -90,7 +94,10 @@ class DGStreamChatViewController: UIViewController {
     }
 
     override public func viewWillAppear(_ animated: Bool) {
-        loadData()
+        DGStreamCore.instance.presentedViewController = self
+        if didLoadData == false {
+            loadData()
+        }
     }
 
     override public func viewDidAppear(_ animated: Bool) {
@@ -98,14 +105,31 @@ class DGStreamChatViewController: UIViewController {
 
     }
     
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "image",
+            let image = sender as? UIImage,
+            let imageVC = segue.destination as? DGStreamChatImageViewController {
+            imageVC.image = image
+        }
+    }
+    
     func loadData() {
         print("LOAD DATA")
+        didLoadData = true
         if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID {
             for userID in self.chatConversation.userIDs {
                 if userID != currentUserID, let user = DGStreamCore.instance.getOtherUserWith(userID: userID), let username = user.username {
-                    let abrev = NSString(string: username).substring(to: 1)
-                    self.abrevLabel.text = abrev
+                    
                     self.nameLabel.text = username
+                    
+                    if let imageData = user.image, let image = UIImage(data: imageData) {
+                        self.imageView.image = image
+                    }
+                    else {
+                        let abrev = NSString(string: username).substring(to: 1)
+                        self.abrevLabel.text = abrev
+                    }
+                    
                     break
                 }
             }
@@ -115,6 +139,8 @@ class DGStreamChatViewController: UIViewController {
     }
 
     func loadMessages() {
+        
+        print("Load Messages")
 
         let dialogID = self.chatConversation.conversationID!
 
@@ -131,9 +157,6 @@ class DGStreamChatViewController: UIViewController {
                         self.addChat(messages: messages)
                     }
                     
-                    self.activityIndicator.stopAnimating()
-                    self.activityIndicator.isHidden = true
-                    
                 }, errorBlock: { (errorResponse) in
                     self.activityIndicator.stopAnimating()
                     self.activityIndicator.isHidden = true
@@ -142,6 +165,11 @@ class DGStreamChatViewController: UIViewController {
             }
             else {
                 // Can not ping server, update UI
+//                let alert = UIAlertController(title: "COULD NOT PING SERVER", message: "CurrentUser: \(DGStreamCore.instance.currentUser != nil)", preferredStyle: .alert)
+//                alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: { (action: UIAlertAction) in
+//                    alert.dismiss(animated: true, completion: nil)
+//                }))
+//                self.present(alert, animated: true, completion: nil)
                 self.activityIndicator.stopAnimating()
                 self.activityIndicator.isHidden = true
             }
@@ -182,11 +210,45 @@ class DGStreamChatViewController: UIViewController {
     }
 
     @IBAction func sendButtonTapped(_ sender: Any) {
-        sendChatMessageWith(text: textView.text)
+        sendChatMessageWith(text: textView.text, image: nil)
     }
 
     @IBAction func photoButtonTapped(_ sender: Any) {
-
+        
+        let alert = UIAlertController(title: "", message: "Choose Source", preferredStyle: .actionSheet)
+        alert.addAction(UIAlertAction(title: "Camera", style: .default, handler: { (action: UIAlertAction) in
+            guard UIImagePickerController.isSourceTypeAvailable(.camera) else {
+                print("This device doesn't have a camera.")
+                return
+            }
+            
+            let photoPicker = UIImagePickerController()
+            photoPicker.sourceType = .camera
+            photoPicker.delegate = self
+            photoPicker.modalPresentationStyle = .custom
+            self.present(photoPicker, animated: true) {
+                
+            }
+        }))
+        alert.addAction(UIAlertAction(title: "Library", style: .default, handler: { (action: UIAlertAction) in
+            guard UIImagePickerController.isSourceTypeAvailable(.savedPhotosAlbum) else {
+                print("This device doesn't have a camera.")
+                return
+            }
+            
+            let photoPicker = UIImagePickerController()
+            photoPicker.sourceType = .savedPhotosAlbum
+            photoPicker.delegate = self
+            photoPicker.modalPresentationStyle = .custom
+            self.present(photoPicker, animated: true) {
+                
+            }
+        }))
+        alert.popoverPresentationController?.sourceView = self.view
+        alert.popoverPresentationController?.sourceRect = CGRect(x: 20, y: self.textBar.frame.origin.y, width: 20, height: 20)
+        self.present(alert, animated: true) {
+            
+        }
     }
 
     @IBAction func moreButtonTapped(_ sender: Any) {
@@ -276,27 +338,27 @@ extension DGStreamChatViewController {
 }
 
 // MARK:- UITableView
-extension DGStreamChatViewController: UITableViewDataSource {
-    public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return chatMessages.count
-    }
-    public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-
-        var cellIdentifier:String = ""
-        let chatMessage = chatMessages[indexPath.row]
-
-        if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID, chatMessage.senderID == currentUserID {
-            cellIdentifier = "SelfCell"
-        }
-        else {
-            cellIdentifier = "Cell"
-        }
-
-            let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as! DGStreamChatTableViewCell
-            cell.configureWith(chatMessage: chatMessage)
-            return cell
-        }
-    }
+//extension DGStreamChatViewController: UITableViewDataSource {
+//    public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+//        return chatMessages.count
+//    }
+//    public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+//
+//        var cellIdentifier:String = ""
+//        let chatMessage = chatMessages[indexPath.row]
+//
+//        if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID, chatMessage.senderID == currentUserID {
+//            cellIdentifier = "SelfCell"
+//        }
+//        else {
+//            cellIdentifier = "Cell"
+//        }
+//
+//            let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as! DGStreamChatTableViewCell
+//            cell.configureWith(chatMessage: chatMessage)
+//            return cell
+//        }
+//    }
 
 // MARK:- UITextViewDelegate
 extension DGStreamChatViewController: UITextViewDelegate {
@@ -312,7 +374,7 @@ extension DGStreamChatViewController: UITextViewDelegate {
 
     public func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
         if(text == "\n") {
-            sendChatMessageWith(text: textView.text)
+            sendChatMessageWith(text: textView.text, image: nil)
             return false
         }
         else {
@@ -328,24 +390,32 @@ extension DGStreamChatViewController: UITextViewDelegate {
         if let user = DGStreamCore.instance.currentUser, let currentUserID = user.userID, message.senderID == currentUserID {
             isIncomingMessage = false
         }
-
-        let textNode = TextContentNode(textMessageString: message.message)
-        textNode.isIncomingMessage = isIncomingMessage
-        textNode.incomingTextFont = UIFont(name: "HelveticaNeue-Bold", size: 14)!
-        textNode.outgoingTextFont = UIFont(name: "HelveticaNeue-Bold", size: 14)!
-        textNode.insets = UIEdgeInsetsMake(8, 8, 8, 8)
-        textNode.incomingTextColor = .white
-
+        
         if isIncomingMessage {
             // Play Incoming Sound
         }
         else {
             // Play Outgoing Sound
         }
+        
+        var messageNode: MessageNode!
 
-        textNode.bubbleConfiguration = DGStreamChatBubble() as BubbleConfigurationProtocol
+        if let image = message.image {
+            let imageNode = ImageContentNode(image: image, bubbleConfiguration: DGStreamChatBubble() as BubbleConfigurationProtocol)
+            imageNode.bubbleConfiguration = DGStreamChatImageBubble() as BubbleConfigurationProtocol
+            messageNode = MessageNode(content: imageNode)
+        }
+        else {
+            let textNode = TextContentNode(textMessageString: message.message)
+            textNode.isIncomingMessage = isIncomingMessage
+            textNode.incomingTextFont = UIFont(name: "HelveticaNeue-Bold", size: 14)!
+            textNode.outgoingTextFont = UIFont(name: "HelveticaNeue-Bold", size: 14)!
+            textNode.insets = UIEdgeInsetsMake(8, 8, 8, 8)
+            textNode.incomingTextColor = .white
+            textNode.bubbleConfiguration = DGStreamChatBubble() as BubbleConfigurationProtocol
+            messageNode = MessageNode(content: textNode)
+        }
 
-        let messageNode = MessageNode(content: textNode)
         messageNode.isIncomingMessage = isIncomingMessage
         messageNode.messageOffset = 10
         messageNode.cellPadding = UIEdgeInsetsMake(5, 0, 5, 0)
@@ -354,41 +424,23 @@ extension DGStreamChatViewController: UITextViewDelegate {
     }
 
     fileprivate func addChat(messages: [QBChatMessage]) {
-
-        var messageNodes:[MessageNode] = []
-
-        for message in messages {
-            var isIncomingMessage:Bool = true
-            if let user = DGStreamCore.instance.currentUser, let currentUserID = user.userID, message.senderID == currentUserID.uintValue {
-                isIncomingMessage = false
+        let chatOperationQueue = DGStreamChatOperationQueue()
+        chatOperationQueue.getMessageNodesFor(messages: messages) { (messageNodes) in
+            DispatchQueue.main.async {
+                self.messengerView.addMessages(messageNodes, scrollsToMessage: false)
+                self.messengerView.scrollToLastMessage(animated: false)
+                self.activityIndicator.stopAnimating()
+                self.activityIndicator.isHidden = true
             }
-
-            let textNode = TextContentNode(textMessageString: message.text ?? "")
-            textNode.isIncomingMessage = isIncomingMessage
-            textNode.incomingTextFont = UIFont(name: "HelveticaNeue-Bold", size: 14)!
-            textNode.outgoingTextFont = UIFont(name: "HelveticaNeue-Bold", size: 14)!
-            textNode.insets = UIEdgeInsetsMake(8, 8, 8, 8)
-            textNode.incomingTextColor = .white
-            textNode.bubbleConfiguration = DGStreamChatBubble()
-
-            let messageNode = MessageNode(content: textNode)
-            messageNode.isIncomingMessage = isIncomingMessage
-            messageNode.messageOffset = 10
-            messageNode.cellPadding = UIEdgeInsetsMake(5, 0, 5, 0)
-
-            messageNodes.append(messageNode)
         }
-
-        self.messengerView.addMessages(messageNodes, scrollsToMessage: false)
-        self.messengerView.scrollToLastMessage(animated: false)
     }
 
-    func sendChatMessageWith(text: String) {
+    func sendChatMessageWith(text: String?, image: UIImage?) {
         self.textView.resignFirstResponder()
         self.sendButton.isEnabled = false
         self.sendButton.setTitleColor(.lightGray, for: .normal)
 
-        if let user = DGStreamCore.instance.currentUser, let currentUserID = user.userID, !self.textView.text.isEmpty {
+        if let user = DGStreamCore.instance.currentUser, let currentUserID = user.userID {
 
             var receivers: [NSNumber] = []
             if let userIDs = self.chatConversation.userIDs {
@@ -404,6 +456,7 @@ extension DGStreamChatViewController: UITextViewDelegate {
             chatMessage.message = text
             chatMessage.senderID = currentUserID
             chatMessage.receiverID = receivers.first
+            chatMessage.image = image
             chatMessage.conversationID = self.chatConversation.conversationID
             for receiverID in receivers {
                 chatMessage.receiverID = receiverID
@@ -417,7 +470,64 @@ extension DGStreamChatViewController: UITextViewDelegate {
     
 }
     
+extension DGStreamChatViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+        
+    }
+    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+        
+        defer {
+            picker.dismiss(animated: true)
+        }
+        
+        print(info)
+        // get the image
+        guard let image = info[UIImagePickerControllerOriginalImage] as? UIImage else {
+            return
+        }
+        
+        let newWidth = image.size.width / 2
+        let newHeight = image.size.height / 2
+        
+        let smallerImage = UIImage.resizeImage(image: image, targetSize: CGSize(width: newWidth, height: newHeight))
+        
+        // do something with it
+        self.sendChatMessageWith(text: nil, image: smallerImage)
+        
+    }
+}
+
+//MARK:- Messenger Delegate
+extension DGStreamChatViewController: NMessengerDelegate {
+    func didSelect(image: UIImage, frame: CGRect) {
+        let blackoutView = UIView(frame: UIScreen.main.bounds)
+        blackoutView.backgroundColor = .black
+        blackoutView.alpha = 0
+        self.view.addSubview(blackoutView)
+        let imageView = UIImageView(frame: frame)
+        imageView.backgroundColor = .clear
+        imageView.contentMode = .scaleAspectFit
+        imageView.image = image
+        imageView.clipsToBounds = true
+        self.view.addSubview(imageView)
+        UIView.animate(withDuration: 0.25, animations: {
+            imageView.frame = UIScreen.main.bounds
+            blackoutView.alpha = 1
+        }) { (f) in
+            
+            DispatchQueue.main.async {
+                self.performSegue(withIdentifier: "image", sender: image)
+            }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.10, execute: {
+                imageView.removeFromSuperview()
+                blackoutView.removeFromSuperview()
+            })
+            
+        }
+    }
     
     
+}
     
 

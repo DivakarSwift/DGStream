@@ -36,3 +36,29 @@ class DGStreamChatBubble: Bubble, BubbleConfigurationProtocol {
     }
 }
 
+class DGStreamChatImageBubble: Bubble, BubbleConfigurationProtocol {
+    
+    open var isMasked = false
+    
+    public override init() {}
+    
+    func getIncomingColor() -> UIColor {
+        return .clear
+    }
+    
+    func getOutgoingColor() -> UIColor {
+        return .clear
+    }
+    
+    func getBubble() -> Bubble {
+        let newBubble = DefaultBubble()
+        newBubble.hasLayerMask = self.isMasked
+        return newBubble
+    }
+    
+    func getSecondaryBubble() -> Bubble {
+        let newBubble = StackedBubble()
+        newBubble.hasLayerMask = self.isMasked
+        return newBubble
+    }
+}

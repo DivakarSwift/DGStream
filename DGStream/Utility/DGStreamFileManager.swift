@@ -61,4 +61,17 @@ class DGStreamFileManager: NSObject {
 //        let count = try? FileManager.default.contentsOfDirectory(atPath: DGStreamFileManager.documentNumberPathWith(userID: userID, documentNumber: documentNumber)).count
 //        return count ?? 0
 //    }
+    
+    class func getDocumentsDirectory() -> URL? {
+        let fileManager = FileManager.default
+        
+        let urls = fileManager.urls(for: .documentDirectory, in: .userDomainMask)
+        
+        if let documentDirectory: URL = urls.first {
+            return documentDirectory
+        } else {
+            return nil
+        }
+    }
+    
 }

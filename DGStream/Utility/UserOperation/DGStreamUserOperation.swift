@@ -32,15 +32,19 @@ class DGStreamUserOperation: Operation {
         QBRequest.users(withTags: self.tags, page: self.page, successBlock: { (response, page, users) in
             if !self.isCancelled, response.isSuccess {
                 
-                page.currentPage += 1
-
-                if page.currentPage * page.perPage >= page.totalEntries {
-                    // Last page
-                    self.delegate.userOperationDidFinishLastPageWith(users: DGStreamUser.usersFrom(users: users))
-                }
-                else {
-                    self.delegate.userOperationDidFinishPageWith(users: DGStreamUser.usersFrom(users: users))
-                }
+                _ = DGStreamUserImageOperationQueue(users: DGStreamUser.usersFrom(users: users), completion: { (success, errorMessage, users) in
+                    
+                    page.currentPage += 1
+                    
+                    if page.currentPage * page.perPage >= page.totalEntries {
+                        // Last page
+                        self.delegate.userOperationDidFinishLastPageWith(users: users)
+                    }
+                    else {
+                        self.delegate.userOperationDidFinishPageWith(users: users)
+                    }
+                    
+                })
                 
             }
             else {

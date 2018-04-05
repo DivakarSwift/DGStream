@@ -235,26 +235,26 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 		}
 	}
     
-//	CFRetain(sampleBuffer);
-//	CFRetain(formatDescription);
-//	dispatch_async(movieWritingQueue,
-//   ^{
-//		if ( assetWriter )
-//      {
-//			if (connection == videoConnection)
-//         {				
-//				// Initialize the video input if this is not done yet
-//				if (!readyToRecordVideo)
-//            {
-//					readyToRecordVideo =
-//                  [self setupAssetWriterVideoInput:formatDescription];
-//            }
-//         }
-//		}
-//      
-//		CFRelease(sampleBuffer);
-//		CFRelease(formatDescription);
-//	});
+    CFRetain(sampleBuffer);
+    CFRetain(formatDescription);
+    dispatch_async(movieWritingQueue,
+   ^{
+        if ( assetWriter )
+      {
+            if (connection == videoConnection)
+         {
+                // Initialize the video input if this is not done yet
+                if (!readyToRecordVideo)
+            {
+                    readyToRecordVideo =
+                  [self setupAssetWriterVideoInput:formatDescription];
+            }
+         }
+        }
+      
+        CFRelease(sampleBuffer);
+        CFRelease(formatDescription);
+    });
 }
 
 

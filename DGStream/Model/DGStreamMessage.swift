@@ -8,6 +8,9 @@
 
 import UIKit
 
+typealias MessageCompletion = (_ message: DGStreamMessage) -> Void
+typealias QBMessageCompletion = (_ message: QBChatMessage?) -> Void
+
 class DGStreamMessage: NSObject {
     var id: String?
     var message: String!
@@ -16,6 +19,8 @@ class DGStreamMessage: NSObject {
     var conversationID: String!
     var delivered: Date!
     var isSystem: Bool = false
+    var image: UIImage?
+    var imageID: String?
     
     class func createDGStreamMessageFrom(proto: DGStreamMessageProtocol) -> DGStreamMessage {
         let message = DGStreamMessage()
@@ -26,17 +31,21 @@ class DGStreamMessage: NSObject {
         return message
     }
     
-    class func createDGStreamMessageFrom(chatMessage: QBChatMessage) -> DGStreamMessage {
+    class func createReceivedMessageFrom(chatMessage: QBChatMessage, completion: MessageCompletion) {
+        
         let message = DGStreamMessage()
         message.id = chatMessage.id
         message.message = chatMessage.text
         message.senderID = NSNumber(value: chatMessage.senderID)
         message.receiverID = NSNumber.init(value: chatMessage.recipientID)
         message.conversationID = chatMessage.dialogID ?? ""
-        return message
+        
+        chatMessage.attachments?.forEach({ (attachment) in
+            message.imageID = attachment.id
+        })
     }
     
-    class func createQuickbloxMessageFrom(message: DGStreamMessage) -> QBChatMessage {
+    class func createQuickbloxMessageFrom(message: DGStreamMessage, completion: @escaping QBMessageCompletion) {
         
         let sortedIDs = [message.receiverID, message.senderID].sorted { (first, second) -> Bool in
             return first.uintValue < second.uintValue
@@ -57,8 +66,33 @@ class DGStreamMessage: NSObject {
         quickbloxMessage.id = message.id
         quickbloxMessage.recipientID = message.receiverID.uintValue
         quickbloxMessage.senderID = message.senderID.uintValue
-        quickbloxMessage.text = message.message
-        return quickbloxMessage
+        
+        if let image = message.image, let data = UIImagePNGRepresentation(image) {
+            // IMAGE
+            QBRequest.tUploadFile(data, fileName: "image.png", contentType: "image/png", isPublic: false, successBlock: {(response: QBResponse!, uploadedBlob: QBCBlob!) in
+                let uploadedFileID: UInt = uploadedBlob.id
+                let attachment: QBChatAttachment = QBChatAttachment()
+                attachment.type = "image"
+                attachment.id = String(uploadedFileID)
+                customParam.setObject("true", forKey: "isImage" as NSCopying)
+                quickbloxMessage.attachments = [attachment]
+                completion(quickbloxMessage)
+            }, statusBlock: {(request: QBRequest?, status: QBRequestStatus?) in
+                
+            }, errorBlock: {(response: QBResponse!) in
+                print(response.error?.reasons ?? "NO REASON")
+                completion(nil)
+            })
+        
+            
+        }
+        else {
+            // TEXT
+            customParam.setObject("false", forKey: "isImage" as NSCopying)
+            quickbloxMessage.text = message.message
+            completion(quickbloxMessage)
+        }
+
     }
     
 }

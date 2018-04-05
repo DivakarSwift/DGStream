@@ -54,21 +54,21 @@ class DGStreamContactsTableViewCell: UITableViewCell {
         if let userID = contact.userID, let user = DGStreamCore.instance.getOtherUserWith(userID: userID) {
             
             if let username = user.username, username != "" {
-                let abrev = NSString(string: username).substring(to: 1)
-                self.abrevLabel.text = abrev
                 self.nameLabel.text = username
             }
             
-            var ringColor:UIColor
             if user.isOnline {
-                ringColor = UIColor.dgGreen()
-            }
-            else {
-                ringColor = UIColor.dgGray()
+                self.userImageView.layer.borderColor = UIColor.dgGreen().cgColor
+                self.userImageView.layer.borderWidth = 2.5
             }
             
-            self.userImageView.layer.borderColor = ringColor.cgColor
-            self.userImageView.layer.borderWidth = 2.5
+            if let imageData = user.image, let image = UIImage(data: imageData) {
+                self.userImageView.image = image
+            }
+            else if let username = user.username {
+                let abrev = NSString(string: username).substring(to: 1)
+                self.abrevLabel.text = abrev
+            }
             
         }
         
@@ -184,6 +184,11 @@ class DGStreamContactsTableViewCell: UITableViewCell {
     
     override func prepareForReuse() {
         self.userImageView.layer.borderColor = UIColor.dgGray().cgColor
+        self.userImageView.image = nil
+        self.nameLabel.text = ""
+        self.abrevLabel.text = ""
+        self.numberLabel.text = ""
+        self.userImageView.layer.borderWidth = 0.0
     }
     
 }

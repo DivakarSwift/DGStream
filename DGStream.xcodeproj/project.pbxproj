@@ -17,8 +17,19 @@
 		0C0F01CE1F7D8F7100FCF3B6 /* NSNumber+CVPixelFormatType.m in Sources */ = {isa = PBXBuildFile; fileRef = 0C0F01CC1F7D8F7100FCF3B6 /* NSNumber+CVPixelFormatType.m */; };
 		0C0FEB33203E4EE300D545BA /* DGStreamRecordingCollectionsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C0FEB32203E4EE300D545BA /* DGStreamRecordingCollectionsViewController.swift */; };
 		0C0FEB40203E528D00D545BA /* DGStreamRecordingCollectionsTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C0FEB3F203E528D00D545BA /* DGStreamRecordingCollectionsTableViewCell.swift */; };
+		0C12FD57206B0E4E001BD4B1 /* DGStreamRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C12FD56206B0E4E001BD4B1 /* DGStreamRecorder.swift */; };
 		0C1902A41F6775710065564C /* Reachability.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C1902A31F6775710065564C /* Reachability.swift */; };
 		0C1902A61F685ADF0065564C /* DGStreamVideoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C1902A51F685ADF0065564C /* DGStreamVideoView.swift */; };
+		0C218C3B206CAD3100337786 /* DGStreamRecorderMerge.h in Headers */ = {isa = PBXBuildFile; fileRef = 0C218C39206CAD3100337786 /* DGStreamRecorderMerge.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		0C218C3C206CAD3100337786 /* DGStreamRecorderMerge.m in Sources */ = {isa = PBXBuildFile; fileRef = 0C218C3A206CAD3100337786 /* DGStreamRecorderMerge.m */; };
+		0C218C4A206E155B00337786 /* DGStreamRecordingEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C218C49206E155B00337786 /* DGStreamRecordingEvent.swift */; };
+		0C218C4C206E6EE400337786 /* DGStreamRecordingManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C218C4B206E6EE400337786 /* DGStreamRecordingManager.swift */; };
+		0C218C4E206E7DE300337786 /* DGStreamRecordingOperationQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C218C4D206E7DE300337786 /* DGStreamRecordingOperationQueue.swift */; };
+		0C218C50206E7F5200337786 /* DGStreamRecordingOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C218C4F206E7F5200337786 /* DGStreamRecordingOperation.swift */; };
+		0C218C52207248BD00337786 /* DGStreamTempRecording.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C218C51207248BD00337786 /* DGStreamTempRecording.swift */; };
+		0C218C5420724A4500337786 /* DGStreamRecordingTrim.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C218C5320724A4500337786 /* DGStreamRecordingTrim.swift */; };
+		0C218C572072C19B00337786 /* DGStreamRecordingWriter.h in Headers */ = {isa = PBXBuildFile; fileRef = 0C218C552072C19A00337786 /* DGStreamRecordingWriter.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		0C218C582072C19B00337786 /* DGStreamRecordingWriter.m in Sources */ = {isa = PBXBuildFile; fileRef = 0C218C562072C19B00337786 /* DGStreamRecordingWriter.m */; };
 		0C24BDE51FCF4A8700E251D9 /* DropDown.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 0C24BDE41FCF4A8700E251D9 /* DropDown.storyboard */; };
 		0C24BDE71FCF4B2500E251D9 /* DGStreamDropDownViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C24BDE61FCF4B2500E251D9 /* DGStreamDropDownViewController.swift */; };
 		0C24BDE91FCF4B8B00E251D9 /* DGStreamDropDownCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C24BDE81FCF4B8B00E251D9 /* DGStreamDropDownCollectionViewCell.swift */; };
@@ -38,6 +49,8 @@
 		0C32BF3C1F69EE2400E4C5A2 /* DGStreamUserOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C32BF3B1F69EE2400E4C5A2 /* DGStreamUserOperation.swift */; };
 		0C32DB45203EADC3001EEB3E /* DGStreamRecordingsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C32DB44203EADC3001EEB3E /* DGStreamRecordingsViewController.swift */; };
 		0C32DB52203EB31D001EEB3E /* DGStreamRecordingCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C32DB51203EB31D001EEB3E /* DGStreamRecordingCollectionViewCell.swift */; };
+		0C32DB5E20449956001EEB3E /* DGStreamChatOperationQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C32DB5D20449956001EEB3E /* DGStreamChatOperationQueue.swift */; };
+		0C32DB6120449B91001EEB3E /* DGStreamChatOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C32DB6020449B91001EEB3E /* DGStreamChatOperation.swift */; };
 		0C3BDBEA2004137B00D38582 /* DGStreamChatBubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3BDBE92004137B00D38582 /* DGStreamChatBubble.swift */; };
 		0C3F964A1FCCE5E400FF1C72 /* CGRectExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3F96461FCCE5DA00FF1C72 /* CGRectExtension.swift */; };
 		0C3F964B1FCCE5E600FF1C72 /* CustomTransitionViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3F96491FCCE5DA00FF1C72 /* CustomTransitionViewController.swift */; };
@@ -91,6 +104,9 @@
 		0C88A4ED1FBF7DBB008C5627 /* DGStreamChatPeekCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C88A4EC1FBF7DBB008C5627 /* DGStreamChatPeekCell.swift */; };
 		0C88A4EF1FBF7DDA008C5627 /* DGStreamChatPeekCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0C88A4EE1FBF7DDA008C5627 /* DGStreamChatPeekCell.xib */; };
 		0C91351220118A7500928F59 /* NMessenger.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0C69222320113D220061AB76 /* NMessenger.framework */; };
+		0C9281F220520E6F00CD18F8 /* DGStreamChatImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C9281F120520E6F00CD18F8 /* DGStreamChatImageViewController.swift */; };
+		0C9281FF2056F8AB00CD18F8 /* DGStreamUserImageOperationQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C9281FE2056F8AB00CD18F8 /* DGStreamUserImageOperationQueue.swift */; };
+		0C9282012056FA4300CD18F8 /* DGStreamUserImageOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C9282002056FA4300CD18F8 /* DGStreamUserImageOperation.swift */; };
 		0CA5168D1FF58043006B536E /* DGStreamDrawOperationQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CA5168C1FF58043006B536E /* DGStreamDrawOperationQueue.swift */; };
 		0CA5168F1FF5807D006B536E /* DGStreamDrawOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CA5168E1FF5807D006B536E /* DGStreamDrawOperation.swift */; };
 		0CA6CD5D1F8C06000061D3D9 /* DGStreamGreenScreenCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CA6CD5C1F8C06000061D3D9 /* DGStreamGreenScreenCapture.swift */; };
@@ -215,8 +231,19 @@
 		0C0F01CC1F7D8F7100FCF3B6 /* NSNumber+CVPixelFormatType.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSNumber+CVPixelFormatType.m"; sourceTree = "<group>"; };
 		0C0FEB32203E4EE300D545BA /* DGStreamRecordingCollectionsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamRecordingCollectionsViewController.swift; sourceTree = "<group>"; };
 		0C0FEB3F203E528D00D545BA /* DGStreamRecordingCollectionsTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamRecordingCollectionsTableViewCell.swift; sourceTree = "<group>"; };
+		0C12FD56206B0E4E001BD4B1 /* DGStreamRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamRecorder.swift; sourceTree = "<group>"; };
 		0C1902A31F6775710065564C /* Reachability.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Reachability.swift; sourceTree = "<group>"; };
 		0C1902A51F685ADF0065564C /* DGStreamVideoView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DGStreamVideoView.swift; sourceTree = "<group>"; };
+		0C218C39206CAD3100337786 /* DGStreamRecorderMerge.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DGStreamRecorderMerge.h; sourceTree = "<group>"; };
+		0C218C3A206CAD3100337786 /* DGStreamRecorderMerge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DGStreamRecorderMerge.m; sourceTree = "<group>"; };
+		0C218C49206E155B00337786 /* DGStreamRecordingEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamRecordingEvent.swift; sourceTree = "<group>"; };
+		0C218C4B206E6EE400337786 /* DGStreamRecordingManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamRecordingManager.swift; sourceTree = "<group>"; };
+		0C218C4D206E7DE300337786 /* DGStreamRecordingOperationQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamRecordingOperationQueue.swift; sourceTree = "<group>"; };
+		0C218C4F206E7F5200337786 /* DGStreamRecordingOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamRecordingOperation.swift; sourceTree = "<group>"; };
+		0C218C51207248BD00337786 /* DGStreamTempRecording.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamTempRecording.swift; sourceTree = "<group>"; };
+		0C218C5320724A4500337786 /* DGStreamRecordingTrim.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamRecordingTrim.swift; sourceTree = "<group>"; };
+		0C218C552072C19A00337786 /* DGStreamRecordingWriter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DGStreamRecordingWriter.h; sourceTree = "<group>"; };
+		0C218C562072C19B00337786 /* DGStreamRecordingWriter.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DGStreamRecordingWriter.m; sourceTree = "<group>"; };
 		0C24BDE41FCF4A8700E251D9 /* DropDown.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = DropDown.storyboard; sourceTree = "<group>"; };
 		0C24BDE61FCF4B2500E251D9 /* DGStreamDropDownViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamDropDownViewController.swift; sourceTree = "<group>"; };
 		0C24BDE81FCF4B8B00E251D9 /* DGStreamDropDownCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamDropDownCollectionViewCell.swift; sourceTree = "<group>"; };
@@ -255,6 +282,8 @@
 		0C32BF3B1F69EE2400E4C5A2 /* DGStreamUserOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DGStreamUserOperation.swift; sourceTree = "<group>"; };
 		0C32DB44203EADC3001EEB3E /* DGStreamRecordingsViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamRecordingsViewController.swift; sourceTree = "<group>"; };
 		0C32DB51203EB31D001EEB3E /* DGStreamRecordingCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamRecordingCollectionViewCell.swift; sourceTree = "<group>"; };
+		0C32DB5D20449956001EEB3E /* DGStreamChatOperationQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamChatOperationQueue.swift; sourceTree = "<group>"; };
+		0C32DB6020449B91001EEB3E /* DGStreamChatOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamChatOperation.swift; sourceTree = "<group>"; };
 		0C39F86320100CA300F63533 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		0C39F86520100CA300F63533 /* MASCompositeConstraint.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MASCompositeConstraint.h; sourceTree = "<group>"; };
 		0C39F86620100CA300F63533 /* MASCompositeConstraint.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MASCompositeConstraint.m; sourceTree = "<group>"; };
@@ -1000,6 +1029,9 @@
 		0C88A4EE1FBF7DDA008C5627 /* DGStreamChatPeekCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = DGStreamChatPeekCell.xib; sourceTree = "<group>"; };
 		0C9143CA1F58C15D00708198 /* DGStream.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = DGStream.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		0C9143CE1F58C15D00708198 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		0C9281F120520E6F00CD18F8 /* DGStreamChatImageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamChatImageViewController.swift; sourceTree = "<group>"; };
+		0C9281FE2056F8AB00CD18F8 /* DGStreamUserImageOperationQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamUserImageOperationQueue.swift; sourceTree = "<group>"; };
+		0C9282002056FA4300CD18F8 /* DGStreamUserImageOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamUserImageOperation.swift; sourceTree = "<group>"; };
 		0CA5168C1FF58043006B536E /* DGStreamDrawOperationQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamDrawOperationQueue.swift; sourceTree = "<group>"; };
 		0CA5168E1FF5807D006B536E /* DGStreamDrawOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamDrawOperation.swift; sourceTree = "<group>"; };
 		0CA6CD5C1F8C06000061D3D9 /* DGStreamGreenScreenCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamGreenScreenCapture.swift; sourceTree = "<group>"; };
@@ -1190,8 +1222,19 @@
 			children = (
 				0C32BF391F69EE0D00E4C5A2 /* DGStreamUserOperationQueue.swift */,
 				0C32BF3B1F69EE2400E4C5A2 /* DGStreamUserOperation.swift */,
+				0C9281FE2056F8AB00CD18F8 /* DGStreamUserImageOperationQueue.swift */,
+				0C9282002056FA4300CD18F8 /* DGStreamUserImageOperation.swift */,
 			);
 			path = UserOperation;
+			sourceTree = "<group>";
+		};
+		0C32DB5F20449963001EEB3E /* Chat Operation */ = {
+			isa = PBXGroup;
+			children = (
+				0C32DB5D20449956001EEB3E /* DGStreamChatOperationQueue.swift */,
+				0C32DB6020449B91001EEB3E /* DGStreamChatOperation.swift */,
+			);
+			path = "Chat Operation";
 			sourceTree = "<group>";
 		};
 		0C39F86220100CA300F63533 /* Masonry */ = {
@@ -1260,8 +1303,7 @@
 				0C50030B1F9A5E7B00732730 /* DGStreamRecent.swift */,
 				0C50030D1F9A5E8400732730 /* DGStreamContact.swift */,
 				0C7B080E1FC3B13500F6D0AD /* DGStreamWhiteBoardSession.swift */,
-				0C691735203CB0EC004A50FF /* DGStreamRecording.swift */,
-				0C691737203CB277004A50FF /* DGStreamRecordingCollection.swift */,
+				0C928202206B0D2C00CD18F8 /* Recording */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -2639,6 +2681,7 @@
 				0CA5168B1FF57F78006B536E /* Draw Operation */,
 				0C32BF381F69ED9D00E4C5A2 /* UserOperation */,
 				0C8067461F689A880074FFD2 /* UserDataSource */,
+				0C32DB5F20449963001EEB3E /* Chat Operation */,
 				0C284C971FFC36CD00A1ACCA /* Notification */,
 				0C69171D2033774C004A50FF /* DGStreamFileManager.swift */,
 				0C8067421F68729D0074FFD2 /* DGStreamSettings.swift */,
@@ -2711,6 +2754,26 @@
 			path = DGStream;
 			sourceTree = "<group>";
 		};
+		0C928202206B0D2C00CD18F8 /* Recording */ = {
+			isa = PBXGroup;
+			children = (
+				0C691735203CB0EC004A50FF /* DGStreamRecording.swift */,
+				0C218C51207248BD00337786 /* DGStreamTempRecording.swift */,
+				0C691737203CB277004A50FF /* DGStreamRecordingCollection.swift */,
+				0C218C4B206E6EE400337786 /* DGStreamRecordingManager.swift */,
+				0C218C4D206E7DE300337786 /* DGStreamRecordingOperationQueue.swift */,
+				0C218C4F206E7F5200337786 /* DGStreamRecordingOperation.swift */,
+				0C12FD56206B0E4E001BD4B1 /* DGStreamRecorder.swift */,
+				0C218C49206E155B00337786 /* DGStreamRecordingEvent.swift */,
+				0C218C39206CAD3100337786 /* DGStreamRecorderMerge.h */,
+				0C218C3A206CAD3100337786 /* DGStreamRecorderMerge.m */,
+				0C218C5320724A4500337786 /* DGStreamRecordingTrim.swift */,
+				0C218C552072C19A00337786 /* DGStreamRecordingWriter.h */,
+				0C218C562072C19B00337786 /* DGStreamRecordingWriter.m */,
+			);
+			path = Recording;
+			sourceTree = "<group>";
+		};
 		0CA5168B1FF57F78006B536E /* Draw Operation */ = {
 			isa = PBXGroup;
 			children = (
@@ -2725,6 +2788,7 @@
 			children = (
 				0CB816191F916A540079728E /* Chat.storyboard */,
 				0CB8161B1F916A6A0079728E /* DGStreamChatViewController.swift */,
+				0C9281F120520E6F00CD18F8 /* DGStreamChatImageViewController.swift */,
 				0C3BDBE92004137B00D38582 /* DGStreamChatBubble.swift */,
 			);
 			path = Chat;
@@ -2777,6 +2841,8 @@
 				0C8730151F58D7CA004B316D /* DGStream.h in Headers */,
 				0CD79AB91F74A1E80034D2B4 /* GSGreenScreenEffect.h in Headers */,
 				0CD79AC11F74A21A0034D2B4 /* GSViewController.h in Headers */,
+				0C218C3B206CAD3100337786 /* DGStreamRecorderMerge.h in Headers */,
+				0C218C572072C19B00337786 /* DGStreamRecordingWriter.h in Headers */,
 				0C5F26F91F7F0D4D001B1D80 /* DGStreamNotification.h in Headers */,
 				0C69223020113D840061AB76 /* AsyncDisplayKit.h in Headers */,
 				0C4150BB1FBAB54E006ABAD4 /* DGStreamPhotoSaver.h in Headers */,
@@ -2999,11 +3065,13 @@
 				0C3BDBEA2004137B00D38582 /* DGStreamChatBubble.swift in Sources */,
 				0C3F96521FCD388F00FF1C72 /* UILabelExtension.swift in Sources */,
 				0C0FEB40203E528D00D545BA /* DGStreamRecordingCollectionsTableViewCell.swift in Sources */,
+				0C218C4C206E6EE400337786 /* DGStreamRecordingManager.swift in Sources */,
 				0C69171E2033774C004A50FF /* DGStreamFileManager.swift in Sources */,
 				0C7273F81F8E91FD003F3AD4 /* DGStreamAlertView.swift in Sources */,
 				0C5463251F71AC890008A9B8 /* UIImageExtension.swift in Sources */,
 				0C465AAB1FB9B9FC00283CEE /* DGStreamAudioPlayer.swift in Sources */,
 				0CB816201F9199070079728E /* DGStreamMessage.swift in Sources */,
+				0C218C5420724A4500337786 /* DGStreamRecordingTrim.swift in Sources */,
 				0C50030C1F9A5E7B00732730 /* DGStreamRecent.swift in Sources */,
 				0C88A4ED1FBF7DBB008C5627 /* DGStreamChatPeekCell.swift in Sources */,
 				0C41BB9C1F637233001F42ED /* DGStreamUser.swift in Sources */,
@@ -3013,6 +3081,7 @@
 				0C0A9DC41F675D6300FAC6DD /* DGStreamCollectionViewCell.swift in Sources */,
 				0C8067431F68729D0074FFD2 /* DGStreamSettings.swift in Sources */,
 				0C3F964D1FCCE5EB00FF1C72 /* SpinerLayer.swift in Sources */,
+				0C218C4A206E155B00337786 /* DGStreamRecordingEvent.swift in Sources */,
 				0C3F964B1FCCE5E600FF1C72 /* CustomTransitionViewController.swift in Sources */,
 				0CA6CD5D1F8C06000061D3D9 /* DGStreamGreenScreenCapture.swift in Sources */,
 				0C6257E91F6AF15200DFFE93 /* UIColorExtension.swift in Sources */,
@@ -3023,7 +3092,9 @@
 				0C08FA3C1F671A6800B03CB2 /* DGStreamCallViewController.swift in Sources */,
 				0C24BDF31FCF916B00E251D9 /* DGStreamDropDownImages.swift in Sources */,
 				0C24BDF51FCF91DE00E251D9 /* DGStreamDropDownView.swift in Sources */,
+				0C9281FF2056F8AB00CD18F8 /* DGStreamUserImageOperationQueue.swift in Sources */,
 				0CD79ABA1F74A1E80034D2B4 /* GSGreenScreenEffect.m in Sources */,
+				0C218C582072C19B00337786 /* DGStreamRecordingWriter.m in Sources */,
 				0C4150BC1FBAB54E006ABAD4 /* DGStreamPhotoSaver.m in Sources */,
 				0C24BDED1FCF90AD00E251D9 /* DGStreamDropDownMenu.swift in Sources */,
 				0C50030A1F9A5AC600732730 /* DGStreamRecentsTableViewCell.swift in Sources */,
@@ -3039,6 +3110,8 @@
 				0C54631F1F6C9FC20008A9B8 /* DGStreamFullLayout.swift in Sources */,
 				0C5463191F6C9E630008A9B8 /* UIScreenExtension.swift in Sources */,
 				0C24BDF11FCF913D00E251D9 /* DGStreamDropDownButton.swift in Sources */,
+				0C32DB5E20449956001EEB3E /* DGStreamChatOperationQueue.swift in Sources */,
+				0C32DB6120449B91001EEB3E /* DGStreamChatOperation.swift in Sources */,
 				0C82328F1FE9EE3400980AF3 /* DGStreamUserViewController.swift in Sources */,
 				0C5003041F99DB9D00732730 /* DGStreamTabBarViewController.swift in Sources */,
 				0C0F01CE1F7D8F7100FCF3B6 /* NSNumber+CVPixelFormatType.m in Sources */,
@@ -3049,7 +3122,9 @@
 				0CD79ABE1F74A1F60034D2B4 /* UtilityEffect.m in Sources */,
 				0CB8161E1F91984F0079728E /* DGStreamChatTableViewCell.swift in Sources */,
 				0C24BDE91FCF4B8B00E251D9 /* DGStreamDropDownCollectionViewCell.swift in Sources */,
+				0C218C52207248BD00337786 /* DGStreamTempRecording.swift in Sources */,
 				0C465AA61FB9A62000283CEE /* DGStreamAudioIndicator.swift in Sources */,
+				0C218C4E206E7DE300337786 /* DGStreamRecordingOperationQueue.swift in Sources */,
 				0C5463211F7190830008A9B8 /* CVReturnExtension.swift in Sources */,
 				0C3F964C1FCCE5E900FF1C72 /* FadeTransition.swift in Sources */,
 				0C3F964A1FCCE5E400FF1C72 /* CGRectExtension.swift in Sources */,
@@ -3057,14 +3132,19 @@
 				0CA5168D1FF58043006B536E /* DGStreamDrawOperationQueue.swift in Sources */,
 				0CD79AC21F74A21A0034D2B4 /* GSViewController.m in Sources */,
 				0C32BF3A1F69EE0D00E4C5A2 /* DGStreamUserOperationQueue.swift in Sources */,
+				0C218C50206E7F5200337786 /* DGStreamRecordingOperation.swift in Sources */,
 				0C32DB45203EADC3001EEB3E /* DGStreamRecordingsViewController.swift in Sources */,
 				0C5003101F9A708200732730 /* DGStreamConversationsTableViewCell.swift in Sources */,
+				0C12FD57206B0E4E001BD4B1 /* DGStreamRecorder.swift in Sources */,
 				0C82328A1FE9C80300980AF3 /* DGStreamUserHeader.swift in Sources */,
 				0C32BF371F69E19000E4C5A2 /* DGStreamUserTableViewCell.swift in Sources */,
 				0C8067481F689ABE0074FFD2 /* DGStreamUserDataSource.swift in Sources */,
+				0C9281F220520E6F00CD18F8 /* DGStreamChatImageViewController.swift in Sources */,
 				0C1902A41F6775710065564C /* Reachability.swift in Sources */,
+				0C218C3C206CAD3100337786 /* DGStreamRecorderMerge.m in Sources */,
 				0C32BF331F69E03300E4C5A2 /* DGStreamUsersViewController.swift in Sources */,
 				0C284C911FF74C1500A1ACCA /* DGStreamUserDropDownViewController.swift in Sources */,
+				0C9282012056FA4300CD18F8 /* DGStreamUserImageOperation.swift in Sources */,
 				0CA5168F1FF5807D006B536E /* DGStreamDrawOperation.swift in Sources */,
 				0C08FA411F67251600B03CB2 /* DispatchExtension.swift in Sources */,
 				0C7B080F1FC3B13500F6D0AD /* DGStreamWhiteBoardSession.swift in Sources */,

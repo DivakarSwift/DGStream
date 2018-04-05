@@ -62,6 +62,9 @@ public class DGStreamManager: NSObject {
     }
     
     func initialize() {
+        
+        registerforDeviceLockNotification()
+        
         QBSettings.applicationID = 62345
         QBSettings.authKey = "nARYSQ7S8-yuaAR"
         QBSettings.authSecret = "XWrAtJTC-KvmhBD"
@@ -89,11 +92,51 @@ public class DGStreamManager: NSObject {
         }
     }
     
-    //MARK:- PUSH NOTIFICATIONS
-    public func receivedPushNotification(_ notification: String) {
-//        if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID {
-//            
-//        }
+    public func loginIfNeeded() {
+        if let currentUser = DGStreamCore.instance.currentUser {
+            DGStreamCore.instance.loginWith(user: currentUser, completion: { (success, errorMessage) in
+                print("LOGGED BACK IN!!!")
+                DGStreamCore.instance.initialize()
+            })
+        }
+    }
+    
+    //MARK:- LOCK NOTIFICATIONS
+    private func registerforDeviceLockNotification() {
+        CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(),
+            Unmanaged.passUnretained(self).toOpaque(),
+            displayStatusChangedCallback,
+            "com.apple.springboard.lockcomplete" as CFString,
+            nil,
+            .deliverImmediately)
+        CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(),
+            Unmanaged.passUnretained(self).toOpaque(),
+            displayStatusChangedCallback,
+            "com.apple.springboard.lockstate" as CFString,
+            nil,     // object
+            .deliverImmediately)
+    }
+    
+    private let displayStatusChangedCallback: CFNotificationCallback = { _, cfObserver, cfName, _, _ in
+        guard let lockState = cfName?.rawValue as String? else {
+            return
+        }
+        
+        let catcher = Unmanaged<DGStreamManager>.fromOpaque(UnsafeRawPointer(OpaquePointer(cfObserver)!)).takeUnretainedValue()
+        catcher.displayStatusChanged(lockState)
+    }
+    
+    private func displayStatusChanged(_ lockState: String) {
+        // the "com.apple.springboard.lockcomplete" notification will always come after the "com.apple.springboard.lockstate" notification
+        print("Darwin notification NAME = \(lockState)")
+        if (lockState == "com.apple.springboard.lockcomplete") {
+            print("DEVICE LOCKED")
+            if let callVC = DGStreamCore.instance.presentedViewController as? DGStreamCallViewController {
+                callVC.hangUpButtonTapped(self)
+            }
+        } else {
+            print("LOCK STATUS CHANGED")
+        }
     }
 
 }

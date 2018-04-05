@@ -46,6 +46,11 @@ class DGStreamUsersViewController: UIViewController {
         configureNavBar()
         loadUsers()
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        DGStreamCore.instance.presentedViewController = self
+    }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
