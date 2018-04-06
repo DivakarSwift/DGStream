@@ -230,7 +230,7 @@ extension DGStreamRecorder: AVCaptureVideoDataOutputSampleBufferDelegate {
     func recordLocalVideo() {
         
         // let path = DGStreamFileManager.recordingPathFor(userID: DGStreamCore.instance.currentUser?.userID ?? 0, withDocumentNumber: "ASGAG", recordingTitle: UUID().uuidString.components(separatedBy: "-").first!)
-        
+        print("Record Local Video")
         let documentsDirectory = DGStreamFileManager.getDocumentsDirectory()!
         print("Doc = \(documentsDirectory)")
         let fileName = "processedVideo"
@@ -267,6 +267,7 @@ extension DGStreamRecorder: AVCaptureVideoDataOutputSampleBufferDelegate {
         
         for output in self.localCaptureSession.outputs {
             if let dataOutput = output as? AVCaptureVideoDataOutput {
+                print("setSampleBufferDelegate")
                 dataOutput.setSampleBufferDelegate(self, queue: self.bufferQueue)
             }
         }
@@ -287,7 +288,7 @@ extension DGStreamRecorder: AVCaptureVideoDataOutputSampleBufferDelegate {
     }
     public func captureOutput(_ output: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, from connection: AVCaptureConnection!) {
         
-//        print("didOutputSampleBuffer")
+        print("didOutputSampleBuffer")
         
         var bufferCopy: CMSampleBuffer?
         if CMSampleBufferCreateCopy(kCFAllocatorDefault, sampleBuffer, &bufferCopy) == noErr {

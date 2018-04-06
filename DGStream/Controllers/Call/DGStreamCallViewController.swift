@@ -96,6 +96,8 @@ public class DGStreamCallViewController: UIViewController {
     @IBOutlet weak var freezeButton: UIButton!
     var freezeImageView: UIImageView?
     var isFrozen: Bool = false
+    var freezeFrame: UIImage?
+    var freezeRotation: QBRTCVideoRotation?
     @IBOutlet weak var freezeActivityIndicator: UIActivityIndicatorView!
     
     @IBOutlet weak var snapshotButtonContainer: UIView!
@@ -131,7 +133,7 @@ public class DGStreamCallViewController: UIViewController {
     var didHangUp = false
     var didOtherUserHangUp = false
     
-    var localVideoView:DGStreamVideoView?
+    //var localVideoView:DGStreamVideoView?
     var isCentered:Bool = true
     
     var toolbar: UIToolbar!
@@ -191,39 +193,45 @@ public class DGStreamCallViewController: UIViewController {
     var localBroadcastView:QBRTCRemoteVideoView?
     var recordQueue:DispatchQueue?
     
-    var recordedScreenshots:[UIImage] = []
-    var isRecording:Bool = false
+    var recordedScreenshots:[String] = []
+    var isBroadcasting:Bool = false
     var recorder = RPScreenRecorder.shared()
+    
+    var didViewLoad: Bool = false
     
     override public func viewDidLoad() {
         super.viewDidLoad()
         
-        let tap = UITapGestureRecognizer(target: self, action: #selector(toggleControls))
-        tap.delegate = self
-        self.view.addGestureRecognizer(tap)
-        
-        self.blackoutView.backgroundColor = UIColor.dgBlueDark()
-        
-        self.savedPhotoLabel.clipsToBounds = true
-        self.savedPhotoLabel.textColor = UIColor.dgDarkGray()
-        self.savedPhotoLabel.backgroundColor = UIColor.white
-        self.savedPhotoLabel.layer.cornerRadius = 6
-                
-        self.view.backgroundColor = UIColor.dgWhite()
-        
-        UIApplication.shared.isStatusBarHidden = true
-        self.statusBar.backgroundColor = UIColor.dgGreen()
-        self.statusBarTitle.textColor = UIColor.dgBlack()
-        
-        DGStreamCore.instance.presentedViewController = self
-        
-        if self.session == nil {
-            print("NO SESSION!")
-        }
-        else {
-            initCall()
-            self.setUpButtons()
-            self.setUpChat()
+        if didViewLoad == false {
+            self.localVideoViewContainer.backgroundColor = .clear
+            self.didViewLoad = true
+            let tap = UITapGestureRecognizer(target: self, action: #selector(toggleControls))
+            tap.delegate = self
+            self.view.addGestureRecognizer(tap)
+            
+            self.blackoutView.backgroundColor = UIColor.dgBlueDark()
+            
+            self.savedPhotoLabel.clipsToBounds = true
+            self.savedPhotoLabel.textColor = UIColor.dgDarkGray()
+            self.savedPhotoLabel.backgroundColor = UIColor.white
+            self.savedPhotoLabel.layer.cornerRadius = 6
+            
+            self.view.backgroundColor = UIColor.dgWhite()
+            
+            UIApplication.shared.isStatusBarHidden = true
+            self.statusBar.backgroundColor = UIColor.dgGreen()
+            self.statusBarTitle.textColor = UIColor.dgBlack()
+            
+            DGStreamCore.instance.presentedViewController = self
+            
+            if self.session == nil {
+                print("NO SESSION!")
+            }
+            else {
+                initCall()
+                self.setUpButtons()
+                self.setUpChat()
+            }
         }
         
     }
@@ -265,17 +273,17 @@ public class DGStreamCallViewController: UIViewController {
         if self.isAudioCall {
             self.buttonsContainer.alpha = 0
         }
-        else if localVideoView == nil, self.cameraCapture != nil {
-            
-            // Place Local Video On Top of Remote
-            self.localVideoView = DGStreamVideoView(layer: self.cameraCapture.previewLayer, frame: self.localVideoViewContainer.bounds)
-            self.localVideoView?.boundInside(container: self.localVideoViewContainer)
-            self.localVideoView?.alpha = 0.45
-            if let orientation = self.localVideoView?.updateOrientationIfNeeded() {
-                self.videoOrientation = orientation
-            }
-            self.localVideoView?.videoLayer.videoGravity = AVLayerVideoGravityResizeAspectFill
-        }
+//        else if localVideoView == nil, self.cameraCapture != nil {
+//
+//            // Place Local Video On Top of Remote
+//            self.localVideoView = DGStreamVideoView(layer: self.cameraCapture.previewLayer, frame: self.localVideoViewContainer.bounds)
+//            self.localVideoView?.boundInside(container: self.localVideoViewContainer)
+//            self.localVideoView?.alpha = 0.45
+//            if let orientation = self.localVideoView?.updateOrientationIfNeeded() {
+//                self.videoOrientation = orientation
+//            }
+//            self.localVideoView?.videoLayer.videoGravity = AVLayerVideoGravityResizeAspectFill
+//        }
         
         // Drop Down
         self.setDropDownView(isOrientationReset: false)
@@ -323,7 +331,7 @@ public class DGStreamCallViewController: UIViewController {
             if let videoView = self.videoViewWith(userID: self.selectedUser), self.remoteVideoViewContainer.subviews.contains(videoView) {
                 self.remoteVideoViewContainer.bringSubview(toFront: videoView)
             }
-            if let localVideoView = self.localVideoView, self.remoteVideoViewContainer.subviews.contains(localVideoView) {
+            if let localVideoView = self.localBroadcastView, self.remoteVideoViewContainer.subviews.contains(localVideoView) {
                 self.remoteVideoViewContainer.bringSubview(toFront: localVideoView)
             }
             if let whiteBoard = self.whiteBoardView, self.remoteVideoViewContainer.subviews.contains(whiteBoard) {
@@ -410,44 +418,28 @@ public class DGStreamCallViewController: UIViewController {
             
             if self.callMode == .merge {
                 
-                if self.localVideoView != nil {
-                    self.localVideoView?.removeFromSuperview()
-                    self.localVideoView = nil
+                //self.localBroadcastView?.boundInside(container: self.remoteVideoViewContainer)
+                self.localBroadcastView?.setSize(self.remoteVideoViewContainer.bounds.size)
+                
+                if self.isFrozen == false {
+                    self.localBroadcastView?.alpha = 0.50
                 }
                 
-                self.localVideoView = DGStreamVideoView(layer: self.cameraCapture.previewLayer, frame: self.remoteVideoViewContainer.bounds)
-                self.localVideoView?.boundInside(container: self.remoteVideoViewContainer)
-                
-                if self.isHelper {
-                    self.localVideoView?.alpha = 0.45
-                    
-                    if let remoteView = self.videoViewWith(userID: self.selectedUser) as? QBRTCRemoteVideoView {
-                        remoteView.alpha = 1.0
-                    }
-                    
-                }
-                else {
-                    self.localVideoView?.alpha = 1.0
-                    
-                    if let remoteView = self.videoViewWith(userID: self.selectedUser) as? QBRTCRemoteVideoView {
-                        remoteView.alpha = 0.45
-                    }
-                    
-                    self.remoteVideoViewContainer.sendSubview(toBack: self.localVideoView!)
-                    
+                if let remoteView = self.videoViewWith(userID: self.selectedUser) as? QBRTCRemoteVideoView {
+                    remoteView.alpha = 1.0
                 }
                 
-                if let orientation = self.localVideoView?.updateOrientationIfNeeded() {
-                    self.videoOrientation = orientation
-                }
-                self.localVideoView?.videoLayer.videoGravity = AVLayerVideoGravityResize
+//                if let orientation = self.localVideoView?.updateOrientationIfNeeded() {
+//                    self.videoOrientation = orientation
+//                }
+                //self.localBroadcastView?.videoLayer.videoGravity = AVLayerVideoGravityResize
             }
             else {
-                self.localVideoViewContainer.frame = self.frameForLocalVideo(isCenter: self.isCentered)
-                if let orientation = self.localVideoView?.updateOrientationIfNeeded() {
-                    self.videoOrientation = orientation
-                }
-                self.localVideoView?.videoLayer.videoGravity = AVLayerVideoGravityResizeAspectFill
+                self.localBroadcastView?.setSize(self.localVideoViewContainer.bounds.size)
+//                if let orientation = self.localVideoView?.updateOrientationIfNeeded() {
+//                    self.videoOrientation = orientation
+//                }
+                //self.localVideoView?.videoLayer.videoGravity = AVLayerVideoGravityResizeAspectFill
             }
             
         }
@@ -478,16 +470,15 @@ public class DGStreamCallViewController: UIViewController {
             }
         }
         
-        let settings = DGStreamSettings.instance
-        
-        if self.session?.conferenceType == .video, let videoSettings = settings.videoFormat {
-            self.cameraCapture = QBRTCCameraCapture(videoFormat: videoSettings, position: .front)
-            self.cameraCapture.startSession({
-                self.bufferQueue = self.cameraCapture.videoQueue
-                self.session?.localMediaStream.videoTrack.videoCapture = self.cameraCapture
-                
-//                self.recordingManager.startRecordingWith(localCaptureSession: self.cameraCapture.captureSession, remoteRecorder: self.session!.recorder!, bufferQueue: self.bufferQueue!, documentNumber: "01234-56789", isMerged: false, delegate: self)
-            })
+        let format = QBRTCVideoFormat(width: 640, height: 480, frameRate: 30, pixelFormat: QBRTCPixelFormat.format420f)
+        self.cameraCapture = QBRTCCameraCapture(videoFormat: format, position: .front)
+        self.cameraCapture.startSession {
+            print("START LOCAL SESSION")
+            self.session?.localMediaStream.videoTrack.videoCapture = self.cameraCapture
+            self.bufferQueue = self.cameraCapture.videoQueue
+            DispatchQueue.main.async {
+                self.recordingManager.startRecordingWith(localCaptureSession: self.cameraCapture.captureSession, remoteRecorder: self.session!.recorder!, bufferQueue: self.bufferQueue!, documentNumber: "01234-56789", isMerged: false, delegate: self)
+            }
         }
         
         if isAudioCall {
@@ -585,15 +576,9 @@ public class DGStreamCallViewController: UIViewController {
             self.session?.localMediaStream.audioTrack.isEnabled = true
             self.session?.localMediaStream.videoTrack.isEnabled = true
             
-            if videoViews.count > 0 {
-                let nsDictionary = NSDictionary.init(dictionary: videoViews)
-                let key = nsDictionary.allKeys[0] as! UInt
-                let videoView = videoViews[key]
-                self.localVideoView = videoView as? DGStreamVideoView
-                self.localVideoView?.frame = self.localVideoViewContainer.bounds
-                videoView?.boundInside(container: self.localVideoViewContainer)
-                self.localVideoView?.isHidden = false
-            }
+            self.localBroadcastView?.frame = self.localVideoViewContainer.bounds
+            localBroadcastView?.boundInside(container: self.localVideoViewContainer)
+            self.localBroadcastView?.isHidden = false
         }
     }
     
@@ -870,9 +855,9 @@ public class DGStreamCallViewController: UIViewController {
                 let videoView = DGStreamVideoView(layer: self.cameraCapture.previewLayer, frame: self.localVideoViewContainer.bounds)
                 self.videoViews[userID.uintValue] = videoView
                 //videoView.delegate = self
-                self.localVideoView = videoView
+                //self.localVideoView = videoView
                 
-                return self.localVideoView
+                return videoView
             }
         }
         else {
@@ -951,9 +936,9 @@ public class DGStreamCallViewController: UIViewController {
         
         let newFrame = self.frameForLocalVideo(isCenter: true)
         
-        self.localVideoView?.frame = CGRect(x: 0, y: 0, width: newFrame.size.width, height: newFrame.size.height)
-        self.localVideoView?.videoLayer.frame = CGRect(x: 0, y: 0, width: newFrame.size.width, height: newFrame.size.height)
-        self.localVideoView?.layoutIfNeeded()
+        self.localBroadcastView?.frame = CGRect(x: 0, y: 0, width: newFrame.size.width, height: newFrame.size.height)
+        //self.localBroadcastView?.videoLayer.frame = CGRect(x: 0, y: 0, width: newFrame.size.width, height: newFrame.size.height)
+        self.localBroadcastView?.layoutIfNeeded()
         
         self.localVideoViewContainer.frame = newFrame
         self.localVideoViewContainer.layoutIfNeeded()
@@ -1012,10 +997,9 @@ public class DGStreamCallViewController: UIViewController {
         
         if self.isWaitingForOrientation {
             self.isWaitingForOrientation = false
-            //self.recorder.startRecordingWith(remoteOrientation: orientation)
-            self.recordingManager.endRecording {
-                self.recordingManager.startRecordingWith(localCaptureSession: self.cameraCapture.captureSession, remoteRecorder: self.session!.recorder!, bufferQueue: self.bufferQueue!, documentNumber: "01234-56789", isMerged: self.callMode == .merge, delegate: self)
-            }
+//            self.recordingManager.endRecording {
+//                self.recordingManager.startRecordingWith(localCaptureSession: self.cameraCapture.captureSession, remoteRecorder: self.session!.recorder!, bufferQueue: self.bufferQueue!, documentNumber: "01234-56789", isMerged: self.callMode == .merge, delegate: self)
+//            }
         }
         
 //        let orientation = UIApplication.shared.statusBarOrientation
@@ -1151,16 +1135,14 @@ public class DGStreamCallViewController: UIViewController {
                 self.snapshotButtonContainer.alpha = 1
                 self.chatButtonContainer.alpha = 1
                 
-                self.localVideoView?.frame = CGRect(x: 0, y: 0, width: newFrame.size.width, height: newFrame.size.height)
-                self.localVideoView?.videoLayer.frame = CGRect(x: 0, y: 0, width: newFrame.size.width, height: newFrame.size.height)
-                self.localVideoView?.layoutIfNeeded()
-                self.localVideoViewContainer.frame = newFrame
-                self.localVideoViewContainer.layer.cornerRadius = newFrame.size.width / 2
-                self.localVideoViewContainer.layoutIfNeeded()
+                self.localBroadcastView?.frame = CGRect(x: 0, y: 0, width: newFrame.size.width, height: newFrame.size.height)
+                self.localBroadcastView?.layoutIfNeeded()
+                self.localVideoViewContainer?.frame = newFrame
+                self.localVideoViewContainer?.layer.cornerRadius = newFrame.size.width / 2
+                self.localVideoViewContainer?.layoutIfNeeded()
                 
             }) { (f) in
                 self.animateButtons()
-                
             }
             
             self.freezeImageView = UIImageView.init(frame: self.remoteVideoViewContainer.bounds)
@@ -1266,29 +1248,30 @@ public class DGStreamCallViewController: UIViewController {
     
     
     @IBAction func recordButtonTapped(_ sender: Any) {
-        DispatchQueue.main.async {
-            if self.isRecording {
-                self.didRecord = true
-                self.isRecording = false
-                self.shareScreenButton.backgroundColor = UIColor.dgBlueDark()
-                self.shareScreenButton.isEnabled = false
-                //                    self.recordingManager.endRecording {
-                //                        print("endRecording")
-                //                        //DGStreamRecording
-                //                        let writer = DGStreamRecordingWriter()
-                //                        writer.saveMovieToLibrary(withScreenshots: self.recordedScreenshots)
-                //                    }
-                let writer = DGStreamRecordingWriter()
-                writer.saveMovieToLibrary(withScreenshots: self.recordedScreenshots)
-                
-            }
-            else {
-                self.shareScreenButton.backgroundColor = .red
-                self.recordingManager.startRecordingWith(localCaptureSession: self.cameraCapture.captureSession, remoteRecorder: self.session!.recorder!, bufferQueue: self.bufferQueue!, documentNumber: "01234-56789", isMerged: self.callMode == .merge, delegate: self)
-                self.isRecording = true
-                print("start recording")
-            }
-        }
+//        DispatchQueue.main.async {
+//            if self.isRecording {
+//                self.didRecord = true
+//                self.isRecording = false
+//                self.shareScreenButton.backgroundColor = UIColor.dgBlueDark()
+//                self.shareScreenButton.isEnabled = false
+//                //                    self.recordingManager.endRecording {
+//                //                        print("endRecording")
+//                //                        //DGStreamRecording
+//                //                        let writer = DGStreamRecordingWriter()
+//                //                        writer.saveMovieToLibrary(withScreenshots: self.recordedScreenshots)
+//                //                    }
+//                let writer = DGStreamRecordingWriter()
+//                writer.saveMovieToLibrary(withScreenshots: self.recordedScreenshots)
+//
+//            }
+//            else {
+//                self.shareScreenButton.backgroundColor = .red
+//                self.recordingManager.startRecordingWith(localCaptureSession: self.cameraCapture.captureSession, remoteRecorder: self.session!.recorder!, bufferQueue: self.bufferQueue!, documentNumber: "01234-56789", isMerged: self.callMode == .merge, delegate: self)
+//                self.isRecording = true
+//                print("start recording")
+//            }
+//        }
+        
     }
     
     @IBAction func drawButtonTapped(_ sender: Any) {
@@ -1371,7 +1354,16 @@ public class DGStreamCallViewController: UIViewController {
             }
             DGStreamCore.instance.audioPlayer.stopAllSounds()
             self.didHangUp = true
+            self.cameraCapture.stopSession {
+                
+            }
+            self.cameraCapture = nil
             self.session?.hangUp(["hangup" : "hang up"])
+            self.session = nil
+            if let tab = self.navigationController?.viewControllers.first {
+                DGStreamCore.instance.presentedViewController = nil
+                DGStreamCore.instance.presentedViewController = tab
+            }
             self.navigationController?.popViewController(animated: false)
             UIDevice.current.endGeneratingDeviceOrientationNotifications()
             NotificationCenter.default.removeObserver(self, name: Notification.Name.UIDeviceOrientationDidChange, object: nil)
@@ -1398,15 +1390,38 @@ public class DGStreamCallViewController: UIViewController {
     
     }
     
-    func freeze(imageData: Data?) {
+    func freeze() {
         
-        if let removeView = self.videoViewWith(userID: self.selectedUser) as? QBRTCRemoteVideoView {
-            
+        // Other device has frozen the screen. This would be your screen.
+        
+        if let localView = self.localBroadcastView {
+            if self.callMode == .merge {
+                localView.alpha = 0.5
+            }
+            else {
+                localView.alpha = 1.0
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                if let image = DGStreamScreenCapture(view: self.remoteVideoViewContainer).screenshot() {
+                    self.freezeFrame = image
+                    self.isFrozen = true
+                    localView.alpha = 0.0
+                }
+            }
         }
         
-//        self.jotVC?.view.alpha = 0
-//
-//        // Freeze from remote
+        if let user = DGStreamCore.instance.getOtherUserWith(userID: self.selectedUser), let username = user.username {
+            let message = DGStreamMessage()
+            message.message = "\(username) has frozen the screen."
+            message.isSystem = true
+            self.chatPeekView.addCellWith(message: message)
+        }
+        
+        self.freezeButton.backgroundColor = UIColor.dgMergeMode()
+        
+        //self.jotVC?.view.alpha = 0
+
+        // Freeze from remote
 //        if let imageData = imageData, let image = UIImage(data: imageData) {
 //
 //            let freezeMessage = QBChatMessage()
@@ -1426,7 +1441,7 @@ public class DGStreamCallViewController: UIViewController {
 //                self.remoteVideoViewContainer.insertSubview(freezeView, belowSubview: jot.view)
 //            }
 //        }
-//        // Local Freeze
+        // Local Freeze
 //        else {
 //
 //            let freezeMessage = QBChatMessage()
@@ -1480,6 +1495,13 @@ public class DGStreamCallViewController: UIViewController {
     }
     
     func unfreeze() {
+        if self.callMode == .merge {
+            self.localBroadcastView?.alpha = 0.5
+        }
+        else {
+            self.localBroadcastView?.alpha = 1.0
+        }
+        self.freezeFrame = nil
         isFrozen = false
         self.freezeButton.backgroundColor = UIColor.dgBlueDark()
         self.freezeImageView?.image = nil
@@ -1488,26 +1510,68 @@ public class DGStreamCallViewController: UIViewController {
     
     @IBAction func freezeButtonTapped(_ sender: Any) {
         
-        showFreezeActivityIndicator()
-        
-        if isFrozen, let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID {
-            
-            self.unfreeze()
-            
+        if self.isFrozen {
+            if self.callMode == .merge {
+                self.localBroadcastView?.alpha = 0.5
+            }
+            else {
+                self.localBroadcastView?.alpha = 1.0
+            }
+            self.freezeFrame = nil
+            self.isFrozen = false
             let unfreezeMessage = QBChatMessage()
             unfreezeMessage.text = "unfreeze"
-            unfreezeMessage.senderID = currentUserID.uintValue
+            unfreezeMessage.senderID = DGStreamCore.instance.currentUser?.userID?.uintValue ?? 0
             unfreezeMessage.recipientID = self.selectedUser.uintValue
-            
+            self.freezeButton.backgroundColor = UIColor.dgBlueDark()
             QBChat.instance.sendSystemMessage(unfreezeMessage, completion: { (error) in
                 print("Sent Unfreeze System Message With \(error?.localizedDescription ?? "No Error")")
-                self.hideFreezeActivityIndicator()
+                //self.hideFreezeActivityIndicator()
             })
-            
         }
         else {
-            self.freeze(imageData: nil)
+            if self.callMode == .merge {
+                self.localBroadcastView?.alpha = 0.5
+            }
+            else {
+                self.localBroadcastView?.alpha = 1.0
+            }
+            if let image = DGStreamScreenCapture(view: self.remoteVideoViewContainer).screenshot() {
+                self.freezeFrame = image
+                self.isFrozen = true
+                let freezeMessage = QBChatMessage()
+                freezeMessage.text = "freeze"
+                freezeMessage.senderID = DGStreamCore.instance.currentUser?.userID?.uintValue ?? 0
+                freezeMessage.recipientID = self.selectedUser.uintValue
+                self.freezeButton.backgroundColor = UIColor.dgMergeMode()
+                QBChat.instance.sendSystemMessage(freezeMessage, completion: { (error) in
+                    print("Sent Unfreeze System Message With \(error?.localizedDescription ?? "No Error")")
+                    //self.hideFreezeActivityIndicator()
+                    self.localBroadcastView?.alpha = 0.0
+                })
+            }
         }
+        
+//        showFreezeActivityIndicator()
+//
+//        if isFrozen, let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID {
+//
+//            self.unfreeze()
+//
+//            let unfreezeMessage = QBChatMessage()
+//            unfreezeMessage.text = "unfreeze"
+//            unfreezeMessage.senderID = currentUserID.uintValue
+//            unfreezeMessage.recipientID = self.selectedUser.uintValue
+//
+//            QBChat.instance.sendSystemMessage(unfreezeMessage, completion: { (error) in
+//                print("Sent Unfreeze System Message With \(error?.localizedDescription ?? "No Error")")
+//                self.hideFreezeActivityIndicator()
+//            })
+//
+//        }
+//        else {
+//            //self.freeze(imageData: nil)
+//        }
     }
     
     func showFreezeActivityIndicator() {
@@ -1712,17 +1776,16 @@ public class DGStreamCallViewController: UIViewController {
                 }
                 
                 // Remove LocalVideoVideo from container
-                if self.localVideoView != nil {
-                    self.localVideoView?.removeFromSuperview()
-                    self.localVideoView = nil
-                }
+//                if self.localVideoView != nil {
+//                    self.localVideoView?.removeFromSuperview()
+//                    self.localVideoView = nil
+//                }
                 
                 // Place Local Video On Top of Remote
-                self.localVideoView = DGStreamVideoView(layer: self.cameraCapture.previewLayer, frame: self.remoteVideoViewContainer.bounds)
-                self.localVideoView?.boundInside(container: self.remoteVideoViewContainer)
-                self.localVideoView?.alpha = 0.45
-                self.localVideoView?.updateOrientationIfNeeded()
-                self.localVideoView?.videoLayer.videoGravity = AVLayerVideoGravityResize
+                self.localBroadcastView?.boundInside(container: self.remoteVideoViewContainer)
+                self.localBroadcastView?.alpha = 0.50
+                //self.localBroadcastView?.updateOrientationIfNeeded()
+                //self.localVideoView?.videoLayer.videoGravity = AVLayerVideoGravityResize
                 
                 if let freezeImageView = self.freezeImageView {
                     self.remoteVideoViewContainer.insertSubview(freezeImageView, aboveSubview: self.remoteVideoViewContainer)
@@ -1746,7 +1809,7 @@ public class DGStreamCallViewController: UIViewController {
                 }
                 
                 // Hide Local Video Container
-                self.localVideoViewContainer.isHidden = true
+//                self.localVideoViewContainer.isHidden = true
                 
                 // Set Transmission To Send Back Camera Video
                 self.cameraCapture.configureSession {
@@ -1769,14 +1832,16 @@ public class DGStreamCallViewController: UIViewController {
             }
         }
         
-        if self.recordingManager.isRecording {
-            self.recordingManager.endRecording {
-                merge()
-            }
-        }
-        else {
-            merge()
-        }
+//        if self.recordingManager.isRecording {
+//            self.recordingManager.endRecording {
+//                merge()
+//            }
+//        }
+//        else {
+//            merge()
+//        }
+        
+        merge()
         
     }
     
@@ -1808,16 +1873,9 @@ public class DGStreamCallViewController: UIViewController {
             self.callMode = .stream
             
             // Switch current device to merge mode
-            self.localVideoViewContainer.alpha = 1.0
-            if self.localVideoView != nil {
-                self.localVideoView?.removeFromSuperview()
-                self.localVideoView = nil
-            }
-            
-            self.localVideoView = DGStreamVideoView(layer: self.cameraCapture.previewLayer, frame: self.localVideoViewContainer.bounds)
-            self.localVideoViewContainer.addSubview(self.localVideoView!)
-            self.localVideoView?.alpha = 1
-            self.localVideoView?.videoLayer.videoGravity = AVLayerVideoGravityResizeAspectFill
+            self.localBroadcastView?.alpha = 1.0
+            self.localBroadcastView?.boundInside(container: self.localVideoViewContainer)
+            //self.localVideoView?.videoLayer.videoGravity = AVLayerVideoGravityResizeAspectFill
             
             if let remoteVideo = self.videoViewWith(userID: self.selectedUser) as? QBRTCRemoteVideoView {
                 remoteVideo.alpha = 1
@@ -1847,21 +1905,15 @@ public class DGStreamCallViewController: UIViewController {
             self.session?.localMediaStream.videoTrack.isEnabled = true
         }
         
-        if self.recordingManager.isRecording {
-            self.recordingManager.endRecording {
-                toStream()
-            }
-        }
-        else {
-            toStream()
-        }
-    }
-    
-    func placeLocalVideoViewInRemoteContainer() {
-        if let remoteVideoView = self.videoViewWith(userID: self.selectedUser) {
-            remoteVideoView.alpha = 0
-        }
-        self.localVideoView?.boundInside(container: self.remoteVideoViewContainer)
+//        if self.recordingManager.isRecording {
+//            self.recordingManager.endRecording {
+//                toStream()
+//            }
+//        }
+//        else {
+//            toStream()
+//        }
+        toStream()
     }
     
     //MARK:- Orientation
@@ -2120,7 +2172,7 @@ extension DGStreamCallViewController {
                 self.whiteBoardView?.tag = 1999
                 self.whiteBoardView?.backgroundColor = .white
                 self.whiteBoardView?.boundInside(container: self.remoteVideoViewContainer)
-                self.layoutRemoteViewHeirarchy()
+                //self.layoutRemoteViewHeirarchy()
             }
             
             if userID == DGStreamCore.instance.currentUser?.userID ?? 0 {
@@ -2625,19 +2677,28 @@ extension DGStreamCallViewController: UIGestureRecognizerDelegate {
 extension DGStreamCallViewController: DGStreamRecorderDelegate {
     func recorder(_ recorder: DGStreamRecorder, frameToBroadcast: QBRTCVideoFrame) {
         
-    
-        if self.localBroadcastView == nil {
-            DispatchQueue.main.async {
+        print("frameToBroadcast")
+        if self.isBroadcasting == false {
+            self.isBroadcasting = true
+        }
+        
+        self.freezeRotation = frameToBroadcast.videoRotation
+        
+        // Places Local Video View if its not already there
+        DispatchQueue.main.async {
+            if self.localBroadcastView == nil {
                 self.localBroadcastView = QBRTCRemoteVideoView(frame: self.localVideoViewContainer.frame)
                 self.localBroadcastView?.setSize(self.localVideoViewContainer.frame.size)
                 self.localBroadcastView?.boundInside(container:self.localVideoViewContainer)
                 print("Placed Local BV")
             }
         }
+        
+        // Displays local camera feed to local video view
         if let vb = self.localBroadcastView {
             let vidfra = RTCVideoFrame(pixelBuffer: frameToBroadcast.pixelBuffer, rotation: frameToBroadcast.videoRotation, timeStampNs: 0)
             vb.renderFrame(vidfra)
-            print("Render Frame")
+            //print("Render Frame")
             if let lbv = self.localBroadcastView {
                 DispatchQueue.main.async {
                     self.localVideoViewContainer.bringSubview(toFront: lbv)
@@ -2645,45 +2706,45 @@ extension DGStreamCallViewController: DGStreamRecorderDelegate {
             }
         }
         
-        if self.recordQueue == nil {
-            self.recordQueue = DispatchQueue(label: "record")
-        }
-    
-        if let recordQueue = self.recordQueue {
-            recordQueue.async {
-                if self.isRecording == true, let image = DGStreamScreenCapture(view: self.view).screenshot() {
-//                    let renderWidth = Int(image.size.width)
-//                    let renderHeight = Int(image.size.height)
-//
-//                    var buffer:CVPixelBuffer? = nil
-//
-//                    let pixelFormatType = kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
-//
-//                    let status:CVReturn = CVPixelBufferCreate(kCFAllocatorDefault, renderWidth, renderHeight, pixelFormatType, nil, &buffer)
-//
-//                    if status == kCVReturnSuccess, let buff = buffer {
-//
-//                        CVPixelBufferLockBaseAddress(buff, CVPixelBufferLockFlags(rawValue: 0))
-//
-//                        let rImage:CIImage = CIImage(image: image, options: [:])!
-//
-//                        DGStreamScreenCapture(view: self.view).qb_sharedGPUContext().render(rImage, to: buff)
-//
-//                        CVPixelBufferUnlockBaseAddress(buff, CVPixelBufferLockFlags(rawValue: 0))
-//
-//                        self.recordingManager.recorder?.writeSample(buffer: buff)
-//
-//                    }
-//                    else {
-//                        print("Failed to create buffer. \(status)")
-//                    }
-                    self.recordedScreenshots.append(image)
-                }
+        // If there is a freeze frame send that, otherwise send the local camera feed
+        if self.isFrozen, let image = self.freezeFrame {
+            let renderWidth = Int(image.size.width)
+            let renderHeight = Int(image.size.height)
+            
+            var buffer:CVPixelBuffer? = nil
+            
+            let pixelFormatType = kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
+            
+            let status:CVReturn = CVPixelBufferCreate(kCFAllocatorDefault, renderWidth, renderHeight, pixelFormatType, nil, &buffer)
+            
+            if status == kCVReturnSuccess, let buff = buffer {
+                
+                CVPixelBufferLockBaseAddress(buff, CVPixelBufferLockFlags(rawValue: 0))
+                
+                let rImage:CIImage = CIImage(image: image, options: [:])!
+                
+                DGStreamScreenCapture(view: self.view).qb_sharedGPUContext().render(rImage, to: buff)
+                
+                CVPixelBufferUnlockBaseAddress(buff, CVPixelBufferLockFlags(rawValue: 0))
+                
+                //self.recordingManager.recorder?.writeSample(buffer: buff)
+                
+                let frame = QBRTCVideoFrame(pixelBuffer: buff, videoRotation: ._0)
+                
+                print("Send Freeze Frame")
+                self.cameraCapture.send(frame)
+                
+            }
+            else {
+                print("Failed to create buffer. \(status)")
             }
         }
-        
-        print("frameToBroadcast")
-        self.cameraCapture.send(frameToBroadcast)
+        else {
+            if self.session != nil {
+                self.cameraCapture.send(frameToBroadcast)
+            }
+        }
+
     }
 }
 

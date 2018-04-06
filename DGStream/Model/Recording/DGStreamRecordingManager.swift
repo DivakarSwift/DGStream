@@ -20,7 +20,7 @@ class DGStreamRecordingManager: NSObject {
         self.orientation = orientation
     }
     func startRecordingWith(localCaptureSession: AVCaptureSession, remoteRecorder: QBRTCRecorder?, bufferQueue:DispatchQueue, documentNumber: String, isMerged: Bool, delegate: DGStreamRecorderDelegate) {
-        
+        print("startRecordingWith")
         self.isRecording = true
         
         self.recorder = DGStreamRecorder(localCaptureSession: localCaptureSession, bufferQueue: bufferQueue, documentNumber: documentNumber, delegate: delegate)

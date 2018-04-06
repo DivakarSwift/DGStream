@@ -135,7 +135,25 @@
             else
             {
                 // This command grabs the next UIImage and converts it to a CGImage
-                UIImage *iImage = (UIImage *)[array objectAtIndex:i];
+                NSString *fileName = (NSString *)[array objectAtIndex:i];
+                
+                NSString *documentsPath = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES).firstObject;
+                NSString *framesPath = [NSString stringWithFormat:@"%@/Frames/%@.jpeg", documentsPath, fileName];
+                
+                UIImage *iImage = [UIImage imageNamed:@"clear"];
+                if ([[NSFileManager defaultManager] fileExistsAtPath:framesPath]) {
+                    NSData * imageData = [NSFileManager.defaultManager contentsAtPath:framesPath];
+                    UIImage *image = [UIImage imageWithData:imageData];
+                    if (image) {
+                        iImage = image;
+                    }
+                    NSError *err;
+                    [[NSFileManager defaultManager] removeItemAtPath:framesPath error:&err];
+                    if (err) {
+                        NSLog(@"Error Removing Item %@", err.localizedDescription);
+                    }
+                }
+                
                 buffer = [self pixelBufferFromCGImage:iImage.CGImage];
             }
             

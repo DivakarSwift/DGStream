@@ -563,31 +563,33 @@ extension DGStreamCore: QBChatDelegate {
             else if text.hasPrefix("freeze") {
                 if let callVC = self.presentedViewController as? DGStreamCallViewController {
                     
-                    message.attachments?.forEach({ (attachment) in
-
-                        if let id = attachment.id, let attachmentID = UInt(id) {
-
-                            QBRequest.downloadFile(withID: attachmentID, successBlock: { (response, data) in
-
-                                callVC.freeze(imageData: data)
-
-                                if let user = DGStreamCore.instance.getOtherUserWith(userID: callVC.selectedUser), let username = user.username {
-                                    let message = DGStreamMessage()
-                                    message.message = "\(username) has frozen the screen."
-                                    message.isSystem = true
-                                    callVC.chatPeekView.addCellWith(message: message)
-                                    callVC.hideFreezeActivityIndicator()
-                                }
-
-                            }, statusBlock: { (request, status) in
-
-                            }, errorBlock: { (response) in
-                                print(response.error?.error?.localizedDescription ?? "No Error")
-                            })
-
-                        }
-
-                    })
+                    callVC.freeze()
+                    
+//                    message.attachments?.forEach({ (attachment) in
+//
+//                        if let id = attachment.id, let attachmentID = UInt(id) {
+//
+//                            QBRequest.downloadFile(withID: attachmentID, successBlock: { (response, data) in
+//
+//                                callVC.freeze(imageData: data)
+//
+//                                if let user = DGStreamCore.instance.getOtherUserWith(userID: callVC.selectedUser), let username = user.username {
+//                                    let message = DGStreamMessage()
+//                                    message.message = "\(username) has frozen the screen."
+//                                    message.isSystem = true
+//                                    callVC.chatPeekView.addCellWith(message: message)
+//                                    callVC.hideFreezeActivityIndicator()
+//                                }
+//
+//                            }, statusBlock: { (request, status) in
+//
+//                            }, errorBlock: { (response) in
+//                                print(response.error?.error?.localizedDescription ?? "No Error")
+//                            })
+//
+//                        }
+//
+//                    })
                 }
             }
             else if text.hasPrefix("didFreeze"), let callVC = self.presentedViewController as? DGStreamCallViewController {
