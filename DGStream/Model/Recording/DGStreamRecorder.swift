@@ -288,7 +288,7 @@ extension DGStreamRecorder: AVCaptureVideoDataOutputSampleBufferDelegate {
     }
     public func captureOutput(_ output: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, from connection: AVCaptureConnection!) {
         
-        print("didOutputSampleBuffer")
+        //print("didOutputSampleBuffer")
         
         var bufferCopy: CMSampleBuffer?
         if CMSampleBufferCreateCopy(kCFAllocatorDefault, sampleBuffer, &bufferCopy) == noErr {
@@ -301,29 +301,29 @@ extension DGStreamRecorder: AVCaptureVideoDataOutputSampleBufferDelegate {
         var orientation:QBRTCVideoRotation = ._90
         
         if recordOrientation == .portrait {
-            print("RECORDING IN portrait")
+            //print("RECORDING IN portrait")
             //self.remoteRecorder.setVideoRecording(._90)
             orientation = ._90
         }
         else if recordOrientation == .landscapeLeft {
-            print("RECORDING IN landscapeLeft")
+            //print("RECORDING IN landscapeLeft")
             //self.remoteRecorder.setVideoRecording(._0)
             //self.remoteRecorder.setVideoRecording(._0)
             orientation = ._0
         }
         else if recordOrientation == .landscapeRight {
-            print("RECORDING IN landscapeRight")
+            //print("RECORDING IN landscapeRight")
             //self.remoteRecorder.setVideoRecording(._180)
             orientation = ._180
         }
         else {
-            print("RECORDING IN upsideDown")
+            //print("RECORDING IN upsideDown")
             //self.remoteRecorder.setVideoRecording(._270)
             orientation = ._270
         }
         
         // SEND
-        if let pixelBuffer : CVPixelBuffer = CMSampleBufferGetImageBuffer(bufferCopy!), let videoFrame = QBRTCVideoFrame(pixelBuffer: pixelBuffer, videoRotation: orientation) {
+        if let copy = bufferCopy, let pixelBuffer : CVPixelBuffer = CMSampleBufferGetImageBuffer(copy), let videoFrame = QBRTCVideoFrame(pixelBuffer: pixelBuffer, videoRotation: orientation) {
             self.delegate.recorder(self, frameToBroadcast: videoFrame)
         }
         
