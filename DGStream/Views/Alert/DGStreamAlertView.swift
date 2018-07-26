@@ -17,8 +17,12 @@ enum AlertMode {
     case mergeRequest
     case mergeDeclined
     case mergeCancelled
-    case shareRequest
-    case shareCancelled
+    case whiteboardRequest
+    case whiteboardDeclined
+    case perspectiveRequest
+    case perspectiveCancelled
+    case recordingRequest
+    case videoEnded
 }
 
 class DGStreamAlertView: UIView {
@@ -36,6 +40,7 @@ class DGStreamAlertView: UIView {
     @IBOutlet weak var alertMessageLabel: UILabel!
     
     var alertMode: AlertMode = .incomingVideoCall
+    var isWaiting:Bool = false
     
     override func awakeFromNib() {
         super.awakeFromNib()
@@ -58,6 +63,7 @@ class DGStreamAlertView: UIView {
     func configureFor(mode: AlertMode, fromUsername: String?, message: String?, isWaiting: Bool) {
         
         self.alertMode = mode
+        self.isWaiting = isWaiting
         
         if let username = fromUsername, let user = DGStreamCore.instance.getOtherUserWith(username: username), let imageData = user.image, let image = UIImage.init(data: imageData) {
             self.imageView.image = image
@@ -161,12 +167,123 @@ class DGStreamAlertView: UIView {
             
             break
             
-        case .shareCancelled:
+        case .whiteboardDeclined:
+            
+            DispatchQueue.main.async {
+                self.nameLabel.text = fromUsername
+                self.alertMessageLabel.text = message ?? ""
+                self.alertMessageLabel.isHidden = false
+                self.acceptButton.isHidden = true
+                self.declineButton.isHidden = true
+                self.cancelButton.isHidden = false
+                
+                self.cancelButton.setTitle(NSLocalizedString("OK", comment: "Acknowledged dismissal"), for: .normal)
+            }
+            
             break
             
-        case .shareRequest:
+        case .whiteboardRequest:
+            
+            self.nameLabel.text = fromUsername
+            
+            self.alertTitleLabelContainer.backgroundColor = UIColor.dgMergeMode()
+            self.alertTitleLabel.text = "Whiteboard Request..."
+            
+            self.acceptButton.isHidden = false
+            self.declineButton.isHidden = false
+            if isWaiting == false {
+                self.cancelButton.isHidden = true
+            }
+            
+            let acceptImage = UIImage(named: "scratchpad", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate)
+            let declineImage = UIImage(named: "hangup", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate)
+            
+            self.acceptButton.setImage(acceptImage, for: .normal)
+            self.acceptButton.backgroundColor = UIColor.dgMergeMode()
+            self.acceptButton.tintColor = UIColor.dgWhite()
+            self.acceptButton.imageEdgeInsets = UIEdgeInsetsMake(10, 10, 10, 10)
+            self.acceptButton.backgroundColor = .yellow
+            
+            self.declineButton.setImage(declineImage, for: .normal)
+            self.declineButton.tintColor = UIColor.dgWhite()
+            self.declineButton.imageEdgeInsets = UIEdgeInsetsMake(10, 10, 10, 10)
+            
             break
             
+        case .perspectiveCancelled:
+            break
+            
+        case .perspectiveRequest:
+            
+            self.nameLabel.text = NSLocalizedString("Perspective", comment: "")
+            
+            self.alertTitleLabelContainer.backgroundColor = UIColor.dgMergeMode()
+            self.alertTitleLabel.text = "Perspective Request..."
+            
+            self.acceptButton.isHidden = false
+            self.declineButton.isHidden = false
+            if isWaiting == false {
+                self.cancelButton.isHidden = true
+            }
+            
+            let acceptImage = UIImage(named: "scratchpad", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate)
+            let declineImage = UIImage(named: "hangup", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate)
+            
+            self.acceptButton.setImage(acceptImage, for: .normal)
+            self.acceptButton.backgroundColor = UIColor.dgMergeMode()
+            self.acceptButton.tintColor = UIColor.dgWhite()
+            self.acceptButton.imageEdgeInsets = UIEdgeInsetsMake(10, 10, 10, 10)
+            self.acceptButton.backgroundColor = .yellow
+            
+            self.declineButton.setImage(declineImage, for: .normal)
+            self.declineButton.tintColor = UIColor.dgWhite()
+            self.declineButton.imageEdgeInsets = UIEdgeInsetsMake(10, 10, 10, 10)
+            
+            break
+            
+        case .recordingRequest:
+            
+            self.nameLabel.text = NSLocalizedString("Record", comment: "")
+            
+            self.alertTitleLabelContainer.backgroundColor = .red
+            self.alertTitleLabel.text = "Record Request..."
+            
+            self.acceptButton.isHidden = false
+            self.declineButton.isHidden = false
+            if isWaiting == false {
+                self.cancelButton.isHidden = true
+            }
+            
+            let acceptImage = UIImage(named: "record", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate)
+            let declineImage = UIImage(named: "hangup", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate)
+            
+            self.acceptButton.setImage(acceptImage, for: .normal)
+            self.acceptButton.tintColor = UIColor.dgWhite()
+            self.acceptButton.imageEdgeInsets = UIEdgeInsetsMake(10, 10, 10, 10)
+            self.acceptButton.backgroundColor = .red
+            
+            self.declineButton.setImage(declineImage, for: .normal)
+            self.declineButton.tintColor = UIColor.dgWhite()
+            self.declineButton.imageEdgeInsets = UIEdgeInsetsMake(10, 10, 10, 10)
+            
+            break
+            
+        case .videoEnded:
+            
+            self.nameLabel.text = "Video has ended"
+            self.nameLabel.font = UIFont(name: "HelveticaNeue-Bold", size: 14)
+            
+            self.alertTitleLabelContainer.backgroundColor = UIColor.dgMergeMode()
+            self.alertTitleLabel.text = NSLocalizedString("Recording Sharing...", comment: "")
+            self.alertMessageLabel.text = message ?? ""
+            self.alertMessageLabel.isHidden = false
+            self.acceptButton.isHidden = true
+            self.declineButton.isHidden = true
+            self.cancelButton.isHidden = false
+            
+            self.cancelButton.setTitle(NSLocalizedString("OK", comment: "Acknowledged dismissal"), for: .normal)
+            
+            break
         }
         
         if let message = message {
@@ -189,8 +306,7 @@ class DGStreamAlertView: UIView {
         
     }
     
-    func presentWithin(viewController: UIViewController, fromUsername: String, block: @escaping DGStreamAlertBlock) {
-        self.nameLabel.text = fromUsername
+    func presentWithin(viewController: UIViewController, block: @escaping DGStreamAlertBlock) {
         self.alertBlock = block
         self.alpha = 0
         viewController.view.addSubview(self)
@@ -242,7 +358,11 @@ class DGStreamAlertView: UIView {
     }
     
     @IBAction func cancelButtonTapped(_ sender: Any) {
-        dismiss()
+        if let block = self.alertBlock {
+            block(true)
+            self.alertBlock = nil
+        }
+        self.dismiss()
     }
     
 }

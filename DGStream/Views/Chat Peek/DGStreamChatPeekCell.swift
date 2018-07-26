@@ -61,7 +61,12 @@ class DGStreamChatPeekCell: UIView {
         self.messageBubble.clipsToBounds = true
         self.messageBubble.layer.cornerRadius = 6
         
-        self.label.text = message.message
+        if message.imageID == nil {
+            self.label.text = message.message
+        }
+        else {
+            self.label.text = "(Sent A Picture)"
+        }
         self.label.textColor = .white
         self.label.layoutIfNeeded()
         

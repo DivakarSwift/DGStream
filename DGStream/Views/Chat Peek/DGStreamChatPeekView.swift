@@ -55,7 +55,7 @@ class DGStreamChatPeekView: UIView {
             
         }) { (f) in
             // Fade out after 3 seconds
-            UIView.animate(withDuration: 0.25, delay: 3.0, options: .curveEaseOut, animations: {
+            UIView.animate(withDuration: 0.25, delay: 6.0, options: .curveEaseOut, animations: {
                 cell.alpha = 0
             }, completion: { (fi) in
                 cell.removeFromSuperview()

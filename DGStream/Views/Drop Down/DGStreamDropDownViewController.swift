@@ -15,8 +15,8 @@ enum DGStreamDropDownType: Int {
 }
 
 protocol DGStreamDropDownViewControllerDelegate {
-    func dropDownViewController(viewController: DGStreamDropDownViewController, sizeSelected size: String)
-    func dropDownViewController(viewController: DGStreamDropDownViewController, colorSelected color: UIColor)
+    func dropDownViewController(viewController: DGStreamDropDownViewController, sizeSelected size: String, atIndex index: Int)
+    func dropDownViewController(viewController: DGStreamDropDownViewController, colorSelected color: UIColor, atIndex index: Int)
     func dropDownViewController(viewController: DGStreamDropDownViewController, stampSelected stamp: String)
 }
 
@@ -47,11 +47,12 @@ class DGStreamDropDownViewController: UIViewController {
 
 extension DGStreamDropDownViewController: UICollectionViewDelegate, UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let index = indexPath.item
         if self.type == .size {
-            self.delegate.dropDownViewController(viewController: self, sizeSelected: sizes[indexPath.item])
+            self.delegate.dropDownViewController(viewController: self, sizeSelected: sizes[indexPath.item], atIndex: index)
         }
         else if self.type == .color {
-            self.delegate.dropDownViewController(viewController: self, colorSelected: colors[indexPath.item])
+            self.delegate.dropDownViewController(viewController: self, colorSelected: colors[indexPath.item], atIndex: index)
         }
         else if self.type == .stamp {
             self.delegate.dropDownViewController(viewController: self, stampSelected: stamps[indexPath.item])

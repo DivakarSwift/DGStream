@@ -8,27 +8,50 @@
 
 import UIKit
 
+enum CommnicationType {
+    case video
+    case audio
+    case message
+}
+
+protocol DGStreamUserViewControllerDelegate {
+    func userViewController(_ vc: DGStreamUserViewController, didTap: CommnicationType, forUserID userID: NSNumber)
+}
+
 class DGStreamUserViewController: UIViewController {
     
     @IBOutlet weak var tableView: UITableView!
-    
     @IBOutlet weak var navBarView: UIView!
-    
     @IBOutlet weak var backButton: UIButton!
+    @IBOutlet weak var favoriteButton: UIButton!
+    @IBOutlet weak var backgroundImageView: UIImageView!
+    
     
     var user: DGStreamUser!
-    
+    var userID: NSNumber!
     var recents: [DGStreamRecent] = []
+    var isFavorite:Bool = false
+    var delegate: DGStreamUserViewControllerDelegate!
 
     override func viewDidLoad() {
         super.viewDidLoad()
 
         // Do any additional setup after loading the view.
         
-        self.navBarView.backgroundColor = UIColor.dgBlueDark()
-        self.backButton.setTitle(NSLocalizedString("Back", comment: "Return to previous screen"), for: .normal)
-        self.backButton.setTitleColor(.white, for: .normal)
+        if let userID = user.userID {
+            self.userID = userID
+            if DGStreamCore.instance.isFavorite(userID: userID) {
+                self.favoriteButton.setTitle("Remove Favorite", for: .normal)
+                self.isFavorite = true
+            }
+        }
         
+        self.navBarView.backgroundColor = .white
+        self.backButton.setTitle(NSLocalizedString("Back", comment: "Return to previous screen"), for: .normal)
+        self.backButton.setTitleColor(UIColor.dgButtonColor(), for: .normal)
+        self.tableView.backgroundColor = .clear
+        self.tableView.backgroundView?.backgroundColor = .clear
+        self.backgroundImageView.image = UIImage(named: "background", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)
         loadRecents()
     }
 
@@ -38,7 +61,25 @@ class DGStreamUserViewController: UIViewController {
     }
     
     @IBAction func backButtonTapped(_ sender: Any) {
-        self.dismiss(animated: true, completion: nil)
+        if let nav = self.navigationController {
+            nav.popViewController(animated: true)
+        }
+        else {
+            self.dismiss(animated: true, completion: nil)
+        }
+    }
+    
+    @IBAction func favoriteButtonTapped(_ sender: Any) {
+        if self.isFavorite {
+            DGStreamCore.instance.removeFavorite(userID: self.userID)
+            self.isFavorite = false
+            self.favoriteButton.setTitle("Add Favorite", for: .normal)
+        }
+        else {
+            DGStreamCore.instance.addFavorite(userID: self.userID)
+            self.isFavorite = true
+            self.favoriteButton.setTitle("Remove Favorite", for: .normal)
+        }
     }
     
     //MARK:- Load Data
@@ -58,33 +99,60 @@ class DGStreamUserViewController: UIViewController {
 
 }
 
+extension DGStreamUserViewController: DGStreamUserHeaderDelegate {
+    func close() {
+        if let nav = self.navigationController {
+            nav.popViewController(animated: false)
+        }
+        else {
+            self.dismiss(animated: false, completion: nil)
+        }
+    }
+    func userImageButtonTapped() {
+        
+    }
+    
+    func didTapVideoCall() {
+        self.close()
+        self.delegate.userViewController(self, didTap: .video, forUserID: self.userID)
+    }
+    
+    func didTapAudioCall() {
+        self.close()
+        self.delegate.userViewController(self, didTap: .audio, forUserID: self.userID)
+    }
+    
+    func didTapMessage() {
+        self.close()
+        self.delegate.userViewController(self, didTap: .message, forUserID: self.userID)
+    }
+    
+    
+}
+
 extension DGStreamUserViewController: UITableViewDataSource, UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
+        tableView.deselectRow(at: indexPath, animated: true)
     }
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         if indexPath.section == 0 {
-            return 160
+            return 240
         }
         else {
-            return 70
+            return 76
         }
     }
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         if section == 1 {
-            return 40
+            return 0.5
         }
         return 0
     }
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         if section == 1 {
-            let label = UILabel(frame: CGRect(x: 0, y: 0, width: tableView.bounds.size.width, height: 40))
-            label.backgroundColor = UIColor.dgBlueDark()
-            label.text = NSLocalizedString("Recent Activity", comment: "")
-            label.textAlignment = .center
-            label.textColor = .white
-            label.font = UIFont(name: "HelveticaNeue-Bold", size: 22)
-            return label
+            let view = UIView(frame: CGRect(x: 0, y: 0, width: tableView.bounds.size.width, height: 40))
+            view.backgroundColor = UIColor.dgBlack()
+            return view
         }
         return nil
     }
@@ -102,6 +170,7 @@ extension DGStreamUserViewController: UITableViewDataSource, UITableViewDelegate
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         if indexPath.section == 0, let userHeader = UINib(nibName: "UserHeader", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiate(withOwner: self, options: nil).first as? DGStreamUserHeader {
             userHeader.configureWith(user: self.user)
+            userHeader.delegate = self
             let cell = tableView.dequeueReusableCell(withIdentifier: "HeaderCell")!
             userHeader.boundInside(container: cell.contentView)
             return cell

@@ -60,4 +60,19 @@ public protocol DGStreamRecordingProtocol {
     var dgThumbnail: Data? { get }
     var dgCreatedDate: Date { get }
     var dgCreatedBy: NSNumber { get }
+    var dgIsPhoto: Bool { get }
+}
+
+public protocol DGStreamDocumentProtocol {
+    var dgID: String { get }
+    var dgTitle: String { get }
+    var dgURL: String { get }
+    var dgThumbnail: Data? { get }
+    var dgCreatedDate: Date { get }
+    var dgCreatedBy: NSNumber { get }
+}
+
+public protocol DGStreamImageProtocol {
+    var dgID: String { get }
+    var dgImageData: Data? { get }
 }

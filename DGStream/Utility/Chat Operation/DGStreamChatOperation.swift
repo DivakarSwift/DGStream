@@ -36,30 +36,39 @@ class DGStreamChatOperation: Operation {
                 
                 if let id = attachment.id, let attachmentID = UInt(id) {
                     
-                    QBRequest.downloadFile(withID: attachmentID, successBlock: { (response, data) in
-                        if let image = UIImage(data: data) {
+                    let protos = DGStreamManager.instance.dataSource.streamManager(DGStreamManager.instance, imagesWithID: id)
+                    
+                    let images = DGStreamImage.createDGStreamImagesFor(protocols: protos)
+                    
+                    if let storedImage = images.first, let storedImageData = storedImage.imageData, let image = UIImage(data: storedImageData) {
+                        // LOAD FROM CORE DATA
+                        self.delegate.didFinishOperationWith(messageNode: self.createNodeFrom(image: image, isIncoming: isIncomingMessage))
+                    }
+                    else {
+                        // DOWNLOAD
+                        QBRequest.downloadFile(withID: attachmentID, successBlock: { (response, data) in
+                            if let image = UIImage(data: data) {
+                                
+                                let storeImage = DGStreamImage()
+                                storeImage.imageData = data
+                                storeImage.id = id
+                                
+                                DGStreamManager.instance.dataStore.streamManager(DGStreamManager.instance, store: storeImage)
+                                
+                                self.delegate.didFinishOperationWith(messageNode: self.createNodeFrom(image: image, isIncoming: isIncomingMessage))
+            
+                            }
+                            else {
+                                self.delegate.didFinishOperationWith(messageNode: nil)
+                            }
+                        }, statusBlock: { (request, status) in
                             
-                            let imageNode = ImageContentNode(image: image)
-                            imageNode.imageMessageNode.contentMode = .scaleAspectFit
-                            imageNode.bubbleConfiguration = DGStreamChatImageBubble() as BubbleConfigurationProtocol
-                            
-                            let messageNode = MessageNode(content: imageNode)
-                            messageNode.isIncomingMessage = isIncomingMessage
-                            messageNode.messageOffset = 10
-                            messageNode.cellPadding = UIEdgeInsetsMake(5, 0, 5, 0)
-                            
-                            self.delegate.didFinishOperationWith(messageNode: messageNode)
-                            
-                        }
-                        else {
+                        }, errorBlock: { (response) in
+                            print(response.error?.error?.localizedDescription ?? "No Error")
                             self.delegate.didFinishOperationWith(messageNode: nil)
-                        }
-                    }, statusBlock: { (request, status) in
-                        
-                    }, errorBlock: { (response) in
-                        print(response.error?.error?.localizedDescription ?? "No Error")
-                        self.delegate.didFinishOperationWith(messageNode: nil)
-                    })
+                        })
+                    }
+                    
                 }
                 else {
                     self.delegate.didFinishOperationWith(messageNode: nil)
@@ -67,8 +76,16 @@ class DGStreamChatOperation: Operation {
             })
         }
         else {
-            
-            let textNode = TextContentNode(textMessageString: message.text ?? "")
+            let date = message.dateSent ?? message.createdAt
+            var textMessage = ""
+            if let date = date {
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateStyle = .short
+                dateFormatter.timeStyle = .short
+                textMessage.append("\(dateFormatter.string(from: date)): ")
+            }
+            textMessage.append(message.text ?? "")
+            let textNode = TextContentNode(textMessageString: textMessage)
             textNode.isIncomingMessage = isIncomingMessage
             textNode.incomingTextFont = UIFont(name: "HelveticaNeue-Bold", size: 14)!
             textNode.outgoingTextFont = UIFont(name: "HelveticaNeue-Bold", size: 14)!
@@ -84,5 +101,18 @@ class DGStreamChatOperation: Operation {
             self.delegate.didFinishOperationWith(messageNode: messageNode)
         }
     
+    }
+    
+    func createNodeFrom(image: UIImage, isIncoming: Bool) -> MessageNode {
+        let imageNode = ImageContentNode(image: image)
+        imageNode.imageMessageNode.contentMode = .scaleAspectFit
+        imageNode.bubbleConfiguration = DGStreamChatImageBubble() as BubbleConfigurationProtocol
+        
+        let messageNode = MessageNode(content: imageNode)
+        messageNode.isIncomingMessage = isIncoming
+        messageNode.messageOffset = 10
+        messageNode.cellPadding = UIEdgeInsetsMake(5, 0, 5, 0)
+        
+        return messageNode
     }
 }

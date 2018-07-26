@@ -13,4 +13,5 @@ typedef void(^MergeRecordingCompletion)(NSURL *);
 @interface DGStreamRecorderMerge : NSObject
 - (void) overlapVideosWithLocalURL:(NSURL *) localURL remoteURL:(NSURL *) remoteURL isMerged:(bool) isMerged fileName:(NSString *) fileName withCompletion:(MergeRecordingCompletion) completion;
 //+(CVPixelBufferRef)pixelBufferFromCGImage:(CGImageRef)image;
+- (void) mergeVideo:(NSURL *)videoURL andAudio:(NSURL *)audioURL forFileName:(NSString *)fileName withCompletion:(MergeRecordingCompletion)completion;
 @end

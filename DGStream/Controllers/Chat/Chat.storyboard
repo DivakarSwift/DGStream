@@ -1,19 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Xvf-ae-VJO">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="14113" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES" initialViewController="Xvf-ae-VJO">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
-    <customFonts key="customFonts">
-        <array key="HelveticaNeue.ttc">
-            <string>HelveticaNeue-Bold</string>
-        </array>
-    </customFonts>
     <scenes>
         <!--Stream Chat View Controller-->
         <scene sceneID="9kG-xT-wHY">
@@ -39,6 +34,17 @@
                                         <state key="normal" title="Back"/>
                                         <connections>
                                             <action selector="backButtonTapped:" destination="Xvf-ae-VJO" eventType="touchUpInside" id="IRy-k4-Dmg"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="BTA-z3-saE" userLabel="Clear">
+                                        <rect key="frame" x="285" y="25.5" width="80" height="30"/>
+                                        <constraints>
+                                            <constraint firstAttribute="height" constant="30" id="mSg-dS-lwj"/>
+                                            <constraint firstAttribute="width" constant="80" id="tLJ-Jw-QUx"/>
+                                        </constraints>
+                                        <state key="normal" title="Clear"/>
+                                        <connections>
+                                            <action selector="clearButtonTapped:" destination="Xvf-ae-VJO" eventType="touchUpInside" id="u1l-aV-Ydd"/>
                                         </connections>
                                     </button>
                                     <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="k96-nG-py4">
@@ -75,30 +81,22 @@
                                         <nil key="textColor"/>
                                         <nil key="highlightedColor"/>
                                     </label>
-                                    <button hidden="YES" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="pFz-Wz-4iA">
-                                        <rect key="frame" x="287" y="33" width="80" height="30"/>
-                                        <constraints>
-                                            <constraint firstAttribute="height" constant="30" id="5CR-5b-syA"/>
-                                            <constraint firstAttribute="width" constant="80" id="7M2-nr-Xqh"/>
-                                        </constraints>
-                                        <state key="normal" title="..."/>
-                                    </button>
                                 </subviews>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <constraints>
                                     <constraint firstItem="4hY-wI-4rI" firstAttribute="centerX" secondItem="qLv-yC-CWC" secondAttribute="centerX" id="1wW-4z-03w"/>
                                     <constraint firstItem="Fag-kl-qgl" firstAttribute="leading" secondItem="qLv-yC-CWC" secondAttribute="leading" constant="8" id="3dl-nf-RNv"/>
+                                    <constraint firstAttribute="trailing" secondItem="BTA-z3-saE" secondAttribute="trailing" constant="10" id="3la-1u-UNU"/>
                                     <constraint firstItem="eiQ-6A-zSg" firstAttribute="top" secondItem="qLv-yC-CWC" secondAttribute="top" constant="20" id="81S-W8-8Ci"/>
-                                    <constraint firstItem="k96-nG-py4" firstAttribute="top" secondItem="pFz-Wz-4iA" secondAttribute="bottom" id="8Mo-eO-9be"/>
                                     <constraint firstItem="k96-nG-py4" firstAttribute="top" secondItem="4hY-wI-4rI" secondAttribute="bottom" id="NLL-Ix-4YZ"/>
                                     <constraint firstItem="ZpS-y0-dQw" firstAttribute="top" secondItem="qLv-yC-CWC" secondAttribute="top" constant="20" id="OPs-XB-Obe"/>
                                     <constraint firstAttribute="bottom" secondItem="Fag-kl-qgl" secondAttribute="bottom" constant="8" id="Own-ag-XKu"/>
                                     <constraint firstItem="ZpS-y0-dQw" firstAttribute="centerX" secondItem="qLv-yC-CWC" secondAttribute="centerX" id="Qmm-qi-8SL"/>
-                                    <constraint firstAttribute="trailing" secondItem="pFz-Wz-4iA" secondAttribute="trailing" constant="8" id="RSr-qw-4sc"/>
                                     <constraint firstItem="eiQ-6A-zSg" firstAttribute="centerX" secondItem="qLv-yC-CWC" secondAttribute="centerX" id="S6k-ij-IRE"/>
                                     <constraint firstAttribute="height" constant="64" id="cLS-2F-Ue1"/>
                                     <constraint firstAttribute="bottom" secondItem="k96-nG-py4" secondAttribute="bottom" id="ckL-6w-o3C"/>
                                     <constraint firstAttribute="trailing" secondItem="k96-nG-py4" secondAttribute="trailing" id="dyX-Cb-cFs"/>
+                                    <constraint firstItem="k96-nG-py4" firstAttribute="top" secondItem="BTA-z3-saE" secondAttribute="bottom" constant="8" id="x9m-os-jgx"/>
                                     <constraint firstItem="k96-nG-py4" firstAttribute="leading" secondItem="qLv-yC-CWC" secondAttribute="leading" id="zDw-Xd-WOW"/>
                                 </constraints>
                             </view>
@@ -191,6 +189,7 @@
                         <outlet property="abrevLabel" destination="ZpS-y0-dQw" id="u7q-H0-w38"/>
                         <outlet property="activityIndicator" destination="HlB-ui-hh8" id="qlB-Xh-198"/>
                         <outlet property="backButton" destination="Fag-kl-qgl" id="yA2-DQ-oIK"/>
+                        <outlet property="clearButton" destination="BTA-z3-saE" id="MqJ-G5-nPG"/>
                         <outlet property="imageView" destination="eiQ-6A-zSg" id="R73-bo-9CT"/>
                         <outlet property="messengerContainer" destination="V7O-Bo-PWQ" id="UXJ-AX-Jdb"/>
                         <outlet property="messengerContainerBottomConstraint" destination="3nD-6v-lV0" id="QjO-QC-7QF"/>
@@ -217,10 +216,9 @@
                         <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <scrollView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="Gxz-9j-vU9">
+                            <imageView userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="bGq-b1-JXZ">
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="667"/>
-                                <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
-                            </scrollView>
+                            </imageView>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="wxM-as-Jyy">
                                 <rect key="frame" x="0.0" y="0.0" width="375" height="64"/>
                                 <subviews>
@@ -250,19 +248,19 @@
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
-                            <constraint firstItem="Gxz-9j-vU9" firstAttribute="trailing" secondItem="HwT-ZF-xfT" secondAttribute="trailing" id="9te-td-45O"/>
-                            <constraint firstItem="Gxz-9j-vU9" firstAttribute="bottom" secondItem="HwT-ZF-xfT" secondAttribute="bottom" id="LD8-d7-Onz"/>
-                            <constraint firstItem="Gxz-9j-vU9" firstAttribute="leading" secondItem="HwT-ZF-xfT" secondAttribute="leading" id="LeQ-xf-SBe"/>
+                            <constraint firstItem="bGq-b1-JXZ" firstAttribute="trailing" secondItem="HwT-ZF-xfT" secondAttribute="trailing" id="C3p-bC-ChQ"/>
+                            <constraint firstItem="bGq-b1-JXZ" firstAttribute="leading" secondItem="HwT-ZF-xfT" secondAttribute="leading" id="WOf-bb-NdK"/>
+                            <constraint firstItem="bGq-b1-JXZ" firstAttribute="top" secondItem="Spm-BS-EUS" secondAttribute="top" id="duf-q8-ATT"/>
                             <constraint firstItem="wxM-as-Jyy" firstAttribute="leading" secondItem="HwT-ZF-xfT" secondAttribute="leading" id="hHW-4h-Xp4"/>
                             <constraint firstItem="wxM-as-Jyy" firstAttribute="top" secondItem="Spm-BS-EUS" secondAttribute="top" id="hQV-nd-ORS"/>
                             <constraint firstItem="wxM-as-Jyy" firstAttribute="trailing" secondItem="HwT-ZF-xfT" secondAttribute="trailing" id="nH7-wG-HIo"/>
-                            <constraint firstItem="Gxz-9j-vU9" firstAttribute="top" secondItem="Spm-BS-EUS" secondAttribute="top" id="xBa-TZ-AMQ"/>
+                            <constraint firstItem="bGq-b1-JXZ" firstAttribute="bottom" secondItem="HwT-ZF-xfT" secondAttribute="bottom" id="odq-Dg-Duc"/>
                         </constraints>
                         <viewLayoutGuide key="safeArea" id="HwT-ZF-xfT"/>
                     </view>
                     <connections>
                         <outlet property="backButton" destination="vt3-7b-Viw" id="zNb-F5-SrN"/>
-                        <outlet property="scrollView" destination="Gxz-9j-vU9" id="1Fa-7Y-kyX"/>
+                        <outlet property="imageView" destination="bGq-b1-JXZ" id="PKN-zG-cI1"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dEx-cf-qFD" userLabel="First Responder" sceneMemberID="firstResponder"/>

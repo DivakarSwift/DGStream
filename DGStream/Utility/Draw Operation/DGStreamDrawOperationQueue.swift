@@ -14,17 +14,20 @@ class DGStreamDrawOperationQueue: OperationQueue {
     
     var drawOperations:[DGStreamDrawOperation] = []
     var completion: DrawOperationQueueCompletion?
+    var increment: Int = 0
     
-    func addDrawing(snapshot: UIImage, fromCurrentUser: NSNumber, toUsers: [NSNumber], withFileID fileID: String) {
-        let drawOperation = DGStreamDrawOperation(fileID: fileID, currentUserID: fromCurrentUser, toUserIDs: toUsers, snapshot: snapshot)
+    func addDrawing(snapshot: UIImage, fromCurrentUser: NSNumber, toUsers: [NSNumber], isUndo: Bool, withFileID fileID: String) {
+        let drawOperation = DGStreamDrawOperation(fileID: fileID, currentUserID: fromCurrentUser, toUserIDs: toUsers, isUndo: isUndo, increment: self.increment, snapshot: snapshot)
         drawOperation.delegate = self
         drawOperations.append(drawOperation)
-        if self.operationCount == 0 {
-            loadNextDrawing()
-        }
+        loadNextDrawing()
+//        if self.operationCount == 0 {
+//            loadNextDrawing()
+//        }
     }
     
     func loadNextDrawing() {
+        increment += 1
         if let drawing = drawOperations.popLast() {
             addOperation(drawing)
         }
@@ -46,7 +49,7 @@ extension DGStreamDrawOperationQueue: DGStreamDrawOperationDelegate {
         loadNextDrawing()
     }
     func drawOperationFailedWith(errorMessage: String) {
-        print("FAILED TO DRAW!")
+        print(errorMessage)
         
     }
 }

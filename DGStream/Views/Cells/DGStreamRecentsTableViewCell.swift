@@ -10,36 +10,36 @@ import UIKit
 
 class DGStreamRecentsTableViewCell: UITableViewCell {
     
+    @IBOutlet weak var accessoryButton: UIButton!
     @IBOutlet weak var nameLabel: UILabel!
     @IBOutlet weak var userImageView: UIImageView!
     @IBOutlet weak var dateLabel: UILabel!
-    @IBOutlet weak var durationLabel: UILabel!
     @IBOutlet weak var abrevLabel: UILabel!
-    
-    @IBOutlet weak var audioCallButton: UIButton!
-    @IBOutlet weak var videoCallButton: UIButton!
-    @IBOutlet weak var messageButton: UIButton!
-    @IBOutlet weak var numberLabel: UILabel!
-    
+    var gradient: CAGradientLayer?
     var delegate: DGStreamTableViewCellDelegate!
-    
     var recent: DGStreamRecent!
     
     override func awakeFromNib() {
         super.awakeFromNib()
         self.contentView.backgroundColor = .clear
         self.backgroundColor = .clear
-        self.numberLabel.backgroundColor = UIColor.dgBlueDark()
-        self.numberLabel.layer.cornerRadius = self.numberLabel.frame.size.width / 2
-        self.numberLabel.textColor = .white
-        userImageView.layer.cornerRadius = userImageView.frame.size.width / 2
         userImageView.backgroundColor = UIColor.dgBlack()
         abrevLabel.textColor = .white
         nameLabel.textColor = UIColor.dgBlack()
-        dateLabel.textColor = UIColor.dgBlack()
-        durationLabel.textColor = UIColor.dgBlack()
-        self.userImageView.layer.borderColor = UIColor.dgGray().cgColor
-        self.setUpButtons()
+        dateLabel.textColor = .white
+        self.userImageView.layer.cornerRadius = self.userImageView.frame.size.width / 2
+        self.userImageView.layer.borderColor = UIColor.clear.cgColor
+        self.userImageView.layer.borderWidth = 3
+        
+        let accessoryImage = UIImage(named: "info", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)
+        self.accessoryButton.setImage(accessoryImage?.withRenderingMode(.alwaysTemplate), for: .normal)
+        self.accessoryButton.imageEdgeInsets = UIEdgeInsetsMake(8, 8, 8, 8)
+        self.accessoryButton.tintColor = UIColor.dgButtonColor()
+        self.accessoryButton.layer.borderColor = UIColor.dgButtonColor().cgColor
+        self.accessoryButton.layer.borderWidth = 0.5
+        self.accessoryButton.layer.cornerRadius = self.accessoryButton.frame.size.width / 2
+        
+        self.setUpGradient()
     }
     
 //    func configureWith(contact: DGStreamContact, delegate: DGStreamTableViewCellDelegate) {
@@ -68,8 +68,6 @@ class DGStreamRecentsTableViewCell: UITableViewCell {
 
         self.recent = recent
 
-        self.numberLabel.alpha = 0
-
         var isIncoming: Bool = false
         var otherUser: DGStreamUser?
         if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID, let receiverID = recent.receiverID {
@@ -88,10 +86,8 @@ class DGStreamRecentsTableViewCell: UITableViewCell {
 
         if let user = otherUser, let username = user.username {
             nameLabel.text = username
-            if user.isOnline {
-                self.userImageView.layer.borderColor = UIColor.dgGreen().cgColor
-                self.userImageView.layer.borderWidth = 2.5
-            }
+            let status = DGStreamCore.instance.onlineStatusFor(user: user)
+            self.setOnline(status: status)
             if let imageData = user.image, let image = UIImage(data: imageData) {
                 self.userImageView.image = image
             }
@@ -117,76 +113,60 @@ class DGStreamRecentsTableViewCell: UITableViewCell {
             dateLabel.textColor = UIColor.dgBlack()
         }
 
-        if let duration = recent.duration {
-            self.durationLabel.text = "\(duration)m"
-        }
-        else {
-            self.durationLabel.text = ""
-        }
-
         if isIncoming {
 
         }
 
     }
     
-    func setUpButtons() {
-        self.videoCallButton.setImage(UIImage.init(named: "video", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
-        self.videoCallButton.backgroundColor = UIColor.dgBlueDark()
-        self.videoCallButton.tintColor = UIColor.dgBackground()
-        self.videoCallButton.layer.cornerRadius = self.videoCallButton.frame.size.width / 2
-        
-        self.audioCallButton.setImage(UIImage.init(named: "audio", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
-        self.audioCallButton.backgroundColor = UIColor.dgBlueDark()
-        self.audioCallButton.tintColor = UIColor.dgBackground()
-        self.audioCallButton.layer.cornerRadius = self.audioCallButton.frame.size.width / 2
-        
-        self.messageButton.setImage(UIImage.init(named: "message", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
-        self.messageButton.backgroundColor = UIColor.dgBlueDark()
-        self.messageButton.tintColor = UIColor.dgBackground()
-        self.messageButton.layer.cornerRadius = self.messageButton.frame.size.width / 2
+    func setUpGradient() {
+        if let gradient = self.gradient {
+            gradient.removeFromSuperlayer()
+        }
+        let dark = UIColor(red: 0, green: 0, blue: 0, alpha: 0.10)
+        self.gradient = self.addGradientBackground(firstColor: .clear, secondColor: dark, height: self.contentView.bounds.size.height)
     }
     
     func startSelection(animated: Bool) {
-        if animated {
-            UIView.animate(withDuration: 0.25) {
-                self.videoCallButton.alpha = 0
-                self.audioCallButton.alpha = 0
-            }
-        }
-        else {
-            self.videoCallButton.alpha = 0
-            self.audioCallButton.alpha = 0
-        }
+//        if animated {
+//            UIView.animate(withDuration: 0.25) {
+//                self.videoCallButton.alpha = 0
+//                self.audioCallButton.alpha = 0
+//            }
+//        }
+//        else {
+//            self.videoCallButton.alpha = 0
+//            self.audioCallButton.alpha = 0
+//        }
     }
     
     func endSelection(animated: Bool) {
-        if animated {
-            UIView.animate(withDuration: 0.25) {
-                self.videoCallButton.alpha = 1
-                self.audioCallButton.alpha = 1
-                self.numberLabel.alpha = 0
-            }
-        }
-        else {
-            self.videoCallButton.alpha = 1
-            self.audioCallButton.alpha = 1
-            self.numberLabel.alpha = 0
-        }
+//        if animated {
+//            UIView.animate(withDuration: 0.25) {
+//                self.videoCallButton.alpha = 1
+//                self.audioCallButton.alpha = 1
+//                self.numberLabel.alpha = 0
+//            }
+//        }
+//        else {
+//            self.videoCallButton.alpha = 1
+//            self.audioCallButton.alpha = 1
+//            self.numberLabel.alpha = 0
+//        }
     }
     
     func selectWith(count: Int, animate: Bool) {
-        self.videoCallButton.alpha = 0
-        self.audioCallButton.alpha = 0
-        self.numberLabel.text = "\(count)"
-        if animate {
-            UIView.animate(withDuration: 0.25) {
-                self.numberLabel.alpha = 1
-            }
-        }
-        else {
-            self.numberLabel.alpha = 1
-        }
+//        self.videoCallButton.alpha = 0
+//        self.audioCallButton.alpha = 0
+//        self.numberLabel.text = "\(count)"
+//        if animate {
+//            UIView.animate(withDuration: 0.25) {
+//                self.numberLabel.alpha = 1
+//            }
+//        }
+//        else {
+//            self.numberLabel.alpha = 1
+//        }
     }
     
     func update(user: DGStreamUser, forOnline isOnline: Bool) {
@@ -201,7 +181,7 @@ class DGStreamRecentsTableViewCell: UITableViewCell {
             }
             if let userID = user.userID, userID == otherUserID {
                 if isOnline {
-                    self.setOnline()
+                    self.setOnline(status: .online)
                 }
                 else {
                     self.setOffline()
@@ -210,13 +190,23 @@ class DGStreamRecentsTableViewCell: UITableViewCell {
         }
     }
     
-    func setOnline() {
-        self.userImageView.layer.borderColor = UIColor.dgGreen().cgColor
-        self.userImageView.layer.borderWidth = 2.5
+    func setOnline(status: DGStreamOnlineStatus) {
+        if status == .online {
+            self.userImageView.layer.borderColor = UIColor.green.cgColor
+        }
+        else if status == .recent {
+            self.userImageView.layer.borderColor = UIColor.yellow.cgColor
+        }
+        else if status == .away {
+            self.userImageView.layer.borderColor = UIColor.orange.cgColor
+        }
+        else {
+            self.userImageView.layer.borderColor = UIColor.clear.cgColor
+        }
     }
     
     func setOffline() {
-        self.userImageView.layer.borderWidth = 0.0
+        self.userImageView.layer.borderColor = UIColor.clear.cgColor
     }
 
     @IBAction func videoCallButtonTapped(_ sender: Any) {
@@ -283,15 +273,24 @@ class DGStreamRecentsTableViewCell: UITableViewCell {
         self.delegate.userButtonTapped(userID: userID)
     }
     
+    @IBAction func accessoryButtonTapped(_ sender: Any) {
+        var userID: NSNumber = 0.0
+        if self.recent.senderID == DGStreamCore.instance.currentUser?.userID ?? 0 {
+            userID = self.recent.receiverID!
+        }
+        else {
+            userID = self.recent.senderID!
+        }
+        
+        self.delegate.userButtonTapped(userID: userID)
+    }
+    
     override func prepareForReuse() {
         nameLabel.textColor = UIColor.dgDarkGray()
         dateLabel.textColor = UIColor.dgDarkGray()
-        durationLabel.textColor = UIColor.dgDarkGray()
-        self.userImageView.layer.borderColor = UIColor.dgGray().cgColor
         self.userImageView.image = nil
         self.nameLabel.text = ""
         dateLabel.text = ""
-        durationLabel.text = ""
-        self.userImageView.layer.borderWidth = 0.0
+        self.userImageView.layer.borderColor = UIColor.clear.cgColor
     }
 }

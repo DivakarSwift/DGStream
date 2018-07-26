@@ -36,6 +36,7 @@ class DGStreamMessage: NSObject {
         let message = DGStreamMessage()
         message.id = chatMessage.id
         message.message = chatMessage.text
+        message.delivered = chatMessage.dateSent
         message.senderID = NSNumber(value: chatMessage.senderID)
         message.receiverID = NSNumber.init(value: chatMessage.recipientID)
         message.conversationID = chatMessage.dialogID ?? ""
@@ -43,6 +44,9 @@ class DGStreamMessage: NSObject {
         chatMessage.attachments?.forEach({ (attachment) in
             message.imageID = attachment.id
         })
+        
+        completion(message)
+        
     }
     
     class func createQuickbloxMessageFrom(message: DGStreamMessage, completion: @escaping QBMessageCompletion) {
@@ -62,7 +66,7 @@ class DGStreamMessage: NSObject {
         let quickbloxMessage = QBChatMessage()
         quickbloxMessage.customParameters = customParam
         quickbloxMessage.dialogID = message.conversationID
-        quickbloxMessage.createdAt = Date()
+        quickbloxMessage.dateSent = message.dgDelivered
         quickbloxMessage.id = message.id
         quickbloxMessage.recipientID = message.receiverID.uintValue
         quickbloxMessage.senderID = message.senderID.uintValue
@@ -76,6 +80,7 @@ class DGStreamMessage: NSObject {
                 attachment.id = String(uploadedFileID)
                 customParam.setObject("true", forKey: "isImage" as NSCopying)
                 quickbloxMessage.attachments = [attachment]
+                quickbloxMessage.customParameters = customParam
                 completion(quickbloxMessage)
             }, statusBlock: {(request: QBRequest?, status: QBRequestStatus?) in
                 

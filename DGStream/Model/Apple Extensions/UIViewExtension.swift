@@ -115,11 +115,49 @@ extension UIView {
     
 }
 
+extension UISearchBar {
+    func clearBackgroundColor() {
+        guard let UISearchBarBackground: AnyClass = NSClassFromString("UISearchBarBackground") else { return }
+        
+        for view in self.subviews {
+            for subview in view.subviews {
+                if subview.isKind(of: UISearchBarBackground) {
+                    subview.alpha = 0
+                }
+            }
+        }
+        
+    }
+}
+
+extension UIView{
+    func addGradientBackground(firstColor: UIColor, secondColor: UIColor, height: CGFloat) -> CAGradientLayer {
+        clipsToBounds = true
+        let gradientLayer = CAGradientLayer()
+        gradientLayer.colors = [firstColor.cgColor, secondColor.cgColor]
+        gradientLayer.frame = CGRect(x: self.bounds.x, y: self.bounds.y, width: self.bounds.width + 600, height: height)
+        gradientLayer.startPoint = CGPoint(x: 0, y: 0)
+        gradientLayer.endPoint = CGPoint(x: 0, y: 1)
+        print(gradientLayer.frame)
+        self.layer.insertSublayer(gradientLayer, at: 0)
+        return gradientLayer
+    }
+}
+
 extension UIView {
     // Call as: subview.boundInside(superView)
     func boundInside(_ superView: UIView){
         self.translatesAutoresizingMaskIntoConstraints = false
         superView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "H:|-0-[subview]-0-|", options: NSLayoutFormatOptions.directionLeadingToTrailing, metrics:nil, views:["subview":self]))
         superView.addConstraints(NSLayoutConstraint.constraints(withVisualFormat: "V:|-0-[subview]-0-|", options: NSLayoutFormatOptions.directionLeadingToTrailing, metrics:nil, views:["subview":self]))
+    }
+}
+
+extension UIView {
+    func asImage() -> UIImage {
+        let renderer = UIGraphicsImageRenderer(bounds: bounds)
+        return renderer.image { rendererContext in
+            layer.render(in: rendererContext.cgContext)
+        }
     }
 }

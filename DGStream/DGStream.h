@@ -20,4 +20,6 @@ FOUNDATION_EXPORT const unsigned char DGStreamVersionString[];
 #import <DGStream/DGStreamRecorderMerge.h>
 #import <DGStream/DGStreamPhotoSaver.h>
 #import <DGStream/DGStreamRecordingWriter.h>
+//#import <DGStream/GSViewController.h>
+#import <DGStream/GSViewController.h>
 

@@ -44,9 +44,15 @@ extension DGStreamUserDropDownViewController: UITableViewDelegate, UITableViewDa
         self.dismiss(animated: true, completion: nil)
         if indexPath.row == 0 {
             self.delegate.recordingsButtonTapped()
+            self.dismiss(animated: true) {
+                
+            }
         }
         else {
             self.delegate.logoutTapped()
+            self.dismiss(animated: true) {
+                
+            }
         }
     }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -69,11 +75,23 @@ extension DGStreamUserDropDownViewController: UITableViewDelegate, UITableViewDa
         return 50
     }
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
-        return 150
+        return 170
     }
 }
 
 extension DGStreamUserDropDownViewController: DGStreamUserHeaderDelegate {
+    func didTapVideoCall() {
+
+    }
+    
+    func didTapAudioCall() {
+        
+    }
+    
+    func didTapMessage() {
+        
+    }
+    
     func userImageButtonTapped() {
         self.delegate.userButtonTapped()
     }

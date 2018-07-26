@@ -6,6 +6,7 @@ PODS:
     - AsyncDisplayKit/Core
     - PINRemoteImage/iOS (= 3.0.0-beta.8)
     - PINRemoteImage/PINCache
+  - GPUImage2 (0.1.0)
   - jot (0.1.5):
     - Masonry (~> 0.6.1)
   - Masonry (0.6.4)
@@ -28,17 +29,38 @@ PODS:
   - QuickBlox (2.14)
   - Quickblox-WebRTC (2.6.3):
     - QuickBlox (>= 2.7)
-  - YNDropDownMenu (3.0.1)
 
 DEPENDENCIES:
+  - GPUImage2 (from `./GPUImage2.podspec`)
   - jot
   - NMessenger
   - QuickBlox
   - Quickblox-WebRTC
-  - YNDropDownMenu
+
+SPEC REPOS:
+  https://github.com/cocoapods/specs.git:
+    - AsyncDisplayKit
+    - jot
+    - Masonry
+    - NMessenger
+    - PINCache
+    - PINOperation
+    - PINRemoteImage
+    - QuickBlox
+    - Quickblox-WebRTC
+
+EXTERNAL SOURCES:
+  GPUImage2:
+    :podspec: "./GPUImage2.podspec"
+
+CHECKOUT OPTIONS:
+  GPUImage2:
+    :commit: 2683a19d88b3b1b30d58e7ab0cd60d57b1790b37
+    :git: https://github.com/BradLarson/GPUImage2.git
 
 SPEC CHECKSUMS:
   AsyncDisplayKit: 1585f6cd0531ae9b30476f5912f577b73ebcb0e4
+  GPUImage2: 4ff31f41a47e240e5474b49d9e83e95e2ff5c562
   jot: 0f5dc333defa6ad805d01adc3834b201c22510a7
   Masonry: 281802d04d787ea2973179ee8bcb50500579ede2
   NMessenger: ca6a89073ca40d3868cf45505f6f8318853afd40
@@ -47,8 +69,7 @@ SPEC CHECKSUMS:
   PINRemoteImage: c4f9f16932840c597f32e69dd288e10e111a1929
   QuickBlox: d40cd742985908ce7809058e5a63f1e3581165a0
   Quickblox-WebRTC: 1838368795c479dd61796a3423ce9e74a90fe939
-  YNDropDownMenu: 967ebe0c633ce8f40e8667574525aa230ba24560
 
-PODFILE CHECKSUM: d172d1c75dc3a58261ac038b872b3a9b705b3a4c
+PODFILE CHECKSUM: 35f6df890c33ee3f973af4c77b0f0316bf3b7bcd
 
-COCOAPODS: 1.2.0
+COCOAPODS: 1.5.3

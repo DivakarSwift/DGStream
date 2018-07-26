@@ -8,11 +8,14 @@
 
 protocol DGStreamChatViewControllerDelegate {
     func chat(viewController: DGStreamChatViewController, backButtonTapped sender:Any?)
+    func chat(viewController: DGStreamChatViewController, tapped image:UIImage)
     func chat(viewController: DGStreamChatViewController, didReceiveMessage message: DGStreamMessage)
 }
 
 
 import UIKit
+import Photos
+import PhotosUI
 import NMessenger
 
 class DGStreamChatViewController: UIViewController {
@@ -35,15 +38,18 @@ class DGStreamChatViewController: UIViewController {
     
     var messengerView:NMessenger!
     @IBOutlet weak var messengerContainer: UIView!
+    @IBOutlet weak var clearButton: UIButton!
     
     var chatConversation:DGStreamConversation!
     var isKeyboardShown = false
     var didLoadData = false
+    var isInCall = true // set to false in TabVC
     
     var delegate: DGStreamChatViewControllerDelegate!
     
     let segmentedControlPadding:CGFloat = 10
     let segmentedControlHeight: CGFloat = 30
+    var attachmentImage: UIImage?
     
     lazy var senderSegmentedControl : UISegmentedControl = {
         let control = UISegmentedControl(items: ["incoming", "outgoing"])
@@ -63,6 +69,7 @@ class DGStreamChatViewController: UIViewController {
         self.imageView.layer.cornerRadius = self.imageView.frame.size.width / 2
         self.imageView.backgroundColor = UIColor.dgBackground()
         self.backButton.setTitleColor(.white, for: .normal)
+        self.clearButton.setTitleColor(.white, for: .normal)
         self.nameLabel.textColor = UIColor.dgBackground()
         self.abrevLabel.textColor = UIColor.dgDarkGray()
 
@@ -94,7 +101,9 @@ class DGStreamChatViewController: UIViewController {
     }
 
     override public func viewWillAppear(_ animated: Bool) {
-        DGStreamCore.instance.presentedViewController = self
+        if self.isInCall == false {
+            DGStreamCore.instance.presentedViewController = self
+        }
         if didLoadData == false {
             loadData()
         }
@@ -181,21 +190,24 @@ class DGStreamChatViewController: UIViewController {
         // Dispose of any resources that can be recreated.
     }
 
-    func didReceive(message: DGStreamMessage) {
-
+    func didReceive(message: QBChatMessage) {
+        
         var shouldInformDelegate = false
 
-        if let senderID = message.senderID, let _ = chatConversation.userIDs.filter({ (userID) -> Bool in
-            return userID == senderID
+        if let _ = chatConversation.userIDs.filter({ (userID) -> Bool in
+            return userID.uintValue == message.senderID
         }).first {
             shouldInformDelegate = true
         }
 
         if shouldInformDelegate && self.view.alpha == 0 {
-            delegate.chat(viewController: self, didReceiveMessage: message)
+            DGStreamMessage.createReceivedMessageFrom(chatMessage: message) { (newMessage) in
+                delegate.chat(viewController: self, didReceiveMessage: newMessage)
+            }
         }
-        if chatConversation.conversationID == message.conversationID {
-            addChat(message: message)
+        
+        if chatConversation.userIDs.contains(NSNumber.init(value: message.senderID)) {
+            addReceivedChat(message: message)
         }
     }
 
@@ -208,9 +220,21 @@ class DGStreamChatViewController: UIViewController {
             self.navigationController?.popViewController(animated: true)
         }
     }
+    
+    @IBAction func clearButtonTapped(_ sender: Any) {
+        self.activityIndicator.isHidden = true
+        self.messengerView.removeMessagesWithBlock(self.messengerView.allMessages(), animation: .fade) {
+            
+        }
+    }
 
     @IBAction func sendButtonTapped(_ sender: Any) {
-        sendChatMessageWith(text: textView.text, image: nil)
+        if let image = attachmentImage {
+            sendChatMessageWith(text: nil, image: image)
+        }
+        else {
+            sendChatMessageWith(text: textView.text, image: nil)
+        }
     }
 
     @IBAction func photoButtonTapped(_ sender: Any) {
@@ -233,16 +257,33 @@ class DGStreamChatViewController: UIViewController {
         alert.addAction(UIAlertAction(title: "Library", style: .default, handler: { (action: UIAlertAction) in
             guard UIImagePickerController.isSourceTypeAvailable(.savedPhotosAlbum) else {
                 print("This device doesn't have a camera.")
+                let unavailableAlert = UIAlertController(title: "Unavailable", message: "This device does not have a compatible photo library.", preferredStyle: .actionSheet)
+                unavailableAlert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: { (action: UIAlertAction) in
+                    unavailableAlert.dismiss(animated: true, completion: nil)
+                }))
+                self.present(unavailableAlert, animated: true, completion: nil)
                 return
             }
             
-            let photoPicker = UIImagePickerController()
-            photoPicker.sourceType = .savedPhotosAlbum
-            photoPicker.delegate = self
-            photoPicker.modalPresentationStyle = .custom
-            self.present(photoPicker, animated: true) {
-                
-            }
+            self.checkPermission(completion: { (granted) in
+                if granted {
+                    let photoPicker = UIImagePickerController()
+                    photoPicker.sourceType = .savedPhotosAlbum
+                    photoPicker.delegate = self
+                    photoPicker.modalPresentationStyle = .custom
+                    self.present(photoPicker, animated: true) {
+                        
+                    }
+                }
+                else {
+                    let permissionAlert = UIAlertController(title: "Unauthorized", message: "Change your device settings to allow eCollaborate permission to the device's photo library.", preferredStyle: .actionSheet)
+                    permissionAlert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: { (action: UIAlertAction) in
+                        permissionAlert.dismiss(animated: true, completion: nil)
+                    }))
+                    self.present(permissionAlert, animated: true, completion: nil)
+                }
+            })
+            
         }))
         alert.popoverPresentationController?.sourceView = self.view
         alert.popoverPresentationController?.sourceRect = CGRect(x: 20, y: self.textBar.frame.origin.y, width: 20, height: 20)
@@ -337,29 +378,6 @@ extension DGStreamChatViewController {
 
 }
 
-// MARK:- UITableView
-//extension DGStreamChatViewController: UITableViewDataSource {
-//    public func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-//        return chatMessages.count
-//    }
-//    public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-//
-//        var cellIdentifier:String = ""
-//        let chatMessage = chatMessages[indexPath.row]
-//
-//        if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID, chatMessage.senderID == currentUserID {
-//            cellIdentifier = "SelfCell"
-//        }
-//        else {
-//            cellIdentifier = "Cell"
-//        }
-//
-//            let cell = tableView.dequeueReusableCell(withIdentifier: cellIdentifier, for: indexPath) as! DGStreamChatTableViewCell
-//            cell.configureWith(chatMessage: chatMessage)
-//            return cell
-//        }
-//    }
-
 // MARK:- UITextViewDelegate
 extension DGStreamChatViewController: UITextViewDelegate {
 
@@ -383,44 +401,34 @@ extension DGStreamChatViewController: UITextViewDelegate {
         }
         return true
     }
+    
+    fileprivate func addReceivedChat(message: QBChatMessage) {
+        // Turn back into Quickblox message
+        let operation = DGStreamChatOperationQueue()
+        // Create nodes for MessageView from message
+        operation.getMessageNodesFor(messages: [message]) { (nodes) in
+            // Add message
+            DispatchQueue.main.async {
+                self.messengerView.addMessages(nodes, scrollsToMessage: true)
+            }
+        }
+    }
 
     fileprivate func addChat(message: DGStreamMessage) {
-
-        var isIncomingMessage:Bool = true
-        if let user = DGStreamCore.instance.currentUser, let currentUserID = user.userID, message.senderID == currentUserID {
-            isIncomingMessage = false
+        // Turn back into Quickblox message
+        DGStreamMessage.createQuickbloxMessageFrom(message: message) { (message) in
+            if let message = message {
+                let operation = DGStreamChatOperationQueue()
+                // Create nodes for MessageView from message
+                operation.getMessageNodesFor(messages: [message]) { (nodes) in
+                    // Add message
+                    DispatchQueue.main.async {
+                        self.messengerView.addMessages(nodes, scrollsToMessage: true)
+                    }
+                }
+            }
         }
         
-        if isIncomingMessage {
-            // Play Incoming Sound
-        }
-        else {
-            // Play Outgoing Sound
-        }
-        
-        var messageNode: MessageNode!
-
-        if let image = message.image {
-            let imageNode = ImageContentNode(image: image, bubbleConfiguration: DGStreamChatBubble() as BubbleConfigurationProtocol)
-            imageNode.bubbleConfiguration = DGStreamChatImageBubble() as BubbleConfigurationProtocol
-            messageNode = MessageNode(content: imageNode)
-        }
-        else {
-            let textNode = TextContentNode(textMessageString: message.message)
-            textNode.isIncomingMessage = isIncomingMessage
-            textNode.incomingTextFont = UIFont(name: "HelveticaNeue-Bold", size: 14)!
-            textNode.outgoingTextFont = UIFont(name: "HelveticaNeue-Bold", size: 14)!
-            textNode.insets = UIEdgeInsetsMake(8, 8, 8, 8)
-            textNode.incomingTextColor = .white
-            textNode.bubbleConfiguration = DGStreamChatBubble() as BubbleConfigurationProtocol
-            messageNode = MessageNode(content: textNode)
-        }
-
-        messageNode.isIncomingMessage = isIncomingMessage
-        messageNode.messageOffset = 10
-        messageNode.cellPadding = UIEdgeInsetsMake(5, 0, 5, 0)
-
-        self.messengerView.addMessage(messageNode, scrollsToMessage: true)
     }
 
     fileprivate func addChat(messages: [QBChatMessage]) {
@@ -466,15 +474,44 @@ extension DGStreamChatViewController: UITextViewDelegate {
         }
         
         self.textView.text = ""
+        self.textView.attributedText = nil
+        self.attachmentImage = nil
     }
     
 }
     
 extension DGStreamChatViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-    func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+    func checkPermission(completion:@escaping (_ success: Bool) -> Void) {
+        let photoAuthorizationStatus = PHPhotoLibrary.authorizationStatus()
+        switch photoAuthorizationStatus {
+        case .authorized:
+            print("Access is granted by user")
+            completion(true)
+        case .notDetermined:
+            PHPhotoLibrary.requestAuthorization({
+                (newStatus) in
+                print("status is \(newStatus)")
+                if newStatus ==  PHAuthorizationStatus.authorized {
+                    /* do stuff here */
+                    print("success")
+                    completion(true)
+                }
+            })
+            print("It is not determined until now")
+        case .restricted:
+            // same same
+            print("User do not have access to photo album.")
+            completion(false)
+        case .denied:
+            // same same
+            print("User has denied the permission.")
+            completion(false)
+        }
+    }
+    @objc func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         
     }
-    func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
+    @objc func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         
         defer {
             picker.dismiss(animated: true)
@@ -488,42 +525,68 @@ extension DGStreamChatViewController: UIImagePickerControllerDelegate, UINavigat
         
         let newWidth = image.size.width / 2
         let newHeight = image.size.height / 2
+        let thumbnailWidth = image.size.width / 4
+        let thumbnailHeight = image.size.width / 4
         
         let smallerImage = UIImage.resizeImage(image: image, targetSize: CGSize(width: newWidth, height: newHeight))
+        let thumbnailImage = UIImage.resizeImage(image: image, targetSize: CGSize(width: thumbnailWidth, height: thumbnailHeight))
         
         // do something with it
-        self.sendChatMessageWith(text: nil, image: smallerImage)
+        //self.sendChatMessageWith(text: nil, image: smallerImage)
         
+        self.attachmentImage = smallerImage
+        
+        //let attributedString = NSMutableAttributedString(string: textView.text)
+        let textAttachment = NSTextAttachment()
+        textAttachment.image = thumbnailImage
+        let oldWidth = textAttachment.image!.size.width;
+        _ = oldWidth / (textView.frame.size.width - 10); //for the padding inside the textView
+        let attrStringWithImage = NSAttributedString(attachment: textAttachment)
+        //attributedString.replaceCharacters(in: NSMakeRange(textView.text.count, 1), with: attrStringWithImage)
+        textView.text = ""
+        textView.attributedText = nil
+        textView.attributedText = attrStringWithImage
+        textBarHeightConstraint.constant = 140
+        self.sendButton.isEnabled = true
+        self.sendButton.setTitleColor(.white, for: .normal)
     }
 }
 
 //MARK:- Messenger Delegate
 extension DGStreamChatViewController: NMessengerDelegate {
     func didSelect(image: UIImage, frame: CGRect) {
-        let blackoutView = UIView(frame: UIScreen.main.bounds)
-        blackoutView.backgroundColor = .black
-        blackoutView.alpha = 0
-        self.view.addSubview(blackoutView)
-        let imageView = UIImageView(frame: frame)
-        imageView.backgroundColor = .clear
-        imageView.contentMode = .scaleAspectFit
-        imageView.image = image
-        imageView.clipsToBounds = true
-        self.view.addSubview(imageView)
-        UIView.animate(withDuration: 0.25, animations: {
-            imageView.frame = UIScreen.main.bounds
-            blackoutView.alpha = 1
-        }) { (f) in
-            
-            DispatchQueue.main.async {
+//        let blackoutView = UIView(frame: UIScreen.main.bounds)
+//        blackoutView.backgroundColor = .black
+//        blackoutView.alpha = 0
+//        self.view.addSubview(blackoutView)
+//        let imageView = UIImageView(frame: frame)
+//        imageView.backgroundColor = .clear
+//        imageView.contentMode = .scaleAspectFit
+//        imageView.image = image
+//        imageView.clipsToBounds = true
+//        self.view.addSubview(imageView)
+//        UIView.animate(withDuration: 0.25, animations: {
+//            imageView.frame = UIScreen.main.bounds
+//            blackoutView.alpha = 1
+//        }) { (f) in
+//
+//            DispatchQueue.main.async {
+//                self.performSegue(withIdentifier: "image", sender: image)
+//            }
+//
+//            DispatchQueue.main.asyncAfter(deadline: .now() + 0.10, execute: {
+//                imageView.removeFromSuperview()
+//                blackoutView.removeFromSuperview()
+//            })
+//
+//        }
+        DispatchQueue.main.async {
+            if self.delegate == nil {
                 self.performSegue(withIdentifier: "image", sender: image)
             }
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.10, execute: {
-                imageView.removeFromSuperview()
-                blackoutView.removeFromSuperview()
-            })
-            
+            else {
+                self.delegate.chat(viewController: self, tapped: image)
+            }
         }
     }
     

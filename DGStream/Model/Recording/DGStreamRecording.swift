@@ -16,6 +16,7 @@ class DGStreamRecording: NSObject {
     var title: String?
     var url: String?
     var thumbnail: Data?
+    var isPhoto:Bool = false
     
     class func createDGStreamRecordingsFor(protocols: [DGStreamRecordingProtocol]) -> [DGStreamRecording] {
         var recordings:[DGStreamRecording] = []
@@ -27,6 +28,7 @@ class DGStreamRecording: NSObject {
             record.createdDate = proto.dgCreatedDate
             record.title = proto.dgTitle
             record.url = proto.dgURL
+            record.isPhoto = proto.dgIsPhoto
             recordings.append(record)
         }
         return recordings
@@ -89,5 +91,13 @@ extension DGStreamRecording: DGStreamRecordingProtocol {
         }
     }
     
+    var dgIsPhoto: Bool {
+        get {
+            return self.isPhoto
+        }
+        set {
+            self.createdBy = self.dgCreatedBy
+        }
+    }
     
 }

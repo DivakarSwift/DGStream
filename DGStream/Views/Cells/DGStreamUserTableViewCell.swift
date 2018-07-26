@@ -16,15 +16,21 @@ class DGStreamUserTableViewCell: UITableViewCell {
     
     @IBOutlet weak var durationLabel: UILabel!
     
+    var gradient: CAGradientLayer?
+    
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
+        self.backgroundColor = .clear
+        self.contentView.backgroundColor = .clear
         self.title.text = ""
         self.dateLabel.text = ""
         self.durationLabel.text = ""
-        self.title.textColor = UIColor.dgBlack()
-        self.dateLabel.textColor = UIColor.dgBlack()
-        self.durationLabel.textColor = UIColor.dgBlack()
+        self.title.textColor = .white
+        self.dateLabel.textColor = .white
+        self.durationLabel.textColor = .white
+        
+        self.setUpGradient()
     }
     
     func configureWith(recent: DGStreamRecent) {
@@ -77,6 +83,14 @@ class DGStreamUserTableViewCell: UITableViewCell {
         }
         
     }
+    
+    func setUpGradient() {
+        if let gradient = self.gradient {
+            gradient.removeFromSuperlayer()
+        }
+        let dark = UIColor(red: 0, green: 0, blue: 0, alpha: 0.10)
+        self.gradient = self.addGradientBackground(firstColor: .clear, secondColor: dark, height: self.contentView.bounds.size.height)
+    }
 
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
@@ -88,9 +102,9 @@ class DGStreamUserTableViewCell: UITableViewCell {
         self.title.text = ""
         self.dateLabel.text = ""
         self.durationLabel.text = ""
-        self.title.textColor = UIColor.dgBlack()
-        self.dateLabel.textColor = UIColor.dgBlack()
-        self.durationLabel.textColor = UIColor.dgBlack()
+        self.title.textColor = .white
+        self.dateLabel.textColor = .white
+        self.durationLabel.textColor = .white
     }
 
 }

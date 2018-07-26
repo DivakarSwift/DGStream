@@ -21,7 +21,7 @@
 	<key>NSCameraUsageDescription</key>
 	<string>Your camera will be used for video call streaming.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Snapshots will be saved to the device's photo library.</string>
+	<string>Snapshots will be saved to the device&apos;s photo library.</string>
 	<key>NSPrincipalClass</key>
 	<string></string>
 </dict>

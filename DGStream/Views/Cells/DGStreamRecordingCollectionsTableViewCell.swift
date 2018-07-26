@@ -29,7 +29,8 @@ class DGStreamRecordingCollectionsTableViewCell: UITableViewCell {
     
     func configureWith(collection: DGStreamRecordingCollection) {
         if let documentNumber = collection.documentNumber {
-            self.titleLabel.text = "Document Number: \(documentNumber)"
+//            self.titleLabel.text = "Document Number: \(documentNumber)"
+            self.titleLabel.text = "Misc."
         }
         //self.durationLabel.text = "\(collection.numberOfRecordings ?? 0)"
         if let thumbnail = collection.thumbnail, let image = UIImage(data: thumbnail) {

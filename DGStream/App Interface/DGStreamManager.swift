@@ -14,7 +14,6 @@ public protocol DGStreamManagerDataSource {
     func streamManager(_ manager: DGStreamManager, recentsWithUserIDs userIDs: [NSNumber]) -> [DGStreamRecentProtocol]
     func streamManager(_ manager: DGStreamManager, contactsForUserID userID: NSNumber) -> [DGStreamContactProtocol]
     
-    // Conversation
     func streamManager(_ manager: DGStreamManager, conversationsWithID conversationID: String) -> DGStreamConversationProtocol?
     func streamManager(_ manager: DGStreamManager, conversationsWithCurrentUser userID: NSNumber) -> [DGStreamConversationProtocol]
     func streamManager(_ manager: DGStreamManager, conversationWithUsers userIDs: [NSNumber]) -> DGStreamConversationProtocol?
@@ -26,6 +25,10 @@ public protocol DGStreamManagerDataSource {
     
     func streamManager(_ manager: DGStreamManager, recordingCollectionsForUserID userID: NSNumber) -> [DGStreamRecordingCollectionProtocol]
     func streamManager(_ manager: DGStreamManager, recordingsForUserID userID:NSNumber, documentNumber: String, title: String?) -> [DGStreamRecordingProtocol]
+    
+    func streamManager(_ manager: DGStreamManager, documentsForUserID userID: NSNumber) -> [DGStreamDocumentProtocol]
+    
+    func streamManager(_ manager: DGStreamManager, imagesWithID imageID: String) -> [DGStreamImageProtocol]
 }
 
 public protocol DGStreamManagerDataStore {
@@ -35,6 +38,8 @@ public protocol DGStreamManagerDataStore {
     func streamManager(_ manager: DGStreamManager, store recent: DGStreamRecentProtocol)
     func streamManager(_ manager: DGStreamManager, store contact: DGStreamContactProtocol)
     func streamManager(_ manager: DGStreamManager, store recording: DGStreamRecordingProtocol, into collection: DGStreamRecordingCollectionProtocol)
+    func streamManager(_ manager: DGStreamManager, store document: DGStreamDocumentProtocol)
+    func streamManager(_ manager: DGStreamManager, store image: DGStreamImageProtocol)
 }
 
 public protocol DGStreamManagerDelegate {
@@ -88,6 +93,10 @@ public class DGStreamManager: NSObject {
     
     public func loginWith(user: DGStreamUser, completion: @escaping (_ success: Bool, _ serrorMessage: String) -> Void) {
         DGStreamCore.instance.loginWith(user: user) { (success, errorMessage) in
+            if success, let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID {
+                UserDefaults.standard.set(currentUserID.stringValue, forKey: "LastUser")
+                UserDefaults.standard.synchronize()
+            }
             completion(success, errorMessage)
         }
     }
@@ -99,6 +108,50 @@ public class DGStreamManager: NSObject {
                 DGStreamCore.instance.initialize()
             })
         }
+    }
+    
+    //MARK:- Notifications
+    public func registerForPushNotifications(deviceToken: Data) {
+        DGStreamCore.instance.registerForRemoteNotificationsWith(deviceToken: deviceToken)
+    }
+    
+    public func unregisterForPushNotifications() {
+        DGStreamCore.instance.unregisterFromRemoteNotifications {
+            UIApplication.shared.unregisterForRemoteNotifications()
+        }
+    }
+    
+    public func receivedPush(notification: [AnyHashable: Any]) {
+        
+        if let aps = notification["aps"] as? [AnyHashable: Any], let alert = aps["alert"] {
+            // Text Message
+        }
+        else {
+            // Incoming Call
+            
+            guard let toUserID = notification["toUserID"] as? String else {
+                print("NO TO USER ID")
+                return
+            }
+            
+            guard let fromUsername = notification["fromUsername"] as? String else {
+                print("NO FROM USERNAME")
+                return
+            }
+            
+            guard let lastUser = UserDefaults.standard.string(forKey: "LastUser") else {
+                print("NO LAST USER ID")
+                return
+            }
+            
+            if toUserID != lastUser {
+                print("MEANT FOR A DIFFERENT USER, DONT SHOW")
+                return
+            }
+            
+            self.notification.pushNotification(title: "Incoming Call", body: fromUsername)
+        }
+
     }
     
     //MARK:- LOCK NOTIFICATIONS

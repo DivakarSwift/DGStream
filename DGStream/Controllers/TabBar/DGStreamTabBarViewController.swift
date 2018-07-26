@@ -7,11 +7,13 @@
 //
 
 import UIKit
+import MobileCoreServices
 
 enum DGStreamTabBarItem: Int {
     case recents = 0
     case contacts = 1
     case messages = 2
+    case camera = 3
 }
 
 class DGStreamTabBarViewController: CustomTransitionViewController {
@@ -20,8 +22,13 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
     @IBOutlet weak var navTitleLabel: UILabel!
     var rightButton: UIButton!
     @IBOutlet weak var rightButtonAnchorView: UIView!
+    @IBOutlet weak var dropDownArrowButton: UIButton!
     
-    @IBOutlet weak var userImageView: UIImageView!
+    @IBOutlet weak var dropDownButton: UIButton!
+    
+    @IBOutlet weak var searchBar: UISearchBar!
+    
+    @IBOutlet weak var rightButtonContainer: UIView!
     @IBOutlet weak var leftButton: UIButton!
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var tabBar: UITabBar!
@@ -49,7 +56,11 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
     
     var isSelectingRows:Bool = false
     var selectedRows:[(row: Int, count: Int)] = []
-    var selectedItem:DGStreamTabBarItem = .recents
+    var selectedItem:DGStreamTabBarItem = .contacts
+    var selectedContactsOption: ContactsDropDownOption = .allContacts
+    var lastItem: UITabBarItem?
+    
+    var videoOrientation:UIDeviceOrientation = .portrait
     
     @IBOutlet weak var emptyLabel: UILabel!
     
@@ -58,12 +69,15 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
     
         self.emptyLabel.alpha = 0
         
+        self.videoCallButton.alpha = 0
+        self.audioCallButton.alpha = 0
+        self.messageButton.alpha = 0
+        
         if let user = DGStreamCore.instance.currentUser, let username = user.username {
             
             self.rightButton = UIButton(type: .custom)
             self.rightButton.alpha = 0
-            let frame = CGRect(x: 714, y: 10, width: 44, height: 44)
-            self.rightButton.frame = frame
+            self.rightButton.frame = self.rightButtonContainer.frame
             self.rightButton.backgroundColor = UIColor.dgBlack()
             self.rightButton.layer.cornerRadius = self.rightButton.frame.size.width / 2
             self.rightButton.clipsToBounds = true
@@ -71,21 +85,7 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
             self.rightButton.contentMode = .scaleAspectFill
             self.rightButton.imageView?.contentMode = .scaleAspectFill
             self.rightButton.titleLabel?.font = UIFont(name: "HelveticaNueue-Bold", size: 14)
-            
-            self.navBarView.addSubview(self.rightButton)
-            self.rightButton.translatesAutoresizingMaskIntoConstraints = false
-            
-            let top = NSLayoutConstraint(item: self.rightButton, attribute: .top, relatedBy: .equal, toItem: self.navBarView, attribute: .top, multiplier: 1.0, constant: 10)
-            let right = NSLayoutConstraint(item: self.rightButton, attribute: .right, relatedBy: .equal, toItem: self.navBarView, attribute: .right, multiplier: 1.0, constant: -10)
-            let width = NSLayoutConstraint(item: self.rightButton, attribute: .width, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1.0, constant: 44)
-            let height = NSLayoutConstraint(item: self.rightButton, attribute: .height, relatedBy: .equal, toItem: nil, attribute: .notAnAttribute, multiplier: 1.0, constant: 44)
-            
-            self.rightButton.addConstraints([width, height])
-            self.navBarView.addConstraints([top, right])
-            
-            self.navBarView.layoutIfNeeded()
-            self.rightButton.layoutIfNeeded()
-            
+            self.rightButton.boundInside(container: self.rightButtonContainer)                        
             if let imageData = user.image, let image = UIImage(data: imageData) {
                 self.rightButton.setImage(image, for: .normal)
             }
@@ -95,42 +95,55 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
             }
         }
         
-        self.view.backgroundColor = UIColor.dgBackground()
-        self.blackoutView.backgroundColor = UIColor.dgBlueDark()
+        self.view.backgroundColor = .white
                 
         // Data
-        loadRecents()
-        loadContacts()
-        loadConversations()
+        loadRecents(searchText: self.searchBar.text)
+        loadContactsWith(option: .allContacts, searchText: self.searchBar.text)
+        loadConversations(searchText: self.searchBar.text)
+        
+        self.dropDownButton.alpha = 1
+        self.dropDownArrowButton.alpha = 1
 
         // Nav Bar
-        self.navBarView.backgroundColor = UIColor.dgBlueDark()
-        self.navTitleLabel.textColor = UIColor.dgBackground()
+        //self.navBarView.backgroundColor = self.tabBar.backgroundColor
+//        var height = self.navBarView.bounds.height
+//        if self.navBarView.bounds.width > self.navBarView.bounds.height {
+//            height = self.navBarView.bounds.width
+//        }
+        let dark = UIColor.dgBlack().withAlphaComponent(0.10)
+        let light = UIColor.dgBlack().withAlphaComponent(0.25)
+        _ = self.navBarView.addGradientBackground(firstColor: light, secondColor: dark, height: self.navBarView.frame.size.height)
+        self.blackoutView.backgroundColor = UIColor.dgBlueDark()
+        self.navTitleLabel.textColor = UIColor.dgBlack()
         
         //Table View
-        self.tableView.estimatedRowHeight = 70
+        self.tableView.estimatedRowHeight = 80
         self.tableView.backgroundColor = .clear
         self.tableView.backgroundView?.backgroundColor = .clear
         
-        self.tabBar.tintColor = UIColor.dgBlueDark()
-        self.tabBar.unselectedItemTintColor = UIColor.dgBlack()
+        self.tabBar.tintColor = UIColor.dgButtonColor()
+        self.tabBar.unselectedItemTintColor = .lightGray
         self.tabBar.selectedItem = self.tabBar.items?.first
         self.tabBar.delegate = self
         
-        self.setUpButtons()
+        self.searchBar.clearBackgroundColor()
         
-        self.tabBar.delegate = self
+        self.dropDownButton.setTitleColor(UIColor.dgButtonColor(), for: .normal)
+        self.dropDownButton.titleLabel?.font = UIFont(name: "HelveticaNeue-Bold", size: 18)
+        
+        self.setUpButtons()
         
         NotificationCenter.default.addObserver(self, selector: #selector(self.restartVideoCall(notification:)), name: Notification.Name("RestartVideoCall"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(self.restartAudioCall(notification:)), name: Notification.Name("RestartAudioCall"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(self.acceptIncomingCall(notification:)), name: Notification.Name("AcceptIncomingCall"), object: nil)
         
+        NotificationCenter.default.addObserver(self, selector: #selector(orientationDidChange), name: Notification.Name.UIDeviceOrientationDidChange, object: nil)
+        
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
-        DGStreamCore.instance.getOnlineUsers()
         
         self.navBarView.layoutIfNeeded()
         
@@ -162,13 +175,12 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
         
         self.tableView.reloadData()
         DGStreamCore.instance.presentedViewController = self
+        
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
-        UIApplication.shared.isStatusBarHidden = true
-        
+                
         if self.blackoutView.isHidden == false {
             showInitialViews()
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.25, execute: {
@@ -181,9 +193,9 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "DropDown" {
             
-            var size = CGSize(width: 320, height: 250)
+            var size = CGSize(width: 320, height: 270)
             if Display.pad {
-                size = CGSize(width: 400, height: 250)
+                size = CGSize(width: 400, height: 270)
             }
             
             let dropDownVC = segue.destination as! DGStreamUserDropDownViewController
@@ -193,6 +205,24 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
             dropDownVC.isModalInPopover = false
             dropDownVC.delegate = self
         }
+        else if segue.identifier == "ContactsDropDown" {
+            
+            let size = CGSize(width: 160, height: 100)
+//            if Display.pad {
+//                size = CGSize(width: 400, height: 100)
+//            }
+            
+            let dropDownVC = segue.destination as! DGStreamContactsDropDownViewController
+            dropDownVC.preferredContentSize = size
+            dropDownVC.modalPresentationStyle = .popover
+            dropDownVC.popoverPresentationController!.delegate = self
+            dropDownVC.isModalInPopover = false
+            dropDownVC.delegate = self
+            dropDownVC.selectedOption = self.selectedContactsOption
+        }
+//        else if segue.identifier == "recordings", let recordingsCollectionsNav = segue.destination as? UINavigationController, let recordingsCollectionsVC = recordingsCollectionsNav.viewControllers[0] as? DGStreamRecordingCollectionsViewController {
+//            recordingsCollectionsVC.delegate = self
+//        }
     }
     
     func showInitialViews() {
@@ -215,7 +245,7 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
     func animateInitialViews() {
         
         let initialRect = self.view.convert(self.initialUserImageViewContainer.frame, to: self.blackoutView)
-        let endRect = CGRect(x: self.view.bounds.size.width - (10 + 44), y: 10, width: 44, height: 44)
+        let endRect = CGRect(x: self.view.bounds.size.width - (10 + 44), y: 24, width: 44, height: 44)
         
         self.initialUserImageViewContainer.isHidden = true
         
@@ -225,6 +255,7 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
         animateImageView.backgroundColor = .red
         animateImageView.layer.cornerRadius = animateImageView.frame.size.width / 2
         animateImageView.contentMode = .scaleAspectFill
+        animateImageView.layer.borderColor = UIColor.yellow.cgColor
         self.blackoutView.addSubview(animateImageView)
     
         UIView.animate(withDuration: 1.25, animations: {
@@ -244,39 +275,54 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
             }
         }
     }
+    
+    func orientationDidChange() {
+        for cell in self.tableView.visibleCells {
+            if let cell = cell as? DGStreamConversationsTableViewCell {
+                cell.setUpGradient()
+            }
+        }
+    }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
     
+    
+    
     func setUpButtons() {
-        self.videoCallButton.setImage(UIImage.init(named: "video", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
-        self.videoCallButton.tintColor = UIColor.dgBackground()
-        self.videoCallButton.backgroundColor = UIColor.dgBlueDark()
-        self.videoCallButton.layer.cornerRadius = self.videoCallButton.frame.size.width / 2
-        self.videoCallButton.alpha = 0
-        
-        self.audioCallButton.setImage(UIImage.init(named: "audio", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
-        self.audioCallButton.tintColor = UIColor.dgBackground()
-        self.audioCallButton.backgroundColor = UIColor.dgBlueDark()
-        self.audioCallButton.layer.cornerRadius = self.audioCallButton.frame.size.width / 2
-        self.audioCallButton.alpha = 0
-        
-        self.messageButton.setImage(UIImage.init(named: "message", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
-        self.messageButton.tintColor = UIColor.dgBackground()
-        self.messageButton.backgroundColor = UIColor.dgBlueDark()
-        self.messageButton.layer.cornerRadius = self.messageButton.frame.size.width / 2
-        self.messageButton.alpha = 0
         
         self.leftButton.setTitleColor(UIColor.dgBackground(), for: .normal)
         self.leftButton.alpha = 0
+        
+        self.dropDownArrowButton.setImage(UIImage(named: "down", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
+        self.dropDownArrowButton.tintColor = UIColor.dgButtonColor()
+        self.dropDownArrowButton.imageEdgeInsets = UIEdgeInsetsMake(4, 4, 4, 4)
+        
     }
     
     //MARK:- Load Data
-    func loadRecents() {
+    func loadRecents(searchText: String?) {
+        self.dropDownArrowButton.alpha = 0
+        self.dropDownButton.alpha = 0
         if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID {
             self.recents = DGStreamRecent.createDGStreamRecentsFrom(protocols: DGStreamManager.instance.dataSource.streamManager(DGStreamManager.instance, recentsWithUserIDs: [currentUserID]))
+            if let text = searchText {
+                self.recents = self.recents.filter({ (recent) -> Bool in
+                    var otherUser: DGStreamUser!
+                    if let receiver = recent.receiver, let receiverID = receiver.userID, receiverID != currentUserID {
+                        otherUser = receiver
+                    }
+                    else if let sender = recent.sender {
+                        otherUser = sender
+                    }
+                    if let username = otherUser.username, username.hasPrefix(text) {
+                        return true
+                    }
+                    return false
+                })
+            }
             print("Loadded Recents \(self.recents.count)")
             self.emptyLabel.alpha = 0
             if self.recents.count == 0 {
@@ -286,9 +332,36 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
         }
     }
     
-    func loadContacts() {
+    func loadContactsWith(option: ContactsDropDownOption, searchText: String?) {
+        self.dropDownArrowButton.alpha = 1
+        self.dropDownButton.alpha = 1
         if let currentUser = DGStreamCore.instance.currentUser, let userID = currentUser.userID {
             self.contacts = DGStreamContact.createDGStreamContactsFrom(protocols: DGStreamManager.instance.dataSource.streamManager(DGStreamManager.instance, contactsForUserID: userID)).reversed()
+            if option == .favorites {
+                if let favorites = DGStreamCore.instance.getFavorites() {
+                    self.contacts = self.contacts.filter({ (contact) -> Bool in
+                        return favorites.contains(contact.userID ?? 0)
+                    })
+                }
+                else {
+                    self.contacts = []
+                }
+            }
+            else if option == .experts {
+                self.contacts = self.contacts.filter { (contact) -> Bool in
+                    return contact.user?.username == "Ashok"
+                }
+            }
+            if let text = searchText {
+                self.contacts = self.contacts.filter({ (contact) -> Bool in
+                    if let user = contact.user, let username = user.username {
+                        return username.hasPrefix(text)
+                    }
+                    else {
+                        return false
+                    }
+                })
+            }
             print("Loaded Contacts \(self.contacts.count)")
             self.emptyLabel.alpha = 0
             if self.contacts.count == 0 {
@@ -298,10 +371,12 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
         }
     }
 
-    func loadConversations() {
+    func loadConversations(searchText: String?) {
+        self.dropDownButton.alpha = 0
+        self.dropDownArrowButton.alpha = 0
         let extendedRequest = ["sort_desc" : "last_message_date_sent"]
         
-        let page = QBResponsePage(limit: 200, skip: 0)
+        let page = QBResponsePage(limit: 1000, skip: 0)
         
         QBRequest.dialogs(for: page, extendedRequest: extendedRequest, successBlock: { (response: QBResponse, dialogs: [QBChatDialog]?, dialogsUsersIDs: Set<NSNumber>?, page: QBResponsePage?) -> Void in
             
@@ -337,8 +412,19 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
                     }
                     return firstOtherUsername < secondOtherUsername
                 })
+                if let text = searchText {
+                    self.conversations = self.conversations.filter({ (conversation) -> Bool in
+                        if let userID = conversation.userIDs.filter({ (userID) -> Bool in
+                            return userID != currentUserID
+                        }).first, let user = DGStreamCore.instance.getOtherUserWith(userID: userID), let username = user.username, username.hasPrefix(text) {
+                            return true
+                        }
+                        else {
+                            return false
+                        }
+                    })
+                }
             }
-            
             self.emptyLabel.alpha = 0
             if self.conversations.count == 0 {
                 self.emptyLabel.text = NSLocalizedString("No Conversations", comment: "")
@@ -362,52 +448,80 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
     
     func callUsers(userIDs: [NSNumber], for type: QBRTCConferenceType) {
         
-        let session = QBRTCClient.instance().createNewSession(withOpponents: userIDs, with: type)
-        print("Session is \(session)")
-        if session == nil {
-            let alert = UIAlertController(title: NSLocalizedString("Error", comment: ""), message: NSLocalizedString("Unable to create session.", comment: ""), preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Acknowledged dismissal"), style: .cancel, handler: { (action: UIAlertAction) in
-                alert.dismiss(animated: true, completion: nil)
-            }))
-            self.present(alert, animated: true, completion: nil)
-        }
-        else if DGStreamCore.instance.isReachable && session.state == .new {
-            if let callVC = UIStoryboard(name: "Call", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamCallViewController, let chatVC = UIStoryboard.init(name: "Chat", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamChatViewController {
-                
-                let otherUserID = userIDs.first!
-                
-                for c in self.conversations {
-                    print("\(c.conversationID) | \(c.userIDs)")
-                    if c.userIDs.contains(otherUserID) {
-                        let proto = DGStreamConversation.createDGStreamConversationFrom(proto: c)
-                        let newConversation = DGStreamConversation.createDGStreamConversationFrom(proto: proto)
-                        newConversation.type = .callConversation
-                        chatVC.chatConversation = newConversation
-                        print("SET NEW CONVERSATION")
-                        break
-                    }
-                }
-                
-                chatVC.delegate = callVC
-                callVC.chatVC = chatVC
-                callVC.session = session
-                callVC.selectedUser = otherUserID
-                if type == .audio {
-                    callVC.isAudioCall = true
-                }
-                
-                DGStreamCore.instance.audioPlayer.ringFor(receiver: false)
-                self.navigationController?.popToViewController(self, animated: false)
-                self.navigationController?.pushViewController(callVC, animated: false)
+        DGStreamNotification.backgroundCall(from: DGStreamCore.instance.currentUser?.userID ?? 0, fromUsername: DGStreamCore.instance.currentUser?.username ?? "", to: [userIDs[0]]) { (success, errorMessage) in
+            if success {
+                print("SENT PUSH")
+            }
+            else if let error = errorMessage {
+                print("ERROR SENDING PUSH \(error)")
             }
         }
-        else {
-            let alert = UIAlertController(title: NSLocalizedString("Error", comment: ""), message: NSLocalizedString("Unable to create session.", comment: ""), preferredStyle: .alert)
-            alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Acknowledged dismissal"), style: .cancel, handler: { (action: UIAlertAction) in
-                alert.dismiss(animated: true, completion: nil)
-            }))
-            self.present(alert, animated: true, completion: nil)
+        
+        func goToCallVC() {
+            let session = QBRTCClient.instance().createNewSession(withOpponents: userIDs, with: type)
+            //session.localMediaStream.videoTrack.videoCapture = DGStreamCore.instance.cameraCapture
+            print("Session is \(session)")
+            if session == nil {
+                let alert = UIAlertController(title: NSLocalizedString("Error", comment: ""), message: NSLocalizedString("Unable to create session.", comment: ""), preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Acknowledged dismissal"), style: .cancel, handler: { (action: UIAlertAction) in
+                    alert.dismiss(animated: true, completion: nil)
+                }))
+                self.present(alert, animated: true, completion: nil)
+            }
+            else if DGStreamCore.instance.isReachable && session.state == .new {
+                if let callVC = UIStoryboard(name: "Call", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamCallViewController, let chatVC = UIStoryboard.init(name: "Chat", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamChatViewController {
+                    
+                    let otherUserID = userIDs.first!
+                    
+                    for c in self.conversations {
+                        print("\(c.conversationID) | \(c.userIDs)")
+                        if c.userIDs.contains(otherUserID) {
+                            let proto = DGStreamConversation.createDGStreamConversationFrom(proto: c)
+                            let newConversation = DGStreamConversation.createDGStreamConversationFrom(proto: proto)
+                            newConversation.type = .callConversation
+                            chatVC.chatConversation = newConversation
+                            print("SET NEW CONVERSATION")
+                            break
+                        }
+                    }
+                    
+                    chatVC.delegate = callVC
+                    callVC.chatVC = chatVC
+                    callVC.session = session
+                    callVC.selectedUser = otherUserID
+                    if type == .audio {
+                        callVC.isAudioCall = true
+                    }
+                    
+                    DGStreamCore.instance.audioPlayer.ringFor(receiver: false)
+//                    self.navigationController?.popToViewController(self, animated: false)
+//                    self.navigationController?.pushViewController(callVC, animated: false)
+                    self.present(callVC, animated: false, completion: nil)
+                }
+            }
+            else {
+                let alert = UIAlertController(title: NSLocalizedString("Error", comment: ""), message: NSLocalizedString("Unable to create session.", comment: ""), preferredStyle: .alert)
+                alert.addAction(UIAlertAction(title: NSLocalizedString("OK", comment: "Acknowledged dismissal"), style: .cancel, handler: { (action: UIAlertAction) in
+                    alert.dismiss(animated: true, completion: nil)
+                }))
+                self.present(alert, animated: true, completion: nil)
+            }
         }
+        
+        goToCallVC()
+        
+//        if type == .video {
+//            DGStreamCore.instance.initializeLocalVideoWith { (success) in
+//                print("LocalVideo is Initialized \(success)")
+//                DispatchQueue.main.async {
+//                    goToCallVC()
+//                }
+//            }
+//            print("intializeLocalVideo()")
+//        }
+//        else {
+//            goToCallVC()
+//        }
         
     }
     
@@ -467,6 +581,8 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
                     
                     break
                 case .messages:
+                    break
+                case .camera:
                     break
                 }
                 
@@ -566,6 +682,8 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
                 conversationCell.update(user: user, forOnline: isOnline)
                 
                 break
+            case .camera:
+                break
             }
         }
     }
@@ -593,6 +711,8 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
                 
                 break
             case .messages:
+                break
+            case .camera:
                 break
             }
         }
@@ -630,6 +750,8 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
                     
                     break
                 case .messages:
+                    break
+                case .camera:
                     break
                 }
             }
@@ -689,6 +811,14 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
     }
     
     //MARK:- Button Actions
+    @IBAction func dropDownTapped(_ sender: Any) {
+        self.performSegue(withIdentifier: "ContactsDropDown", sender: nil)
+    }
+    
+    @IBAction func searchButtonTapped(_ sender: Any) {
+        
+    }
+    
     @IBAction func leftButtonTapped(_ sender: Any) {
         if self.isSelectingRows {
             self.stopSelectingCells(animated: true)
@@ -728,6 +858,11 @@ extension DGStreamTabBarViewController: UITableViewDelegate, UITableViewDataSour
 //                beginSelectingCells()
 //            }
             //self.selectRow(indexPath: indexPath)
+            let newRow:(row: Int, count: Int) = (row: indexPath.row, count: 1)
+            self.selectedRows.append(newRow)
+            let users = getSelectedUsers()
+            self.callUsers(userIDs: users, for: .video)
+            self.selectedRows.removeAll()
             
             break
         case .contacts:
@@ -735,7 +870,11 @@ extension DGStreamTabBarViewController: UITableViewDelegate, UITableViewDataSour
 //            if !self.isSelectingRows {
 //                beginSelectingCells()
 //            }
-            //self.selectRow(indexPath: indexPath)
+            let newRow:(row: Int, count: Int) = (row: indexPath.row, count: 1)
+            self.selectedRows.append(newRow)
+            let users = getSelectedUsers()
+            self.callUsers(userIDs: users, for: .video)
+            self.selectedRows.removeAll()
             
             break
         case .messages:
@@ -749,10 +888,12 @@ extension DGStreamTabBarViewController: UITableViewDelegate, UITableViewDataSour
             chatVC.chatConversation = conversation
             self.navigationController?.pushViewController(chatVC, animated: true)
             break
+        case .camera:
+            break
         }
     }
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 70
+        return 80
     }
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch selectedItem {
@@ -762,6 +903,9 @@ extension DGStreamTabBarViewController: UITableViewDelegate, UITableViewDataSour
             return self.contacts.count
         case .messages:
             return self.conversations.count
+        case .camera:
+            return 0
+            break
         }
     }
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -801,28 +945,91 @@ extension DGStreamTabBarViewController: UITableViewDelegate, UITableViewDataSour
             cell.configureWith(conversation: conversations[indexPath.row])
             cell.delegate = self
             return cell
+        case .camera:
+            return UITableViewCell()
         }
     }
 }
 
-extension DGStreamTabBarViewController: UITabBarDelegate {
+extension DGStreamTabBarViewController: UISearchBarDelegate, UITabBarDelegate {
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        switch self.selectedItem {
+        case .recents:
+            loadRecents(searchText: self.searchBar.text)
+            navTitleLabel.text = NSLocalizedString("Recents", comment: "")
+            break
+        case .contacts:
+            loadContactsWith(option: self.selectedContactsOption, searchText: self.searchBar.text)
+            navTitleLabel.text = NSLocalizedString("Contacts", comment: "")
+            break
+        case .messages:
+            loadConversations(searchText: self.searchBar.text)
+            navTitleLabel.text = NSLocalizedString("Messages", comment: "")
+            break
+        case .camera:
+            break
+        }
+        self.tableView.reloadData()
+    }
     func tabBar(_ tabBar: UITabBar, didSelect item: UITabBarItem) {
         self.emptyLabel.alpha = 0
         if let streamItem:DGStreamTabBarItem = DGStreamTabBarItem(rawValue: item.tag) {
             if streamItem != selectedItem {
-                selectedItem = streamItem
+//                selectedItem = streamItem
                 switch streamItem {
                 case .recents:
-                    loadRecents()
+                    selectedItem = streamItem
+                    loadRecents(searchText: self.searchBar.text)
                     navTitleLabel.text = NSLocalizedString("Recents", comment: "")
                     break
                 case .contacts:
-                    loadContacts()
+                    selectedItem = streamItem
+                    loadContactsWith(option: self.selectedContactsOption, searchText: self.searchBar.text)
                     navTitleLabel.text = NSLocalizedString("Contacts", comment: "")
                     break
                 case .messages:
-                    loadConversations()
+                    selectedItem = streamItem
+                    loadConversations(searchText: self.searchBar.text)
                     navTitleLabel.text = NSLocalizedString("Messages", comment: "")
+                    break
+                case .camera:
+                    let alert = UIAlertController(title: "Choose Option", message: nil, preferredStyle: .actionSheet)
+                    alert.addAction(UIAlertAction(title: "Video", style: .default, handler: { (action: UIAlertAction) in
+                        let imagePicker = UIImagePickerController()
+                        imagePicker.delegate = self
+                        imagePicker.view.tag = 99
+                        imagePicker.sourceType = .camera
+                        imagePicker.videoQuality = .type640x480
+                        imagePicker.allowsEditing = false
+                        imagePicker.mediaTypes = [kUTTypeMovie] as [String]
+                        imagePicker.modalPresentationStyle = .custom
+                        self.videoOrientation = UIDevice.current.orientation
+                        self.present(imagePicker, animated: true) {
+                            tabBar.selectedItem = tabBar.items?.first
+                            self.loadContactsWith(option: self.selectedContactsOption, searchText: self.searchBar.text)
+                            self.selectedItem = .contacts
+                            self.navTitleLabel.text = NSLocalizedString("Contacts", comment: "")
+                            self.tableView.reloadData()
+                        }
+                    }))
+                    alert.addAction(UIAlertAction(title: "Photo", style: .default, handler: { (action: UIAlertAction) in
+                        let imagePicker = UIImagePickerController()
+                        imagePicker.delegate = self
+                        imagePicker.view.tag = 199
+                        imagePicker.sourceType = .camera
+                        imagePicker.allowsEditing = false
+                        imagePicker.modalPresentationStyle = .custom
+                        self.present(imagePicker, animated: true) {
+                            tabBar.selectedItem = tabBar.items?.first
+                            self.loadContactsWith(option: self.selectedContactsOption, searchText: self.searchBar.text)
+                            self.selectedItem = .contacts
+                            self.navTitleLabel.text = NSLocalizedString("Contacts", comment: "")
+                            self.tableView.reloadData()
+                        }
+                    }))
+                    alert.popoverPresentationController?.sourceView = self.view
+                    alert.popoverPresentationController?.sourceRect = CGRect(x: self.view.bounds.size.width - 80, y: self.tabBar.frame.y, width: 44, height: 44)
+                    self.present(alert, animated: true, completion: nil)
                     break
                 }
                 
@@ -830,6 +1037,7 @@ extension DGStreamTabBarViewController: UITabBarDelegate {
                 tableView.reloadData()
             }
         }
+        self.lastItem = item
     }
 }
 
@@ -861,12 +1069,32 @@ extension DGStreamTabBarViewController: DGStreamTableViewCellDelegate {
     func userButtonTapped(userID:NSNumber) {
         if let userVC = UIStoryboard(name: "User", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamUserViewController {
             userVC.user = DGStreamCore.instance.getOtherUserWith(userID: userID)!
-            self.present(userVC, animated: true, completion: nil)
+            userVC.delegate = self
+            if let nav = self.navigationController {
+                nav.pushViewController(userVC, animated: true)
+            }
+            else {
+                self.present(userVC, animated: true, completion: nil)
+            }
         }
+    }
+    func accessoryButtonTapped(userID: NSNumber) {
+        self.userButtonTapped(userID: userID)
     }
 }
 
-extension DGStreamTabBarViewController {
+extension DGStreamTabBarViewController: DGStreamUserViewControllerDelegate {
+    func userViewController(_ vc: DGStreamUserViewController, didTap: CommnicationType, forUserID userID: NSNumber) {
+        if didTap == .video {
+            self.callUsers(userIDs: [userID], for: .video)
+        }
+        else if didTap == .audio {
+            self.callUsers(userIDs: [userID], for: .audio)
+        }
+        else {
+            self.messageButtonTappedWith(userID: userID)
+        }
+    }
     func restartVideoCall(notification: Notification) {
         let userID = notification.object as? NSNumber
         callUsers(userIDs: [userID!], for: .video)
@@ -886,6 +1114,7 @@ extension DGStreamTabBarViewController {
             let chatVC = chatStoryboard.instantiateInitialViewController() as! DGStreamChatViewController
             chatVC.view.alpha = 1
             chatVC.chatConversation = conversation
+            chatVC.isInCall = false
             self.navigationController?.pushViewController(chatVC, animated: true)
         }
     }
@@ -896,10 +1125,24 @@ extension DGStreamTabBarViewController {
     }
 }
 
+extension DGStreamTabBarViewController: DGStreamContactsDropDownViewControllerDelegate {
+    func contactsDropdown(_ dropDown: DGStreamContactsDropDownViewController, didTap: ContactsDropDownOption) {
+        dropDown.dismiss(animated: true, completion: nil)
+        if self.selectedItem == .contacts {
+            self.selectedContactsOption = didTap
+            self.loadContactsWith(option: didTap, searchText: self.searchBar.text)
+            self.dropDownButton.setTitle(didTap.rawValue, for: .normal)
+            self.tableView.reloadData()
+        }
+    }
+}
+
 extension DGStreamTabBarViewController: DGStreamUserDropDownViewControllerDelegate {
     
     func recordingsButtonTapped() {
-        self.performSegue(withIdentifier: "collections", sender: nil)
+        if let recordingsCollectionNav = UIStoryboard(name: "Recording", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() {
+            self.present(recordingsCollectionNav, animated: true, completion: nil)
+        }
     }
     
     func userButtonTapped() {
@@ -953,11 +1196,15 @@ extension DGStreamTabBarViewController: DGStreamUserDropDownViewControllerDelega
     }
     
     func logoutTapped() {
-        QBChat.instance.disconnect { (error) in
-            QBRequest.logOut(successBlock: { (response) in
-                self.dismiss(animated: false, completion: nil)
-            }) { (errorResponse) in
-                
+        DGStreamCore.instance.unregisterFromRemoteNotifications {
+            QBChat.instance.disconnect { (error) in
+                QBRequest.logOut(successBlock: { (response) in
+                    UserDefaults.standard.removeObject(forKey: "LastUser")
+                    UserDefaults.standard.synchronize()
+                    self.dismiss(animated: false, completion: nil)
+                }) { (errorResponse) in
+                    
+                }
             }
         }
     }
@@ -965,7 +1212,9 @@ extension DGStreamTabBarViewController: DGStreamUserDropDownViewControllerDelega
 
 extension DGStreamTabBarViewController: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-        
+        picker.dismiss(animated: true) {
+            
+        }
     }
     func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         
@@ -973,19 +1222,203 @@ extension DGStreamTabBarViewController: UIImagePickerControllerDelegate, UINavig
             picker.dismiss(animated: true)
         }
         
-        print(info)
-        // get the image
-        guard let image = info[UIImagePickerControllerOriginalImage] as? UIImage else {
+        if picker.view.tag == 99 {
+            
+            guard let image = info[UIImagePickerControllerMediaURL] as? URL else {
+                return
+            }
+            
+            if let url = info[UIImagePickerControllerMediaURL] as? URL {
+                
+                let recordingTitle = UUID().uuidString.components(separatedBy: "-").first!
+                
+                var recordingURL = DGStreamFileManager.applicationDocumentsDirectory()
+                recordingURL.appendPathComponent("\(recordingTitle)")
+                recordingURL.appendPathExtension("mov")
+                
+                do {
+                    try FileManager.default.moveItem(at: url, to: recordingURL)
+                }
+                catch let error {
+                    print("ERROR Moving item \(error.localizedDescription)")
+                }
+                
+                encodeVideo(videoUrl: recordingURL) { (resultURL) in
+                    if let encodedURL = resultURL {
+                        let avAsset = AVAsset(url: encodedURL)
+                        let assetGenerator = AVAssetImageGenerator(asset: avAsset)
+                        assetGenerator.generateCGImagesAsynchronously(forTimes: [kCMTimeZero as NSValue], completionHandler: { (time, image, time2, result, error) in
+                            
+                            if error == nil, let image = image {
+                                
+                                let originalThumbnail = UIImage(cgImage: image)
+                                
+                                var newThumbnail: UIImage!
+                                
+                                if self.videoOrientation == .portrait {
+                                    newThumbnail = originalThumbnail.rotated(by:  Measurement(value: 90.0, unit: .degrees))
+                                }
+                                else if self.videoOrientation == .landscapeRight {
+                                    newThumbnail = originalThumbnail.rotated(by:  Measurement(value: 180.0, unit: .degrees))
+                                }
+                                else if self.videoOrientation == .portraitUpsideDown {
+                                    newThumbnail = originalThumbnail.rotated(by:  Measurement(value: 270.0, unit: .degrees))
+                                }
+                                else {
+                                    newThumbnail = originalThumbnail
+                                }
+                                
+                                if let error = error {
+                                    print("Failed To Merge Audio and Video \(error.localizedDescription)")
+                                }
+                                print("MERGED AUDIO AND VIDEO")
+                                let thumbnailData = UIImageJPEGRepresentation(newThumbnail, 0.5)
+                                DispatchQueue.main.async {
+                                    saveRecordingsWith(fileName: recordingTitle, thumbnail: thumbnailData)
+                                }
+                                
+                                
+                            }
+                            
+                        })
+                    }
+                }
+                
+                func saveRecordingsWith(fileName: String, thumbnail: Data?) {
+                    
+                    print("SAVING RECORDING")
+                    
+                    let date = Date()
+                    
+                    let recordingCollection = DGStreamRecordingCollection()
+                    recordingCollection.createdBy = DGStreamCore.instance.currentUser?.userID ?? 0
+                    recordingCollection.createdDate = date
+                    recordingCollection.documentNumber = "01234-56789"
+                    recordingCollection.numberOfRecordings = Int16(1)
+                    recordingCollection.thumbnail = thumbnail
+                    recordingCollection.title = "01234-56789"
+                    
+                    let recording = DGStreamRecording()
+                    recording.createdBy = DGStreamCore.instance.currentUser?.userID ?? 0
+                    recording.createdDate = date
+                    recording.documentNumber = "01234-56789"
+                    recording.title = fileName
+                    recording.thumbnail = thumbnail
+                    recording.url = fileName
+                    recording.isPhoto = false
+                    DGStreamManager.instance.dataStore.streamManager(DGStreamManager.instance, store: recording, into: recordingCollection)
+                }
+                
+            }
+            
+        }
+        else if picker.view.tag == 199 {
+            guard let image = info[UIImagePickerControllerOriginalImage] as? UIImage else {
+                return
+            }
+            
+            let recordingTitle = UUID().uuidString.components(separatedBy: "-").first!
+            
+            func saveRecordingsWith(fileName: String, thumbnail: Data?) {
+                
+                print("SAVING RECORDING")
+                
+                let date = Date()
+                
+                let recordingCollection = DGStreamRecordingCollection()
+                recordingCollection.createdBy = DGStreamCore.instance.currentUser?.userID ?? 0
+                recordingCollection.createdDate = date
+                recordingCollection.documentNumber = "01234-56789"
+                recordingCollection.numberOfRecordings = Int16(1)
+                recordingCollection.thumbnail = thumbnail
+                recordingCollection.title = "01234-56789"
+                
+                let recording = DGStreamRecording()
+                recording.createdBy = DGStreamCore.instance.currentUser?.userID ?? 0
+                recording.createdDate = date
+                recording.documentNumber = "01234-56789"
+                recording.title = fileName
+                recording.thumbnail = thumbnail
+                recording.url = fileName
+                recording.isPhoto = true
+                DGStreamManager.instance.dataStore.streamManager(DGStreamManager.instance, store: recording, into: recordingCollection)
+            }
+            
+            var path = DGStreamFileManager.applicationDocumentsDirectory()
+            path.appendPathComponent(recordingTitle)
+            path.appendPathExtension("jpeg")
+            
+            if let data = UIImageJPEGRepresentation(image, 1.0),
+                !FileManager.default.fileExists(atPath: path.path) {
+                do {
+                    // writes the image data to disk
+                    try data.write(to: path)
+                    print("file saved")
+                } catch {
+                    print("error saving file:", error)
+                }
+            }
+            
+            saveRecordingsWith(fileName: recordingTitle, thumbnail: UIImageJPEGRepresentation(image, 0.5))
+        }
+        else {
+            print(info)
+            // get the image
+            guard let image = info[UIImagePickerControllerOriginalImage] as? UIImage else {
+                return
+            }
+            
+            let newWidth = image.size.width / 2
+            let newHeight = image.size.height / 2
+            
+            let smallerImage = UIImage.resizeImage(image: image, targetSize: CGSize(width: newWidth, height: newHeight))
+            
+            // do something with it
+            self.sendUser(image: smallerImage)
+        }
+    }
+    
+    func encodeVideo(videoUrl: URL, outputUrl: URL? = nil, resultClosure: @escaping (URL?) -> Void ) {
+        
+        var finalOutputUrl: URL? = outputUrl
+        
+        if finalOutputUrl == nil {
+            var url = videoUrl
+            url.deletePathExtension()
+            url.appendPathExtension("mp4")
+            finalOutputUrl = url
+        }
+        
+        if FileManager.default.fileExists(atPath: finalOutputUrl!.path) {
+            print("Converted file already exists \(finalOutputUrl!.path)")
+            resultClosure(finalOutputUrl)
             return
         }
         
-        let newWidth = image.size.width / 2
-        let newHeight = image.size.height / 2
-        
-        let smallerImage = UIImage.resizeImage(image: image, targetSize: CGSize(width: newWidth, height: newHeight))
-        
-        // do something with it
-        self.sendUser(image: smallerImage)
+        let asset = AVURLAsset(url: videoUrl)
+        if let exportSession = AVAssetExportSession(asset: asset, presetName: AVAssetExportPresetPassthrough) {
+            exportSession.outputURL = finalOutputUrl!
+            exportSession.outputFileType = AVFileTypeMPEG4
+            let start = CMTimeMakeWithSeconds(0.0, 0)
+            let range = CMTimeRangeMake(start, asset.duration)
+            exportSession.timeRange = range
+            exportSession.shouldOptimizeForNetworkUse = true
+            exportSession.exportAsynchronously() {
+                
+                switch exportSession.status {
+                case .failed:
+                    print("Export failed: \(exportSession.error != nil ? exportSession.error!.localizedDescription : "No Error Info")")
+                case .cancelled:
+                    print("Export canceled")
+                case .completed:
+                    resultClosure(finalOutputUrl!)
+                default:
+                    break
+                }
+            }
+        } else {
+            resultClosure(nil)
+        }
     }
     
     func sendUser(image: UIImage) {

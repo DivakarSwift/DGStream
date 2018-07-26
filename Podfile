@@ -6,7 +6,7 @@ def pods
     pod 'QuickBlox'
     pod 'jot'
     pod 'NMessenger'
-    pod 'YNDropDownMenu'
+    pod 'GPUImage2', :podspec => './GPUImage2.podspec'
 end
 
 target ‘DGStream’ do

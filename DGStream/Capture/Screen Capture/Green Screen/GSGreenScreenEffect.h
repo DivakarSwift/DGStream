@@ -24,4 +24,6 @@ GLKEffectPropertyTransform *transform;
 @property (nonatomic, readonly)        
 GLKEffectPropertyTexture *texture2d0;
 
+- (id) initWithShaderName: (NSString *) shaderName;
+
 @end

@@ -26,30 +26,41 @@ enum
 
 @interface GSGreenScreenEffect ()
 {
-   GLint uniforms[GNumUniforms];
-   GLKBaseEffect *foo;
+    GLint uniforms[GNumUniforms];
+    GLKBaseEffect *foo;
 }
 
+@property (strong, nonatomic) NSString *shaderName;
+
 @end
-
-
 
 @implementation GSGreenScreenEffect
 
 @synthesize texture2d0 = texture2d0_;
 @synthesize transform = transform_;
 
+- (id) initWithShaderName: (NSString *) shaderName {
+    
+    // Call superclass's initializer
+    self = [super init];
+    if( !self ) return nil;
+    
+    self.shaderName = shaderName;
+    
+    return self;
+}
+
 /////////////////////////////////////////////////////////////////
 // Subclasses should override this implementation to load any
-// OpenGL ES 2.0 Shading Language programs prior to drawing any 
+// OpenGL ES 2.0 Shading Language programs prior to drawing any
 // geometry with the receiver. The override should typically
 // call [self loadShadersWithName:<baseName>] specifying the
 // base name for the desired Shading Language programs.
 - (void)prepareOpenGL
 {
-   texture2d0_ = [[GLKEffectPropertyTexture alloc] init];
-   transform_ = [[GLKEffectPropertyTransform alloc] init];
-   [self loadShadersWithName:@"greenScreen"];
+    texture2d0_ = [[GLKEffectPropertyTexture alloc] init];
+    transform_ = [[GLKEffectPropertyTransform alloc] init];
+    [self loadShadersWithName:@"greenScreen"];
 }
 
 
@@ -57,53 +68,47 @@ enum
 // Binds any OpenGL ES 2.0 Shading Language program attributes.
 - (void)bindAttribLocations;
 {
-   glBindAttribLocation(
-      self.program, 
-      UtilityVertexAttribPosition, 
-      "aPosition");
-   glBindAttribLocation(
-      self.program, 
-      UtilityVertexAttribTexCoord0, 
-      "aTextureCoordinate");
-    
-    NSLog(@"BIND ATTRI - GET ERROR: %u", glGetError());
+    glBindAttribLocation(
+                         self.program,
+                         UtilityVertexAttribPosition,
+                         "aPosition");
+    glBindAttribLocation(
+                         self.program,
+                         UtilityVertexAttribTexCoord0,
+                         "aTextureCoordinate");
 }
 
 
 /////////////////////////////////////////////////////////////////
-// Subclasses should override this implementation to configure 
+// Subclasses should override this implementation to configure
 // OpenGL uniform values prior to drawing any geometry with the
 // receiver.
 - (void)updateUniformValues
 {
-   // Precalculate the mvpMatrix
-   GLKMatrix4 modelViewProjectionMatrix = GLKMatrix4Multiply(
-      self.transform.projectionMatrix, 
-      self.transform.modelviewMatrix);
-   glUniformMatrix4fv(uniforms[GMVPMatrix], 1, 0, 
-      modelViewProjectionMatrix.m);
-      
-   // Texture samplers
-   const GLint   samplerIDs[1] = {self.texture2d0.name};
-   glUniform1iv(uniforms[GSamplers2D], 1, 
-      samplerIDs);
+    // Precalculate the mvpMatrix
+    GLKMatrix4 modelViewProjectionMatrix = GLKMatrix4Multiply(
+                                                              self.transform.projectionMatrix,
+                                                              self.transform.modelviewMatrix);
+    glUniformMatrix4fv(uniforms[GMVPMatrix], 1, 0,
+                       modelViewProjectionMatrix.m);
     
-    NSLog(@"UPDATE UNI - GET ERROR: %u", glGetError());
+    // Texture samplers
+    const GLint   samplerIDs[1] = {self.texture2d0.name};
+    glUniform1iv(uniforms[GSamplers2D], 1,
+                 samplerIDs);
 }
 
 
 /////////////////////////////////////////////////////////////////
-// 
+//
 - (void)configureUniformLocations;
 {
-   uniforms[GMVPMatrix] = glGetUniformLocation(
-      self.program, 
-      "uMVPMatrix");
-   uniforms[GSamplers2D] = glGetUniformLocation(
-      self.program, 
-      "uVideoframe");
-    
-    NSLog(@"CONFIG UNI - GET ERROR: %u", glGetError());
+    uniforms[GMVPMatrix] = glGetUniformLocation(
+                                                self.program,
+                                                "uMVPMatrix");
+    uniforms[GSamplers2D] = glGetUniformLocation(
+                                                 self.program,
+                                                 "uVideoframe");
 }
 
 @end

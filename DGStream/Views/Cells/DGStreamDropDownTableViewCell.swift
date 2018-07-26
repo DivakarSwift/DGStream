@@ -10,6 +10,7 @@ import UIKit
 
 class DGStreamDropDownTableViewCell: UITableViewCell {
     
+    @IBOutlet weak var seperator: UIView!
     @IBOutlet weak var label: UILabel!
     
     override func awakeFromNib() {
@@ -25,7 +26,7 @@ class DGStreamDropDownTableViewCell: UITableViewCell {
     
     func configureWith(title: String) {
         self.label.text = title
-        self.label.textColor = UIColor.dgBlack()
+        self.label.textColor = UIColor.dgButtonColor()
     }
     
     override func prepareForReuse() {

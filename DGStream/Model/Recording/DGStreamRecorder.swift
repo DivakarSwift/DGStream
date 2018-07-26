@@ -11,6 +11,7 @@ import AVFoundation
 
 protocol DGStreamRecorderDelegate {
     func recorder(_ recorder: DGStreamRecorder, frameToBroadcast: QBRTCVideoFrame)
+    func recorder(_ recorder: DGStreamRecorder, audioSample: CMSampleBuffer)
 }
 
 class DGStreamRecorder: NSObject {
@@ -139,11 +140,7 @@ class DGStreamRecorder: NSObject {
                                 let thumbnailData = UIImageJPEGRepresentation(newThumbnail, 0.5)
                                 saveRecordingsWith(thumbnail: thumbnailData)
                                 completion(url)
-                                
-//                                DGStreamRecorderMerge().overlapVideos(withLocalURL: url!, remoteURL: fileURL, isMerged: self.isMerged, fileName: self.recordingTitle, withCompletion: { (url) in
-//                                    completion(url)
-//                                    saveRecordingsWith(thumbnail: thumbnailData)
-//                                })
+                            
                             }
                             else {
                                 saveRecordingsWith(thumbnail: nil)
@@ -265,11 +262,31 @@ extension DGStreamRecorder: AVCaptureVideoDataOutputSampleBufferDelegate {
 //            print("ERROR ASSETWRITER \(error.localizedDescription)")
 //        }
         
+//        self.localCaptureSession.beginConfiguration()
+//        let audioDevice = AVCaptureDevice.defaultDevice(withMediaType: AVMediaTypeAudio)
+//        do {
+//            let audioInput = try AVCaptureDeviceInput(device: audioDevice)
+//            self.localCaptureSession.addInput(audioInput)
+//            print("Added Audio Input")
+//        } catch let error {
+//            print("Unable to add audio device to the recording. \(error.localizedDescription)")
+//        }
+//        let audioOutput = AVCaptureAudioDataOutput()
+//        audioOutput.recommendedAudioSettingsForAssetWriter(withOutputFileType: AVFileTypeMPEG4)
+//        if self.localCaptureSession.canAddOutput(audioOutput) {
+//            self.localCaptureSession.addOutput(audioOutput)
+//        }
+//        self.localCaptureSession.commitConfiguration()
+        // DGStreamAudioPlayer()
+        
         for output in self.localCaptureSession.outputs {
             if let dataOutput = output as? AVCaptureVideoDataOutput {
                 print("setSampleBufferDelegate")
                 dataOutput.setSampleBufferDelegate(self, queue: self.bufferQueue)
             }
+//            if let audioOutput = output as? AVCaptureAudioDataOutput {
+//                audioOutput.setSampleBufferDelegate(self, queue: self.bufferQueue)
+//            }
         }
     }
     func stopRecordingLocalVideo(completion: @escaping (_ url: URL?) -> Void) {
@@ -288,43 +305,44 @@ extension DGStreamRecorder: AVCaptureVideoDataOutputSampleBufferDelegate {
     }
     public func captureOutput(_ output: AVCaptureOutput!, didOutputSampleBuffer sampleBuffer: CMSampleBuffer!, from connection: AVCaptureConnection!) {
         
-        //print("didOutputSampleBuffer")
+        print("didOutputSampleBuffer")
         
         var bufferCopy: CMSampleBuffer?
-        if CMSampleBufferCreateCopy(kCFAllocatorDefault, sampleBuffer, &bufferCopy) == noErr {
-//            print("Copy")
+        if CMSampleBufferCreateCopy(kCFAllocatorDefault, sampleBuffer, &bufferCopy) == noErr, let copy = bufferCopy {
+
+            // SEND AUDIO SAMPLE
+            if connection.output is AVCaptureAudioDataOutput {
+                self.delegate.recorder(self, audioSample: copy)
+                print("AVCaptureAudioDataOutput!")
+                return
+            }
+            
+            var orientation:QBRTCVideoRotation = ._90
+            
+            if recordOrientation == .portrait {
+                orientation = ._90
+            }
+            else if recordOrientation == .landscapeLeft {
+                orientation = ._0
+            }
+            else if recordOrientation == .landscapeRight {
+                orientation = ._180
+            }
+            else {
+                orientation = ._270
+            }
+            
+            // SEND VIDEO FRAME
+            if let pixelBuffer : CVPixelBuffer = CMSampleBufferGetImageBuffer(copy), let videoFrame = QBRTCVideoFrame(pixelBuffer: pixelBuffer, videoRotation: orientation) {
+                print("Pixel Buffer \(pixelBuffer)")
+                self.delegate.recorder(self, frameToBroadcast: videoFrame)
+            }
+            else {
+                print("No Pixel Buffer")
+            }
         }
         else {
             print("Failed To Copy")
-        }
-        
-        var orientation:QBRTCVideoRotation = ._90
-        
-        if recordOrientation == .portrait {
-            //print("RECORDING IN portrait")
-            //self.remoteRecorder.setVideoRecording(._90)
-            orientation = ._90
-        }
-        else if recordOrientation == .landscapeLeft {
-            //print("RECORDING IN landscapeLeft")
-            //self.remoteRecorder.setVideoRecording(._0)
-            //self.remoteRecorder.setVideoRecording(._0)
-            orientation = ._0
-        }
-        else if recordOrientation == .landscapeRight {
-            //print("RECORDING IN landscapeRight")
-            //self.remoteRecorder.setVideoRecording(._180)
-            orientation = ._180
-        }
-        else {
-            //print("RECORDING IN upsideDown")
-            //self.remoteRecorder.setVideoRecording(._270)
-            orientation = ._270
-        }
-        
-        // SEND
-        if let copy = bufferCopy, let pixelBuffer : CVPixelBuffer = CMSampleBufferGetImageBuffer(copy), let videoFrame = QBRTCVideoFrame(pixelBuffer: pixelBuffer, videoRotation: orientation) {
-            self.delegate.recorder(self, frameToBroadcast: videoFrame)
         }
         
     }
@@ -753,4 +771,15 @@ extension DGStreamRecorder: AVCaptureVideoDataOutputSampleBufferDelegate {
 //        return pxbuffer
 //    }
 //}
+
+extension DGStreamRecorder: AVCaptureAudioDataOutputSampleBufferDelegate {
+//    func captureOutput(_ output: AVCaptureOutput!, didDrop sampleBuffer: CMSampleBuffer!, from connection: AVCaptureConnection!) {
+//
+//    }
+//    private func captureOutput(_ output: AVCaptureOutput,
+//                       didOutputSampleBuffer sampleBuffer: CMSampleBuffer,
+//                            from connection: AVCaptureConnection) {
+//
+//    }
+}
 

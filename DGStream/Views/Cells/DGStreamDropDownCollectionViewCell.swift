@@ -23,7 +23,7 @@ class DGStreamDropDownCollectionViewCell: UICollectionViewCell {
         var font:UIFont
         if let title = title, let _ = UInt(title) {
             print("Title is number!")
-            font = UIFont.systemFont(ofSize: 36)
+            font = UIFont.systemFont(ofSize: 32)
         }
         else {
             print("Title is not a number!")

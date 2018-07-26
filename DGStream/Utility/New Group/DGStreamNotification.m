@@ -44,25 +44,70 @@
 
 +(void)backgroundCallFrom:(NSNumber *)fromUserID fromUsername:(NSString *)username to:(NSArray *)toUserIDs with:(void (^)(bool, NSString *))completion {
     
-//    NSMutableString* mutableUserIDs = [[NSMutableString alloc] initWithString:@""];
-//    NSUInteger index = 0;
-//    NSUInteger count = toUserIDs.count;
-//    for (NSNumber* uID in toUserIDs) {
-//        NSString *string = uID.stringValue;
-//        [mutableUserIDs appendString:string];
-//        index += 1;
-//        if (index < count) {
-//            [mutableUserIDs appendString:@","];
-//        }
-//    }
+    NSMutableString* mutableUserIDs = [[NSMutableString alloc] initWithString:@""];
+    NSUInteger index = 0;
+    NSUInteger count = toUserIDs.count;
+    for (NSNumber* uID in toUserIDs) {
+        NSString *string = uID.stringValue;
+        [mutableUserIDs appendString:string];
+        index += 1;
+        if (index < count) {
+            [mutableUserIDs appendString:@","];
+        }
+    }
     
-//    [QBRequest sendPushWithText:[NSString stringWithFormat:@"Incoming Call From %@", username] toUsers:mutableUserIDs successBlock:^(QBResponse * _Nonnull response, NSArray<QBMEvent *> * _Nullable events) {
+    NSMutableDictionary *payload = [NSMutableDictionary dictionary];
+    NSMutableDictionary *aps = [NSMutableDictionary dictionary];
+    [aps setObject:username forKey:@"fromUsername"];
+    [aps setObject:fromUserID forKey:@"fromUserID"];
+    [aps setObject:mutableUserIDs forKey:@"toUserID"];
+    [aps setObject:@"ReceiverRing" forKey:QBMPushMessageSoundKey];
+    [aps setObject:fromUserID forKey:QBMPushMessageBadgeKey];
+    //[aps setObject:mesage forKey:QBMPushMessageAlertKey];
+    [payload setObject:aps forKey:QBMPushMessageApsKey];
+    
+    QBMPushMessage* message = [[QBMPushMessage alloc] initWithPayload:payload];
+    [QBRequest sendPush:message toUsers:mutableUserIDs successBlock:^(QBResponse * _Nonnull response, QBMEvent * _Nullable event) {
+        completion(true, nil);
+    } errorBlock:^(QBError * _Nonnull error) {
+        completion(false, error.error.localizedDescription);
+    }];
+    
+//    [QBRequest sendPushWithText:[NSString stringWithFormat:@"&8274-%@-%@", fromUserID.stringValue, username] toUsers:mutableUserIDs successBlock:^(QBResponse * _Nonnull response, NSArray<QBMEvent *> * _Nullable events) {
 //        NSLog(@"SUCCESSFULLY PUSHED");
 //        completion(YES, @"");
 //    } errorBlock:^(QBError * _Nonnull error) {
 //        NSLog(@"FAILED TO PUSH WITH ERROR %@", error.error.localizedDescription);
 //        completion(NO, error.error.localizedDescription);
 //    }];
+}
+
++(void)registerForPushNotificationsWith:(NSData *)deviceToken {
+    NSString *deviceIdentifier = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
+    
+    QBMSubscription *subscription = [QBMSubscription subscription];
+    subscription.notificationChannel = QBMNotificationChannelAPNS;
+    subscription.deviceUDID = deviceIdentifier;
+    subscription.deviceToken = deviceToken;
+    
+    [QBRequest createSubscription:subscription successBlock:^(QBResponse *response, NSArray *objects) {
+        
+    } errorBlock:^(QBResponse *response) {
+        
+    }];
+}
+
++(void)unregisterForPushNotificationsWith:(void (^)(bool, NSString *))completion {
+    NSString *deviceUdid = [[[UIDevice currentDevice] identifierForVendor] UUIDString];
+    [QBRequest unregisterSubscriptionForUniqueDeviceIdentifier:deviceUdid successBlock:^(QBResponse *response) {
+        // Unsubscribed successfully
+        NSLog(@"DID UNSUBSCRIBE SUCCESSFULLY");
+        completion(true, @"");
+    } errorBlock:^(QBError *error) {
+        // Handle error
+        NSLog(@"DID NOT UNSUBSCRIBE SUCCESSFULLY");
+        completion(false, @"");
+    }];
 }
 
 @end

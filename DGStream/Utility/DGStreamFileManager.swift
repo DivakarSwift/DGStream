@@ -26,6 +26,25 @@ class DGStreamFileManager: NSObject {
     class func applicationDocumentsDirectory() -> URL {
         return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).last!
     }
+    class func createFolder(folderName: String) -> URL? {
+        let fileManager = FileManager.default
+        if let documentDirectory = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first {
+            let filePath = documentDirectory.appendingPathComponent(folderName)
+            if !fileManager.fileExists(atPath: filePath.path) {
+                do {
+                    try fileManager.createDirectory(atPath: filePath.path, withIntermediateDirectories: true, attributes: nil)
+                } catch {
+                    print(error.localizedDescription)
+                    
+                    return nil
+                }
+            }
+            
+            return filePath
+        } else {
+            return nil
+        }
+    }
     class func recordingsPathWith(userID: NSNumber) -> String {
         let documentsDirectory = DGStreamFileManager.applicationDocumentsDirectory()
         let recordingsPath = documentsDirectory.absoluteString.appending("Recordings/")

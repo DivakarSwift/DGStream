@@ -184,4 +184,61 @@
 //                                           }
 //                                           }
 
+- (void)mergeVideo:(NSURL *)videoURL andAudio:(NSURL *)audioURL forFileName:(NSString *)fileName withCompletion:(MergeRecordingCompletion)completion {
+    
+    AVURLAsset *videoAsset = [AVURLAsset URLAssetWithURL:videoURL options:nil];
+    AVURLAsset *audioAsset = [AVURLAsset URLAssetWithURL:audioURL options:nil];
+    
+    AVMutableComposition* mixComposition = [[AVMutableComposition alloc] init];
+    
+    AVMutableCompositionTrack *videoTrack = [mixComposition addMutableTrackWithMediaType:AVMediaTypeVideo preferredTrackID:kCMPersistentTrackID_Invalid];
+    
+    [videoTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, videoAsset.duration) ofTrack:[[videoAsset tracksWithMediaType:AVMediaTypeVideo] objectAtIndex:0] atTime:kCMTimeZero error:nil];
+    
+    AVMutableCompositionTrack *audioTrack = [mixComposition addMutableTrackWithMediaType:AVMediaTypeAudio preferredTrackID:kCMPersistentTrackID_Invalid];
+    [audioTrack insertTimeRange:CMTimeRangeMake(kCMTimeZero, audioAsset.duration) ofTrack:[[audioAsset tracksWithMediaType:AVMediaTypeAudio] objectAtIndex:0] atTime:kCMTimeZero error:nil];
+    
+    AVMutableVideoCompositionInstruction * MainInstruction = [AVMutableVideoCompositionInstruction videoCompositionInstruction];
+    MainInstruction.timeRange = CMTimeRangeMake(kCMTimeZero, videoAsset.duration);
+    
+    AVMutableVideoCompositionLayerInstruction *FirstlayerInstruction = [AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:videoTrack];
+    
+    //Here we are creating AVMutableVideoCompositionLayerInstruction for our second track.see how we make use of Affinetransform to move and scale our second Track.
+    AVMutableVideoCompositionLayerInstruction *SecondlayerInstruction = [AVMutableVideoCompositionLayerInstruction videoCompositionLayerInstructionWithAssetTrack:audioTrack];
+    
+    //Now we add our 2 created AVMutableVideoCompositionLayerInstruction objects to our AVMutableVideoCompositionInstruction in form of an array.
+    MainInstruction.layerInstructions = [NSArray arrayWithObjects:FirstlayerInstruction,SecondlayerInstruction,nil];;
+    
+    AVMutableVideoComposition *MainCompositionInst = [AVMutableVideoComposition videoComposition];
+    MainCompositionInst.instructions = [NSArray arrayWithObject:MainInstruction];
+    MainCompositionInst.frameDuration = CMTimeMake(1, 30);
+    MainCompositionInst.renderSize = CGSizeMake(640, 480);
+    
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+    NSString *documentsDirectory = [paths objectAtIndex:0];
+    
+    NSString *myPathDocs = [documentsDirectory stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.mp4", fileName]];
+    
+    if([[NSFileManager defaultManager] fileExistsAtPath:myPathDocs])
+    {
+        [[NSFileManager defaultManager] removeItemAtPath:myPathDocs error:nil];
+    }
+    
+    NSURL *url = [NSURL fileURLWithPath:myPathDocs];
+    
+    AVAssetExportSession *exporter = [[AVAssetExportSession alloc] initWithAsset:mixComposition presetName:AVAssetExportPresetHighestQuality];
+    exporter.outputURL=url;
+    [exporter setVideoComposition:MainCompositionInst];
+    exporter.outputFileType = AVFileTypeMPEG4;
+    NSLog(@"EXPORTING");
+    [exporter exportAsynchronouslyWithCompletionHandler:^
+     {
+         dispatch_async(dispatch_get_main_queue(), ^{
+             NSLog(@"FINISHED EXPORTING %@", exporter.error.localizedDescription);
+             completion(exporter.outputURL);
+         });
+     }];
+    
+}
+
 @end
