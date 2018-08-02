@@ -25,17 +25,25 @@ class DGStreamScreenCapture: QBRTCVideoCapture {
     var delegate: WhateverProtocol?
     var isIpad = false
     var didAlert = false
+    var remoteScreenSize: CGSize!
 
-    init(view: UIView) {
+    init(view: UIView, remoteScreenSize: CGSize) {
         super.init()
         self.view = view
+        self.remoteScreenSize = remoteScreenSize
         if Display.pad {
             isIpad = true
         }
         UIGraphicsBeginImageContextWithOptions(self.view.frame.size, false, 1.0)
         let context = UIGraphicsGetCurrentContext()
-        context?.interpolationQuality = CGInterpolationQuality.high
+        if Display.phone {
+            context?.interpolationQuality = .high
+        }
+        else {
+            context?.interpolationQuality = .medium
+        }
         context?.setFillColor(UIColor.clear.cgColor)
+        context?.setBlendMode(.clear)
         context?.synchronize()
     }
     
@@ -47,16 +55,6 @@ class DGStreamScreenCapture: QBRTCVideoCapture {
         displayLink.isPaused = true
     }
     
-//    func screenshot() -> UIImage? {
-//        UIGraphicsBeginImageContextWithOptions(self.view.frame.size, true, 1.0)
-//        self.view.drawHierarchy(in: self.view.bounds, afterScreenUpdates: false)
-//        if let image = UIGraphicsGetImageFromCurrentImageContext() {
-//            UIGraphicsEndImageContext()
-//            return DGStreamScreenCapture.imageWithImage(sourceImage: image, scaledToWidth: view.bounds.width)
-//        }
-//        print("No Screenshot")
-//        return nil
-//    }
     func screenshot() -> UIImage? {
         
         if isIpadPro {
@@ -94,21 +92,15 @@ class DGStreamScreenCapture: QBRTCVideoCapture {
         }
         print("No Screenshot")
         return nil
-        
-//        guard let layer = UIApplication.shared.keyWindow?.layer else { return nil }
-//        let renderer = UIGraphicsImageRenderer(size: layer.frame.size)
-//        let image = renderer.image(actions: { context in
-//            layer.render(in: context.cgContext)
-//        })
-//        return image
-        
-//        let bounds = UIScreen.main.bounds
-//        UIGraphicsBeginImageContextWithOptions(bounds.size, true, 0.0)
-//        yourUIViewController.view!.drawHierarchy(in: bounds, afterScreenUpdates: false)
-//
-//        let img = UIGraphicsGetImageFromCurrentImageContext()
-//        UIGraphicsEndImageContext()
-//        return
+    }
+    
+    class func snapshot(view: UIView) -> UIImage? {
+        UIGraphicsBeginImageContextWithOptions(view.frame.size, false, UIScreen.main.scale)
+        view.drawHierarchy(in: view.bounds, afterScreenUpdates: false)
+        if let image = UIGraphicsGetImageFromCurrentImageContext() {
+            return image
+        }
+        return nil
     }
     
     class func imageWithImage (sourceImage:UIImage, scaledToWidth: CGFloat) -> UIImage {
@@ -139,8 +131,6 @@ class DGStreamScreenCapture: QBRTCVideoCapture {
         self.videoQueue.sync {
             
             autoreleasepool {
-                
-                print("Duration = \(displayLink.duration)")
                 
                 if let image = self.screenshot() {
                     

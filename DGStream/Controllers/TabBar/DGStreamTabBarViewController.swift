@@ -308,16 +308,19 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
         self.dropDownButton.alpha = 0
         if let currentUser = DGStreamCore.instance.currentUser, let currentUserID = currentUser.userID {
             self.recents = DGStreamRecent.createDGStreamRecentsFrom(protocols: DGStreamManager.instance.dataSource.streamManager(DGStreamManager.instance, recentsWithUserIDs: [currentUserID]))
-            if let text = searchText {
+            if let text = searchText, !text.isEmpty {
                 self.recents = self.recents.filter({ (recent) -> Bool in
-                    var otherUser: DGStreamUser!
+                    var otherUser: DGStreamUser?
                     if let receiver = recent.receiver, let receiverID = receiver.userID, receiverID != currentUserID {
                         otherUser = receiver
                     }
                     else if let sender = recent.sender {
                         otherUser = sender
                     }
-                    if let username = otherUser.username, username.hasPrefix(text) {
+                    guard let user = otherUser else {
+                        return false
+                    }
+                    if let username = user.username, username.hasPrefix(text) {
                         return true
                     }
                     return false

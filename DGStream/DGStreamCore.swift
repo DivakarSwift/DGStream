@@ -810,6 +810,7 @@ extension DGStreamCore: QBChatDelegate {
                             document.title = "ChromaKey.pdf"
                             document.url = "\(id).pdf"
                             
+                            callVC.isBeingSharedWith = true
                             callVC.placePDF(document: document)
 
                         }, statusBlock: { (request, status) in
@@ -924,6 +925,28 @@ extension DGStreamCore: QBChatDelegate {
             }
             else if text.hasPrefix("clearAllDrawings"), let callVC = self.presentedViewController as? DGStreamCallViewController {
                 if let user = self.getOtherUserWith(userID: senderID), let username = user.username {
+                    
+                    var drawID:Int = 0 // Increments from other devices draws
+                    
+                    if let params = message.customParameters, let drawIDValue = params["increment"] {
+                        let drawIDString:String = String(describing: drawIDValue)
+                        if let drawIDInt = Int(drawIDString) {
+                            drawID = drawIDInt
+                        }
+                        else if drawIDString.contains("(") {
+                            let string = drawIDString.components(separatedBy: "(")[1].components(separatedBy: ")")[0]
+                            if let drawIDInt:Int = Int(string) {
+                                drawID = drawIDInt
+                            }
+                        }
+                    }
+                    
+                    if callVC.latestRemoteDrawID > drawID {
+                        return
+                    }
+                    
+                    callVC.latestRemoteDrawID = drawID
+                    
                     let message = DGStreamMessage()
                     message.message = "\(username) cleared all drawings."
                     message.isSystem = true
@@ -1097,7 +1120,7 @@ extension DGStreamCore: QBChatDelegate {
                     callVC.alertRequestWaitingView = nil
                 }
             }
-            else if text.hasPrefix("mergeRequest"), let mergeRequestView = UINib(nibName: "DGStreamAlertView", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiate(withOwner: self, options: nil).first as? DGStreamAlertView, let callVC = self.presentedViewController as? DGStreamCallViewController, let currentUser = self.currentUser, let currentUserID = currentUser.userID {
+            else if text.hasPrefix("mergeRequest"), let mergeRequestView = UINib(nibName: "DGStreamAlertView", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiate(withOwner: self, options: nil).first as? DGStreamAlertView, let callVC = self.presentedViewController as? DGStreamCallViewController, let currentUser = self.currentUser, let currentUserID = currentUser.userID, let customParams = message.customParameters, let screenWidthString = customParams["ScreenWidth"] as? String, let screenHeightString = customParams["ScreenHeight"] as? String {
                 
                 print("\n\nMERGE REQUEST\n\n")
                 
@@ -1110,6 +1133,32 @@ extension DGStreamCore: QBChatDelegate {
                     fromUsername = username
                 }
                 callVC.playMergeSound()
+                
+                var widthString = ""
+                var heightString = ""
+                if screenWidthString.contains("."), let w = screenWidthString.components(separatedBy: ".").first {
+                    widthString = w
+                }
+                else {
+                    widthString = screenWidthString
+                }
+                
+                if screenHeightString.contains("."), let h = screenHeightString.components(separatedBy: ".").first {
+                    heightString = h
+                }
+                else {
+                    heightString = screenHeightString
+                }
+                
+                var width = UIScreen.main.bounds.width
+                var height = UIScreen.main.bounds.height
+                if let wInt = Int(widthString), let hInt = Int(heightString) {
+                    width = CGFloat(wInt)
+                    height = CGFloat(hInt)
+                }
+                
+                callVC.remoteScreenSize = CGSize(width: width, height: height)
+                
                 mergeRequestView.configureFor(mode: .mergeRequest, fromUsername: fromUsername, message: "", isWaiting: false)
                 
                 DispatchQueue.main.async {

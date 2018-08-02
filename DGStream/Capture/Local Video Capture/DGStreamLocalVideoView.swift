@@ -163,9 +163,22 @@ class DGStreamLocalVideoView: UIView {
         var maxValue:Float = 1.0
         var initialValue:Float = self.removeIntensity
         
-        if !self.isChromaKey || self.removeColor == .black {
+        if !self.isChromaKey, self.removeColor == .black {
             maxValue = 0.0
             initialValue = 0.0
+        }
+        else if !self.isChromaKey {
+            self.filterOperation = FilterOperation(
+                filter:{Sharpen()},
+                listName:"Chroma key blend (green)",
+                titleName:"Chroma Key (Green)",
+                sliderConfiguration:.enabled(minimumValue:0.0, maximumValue:maxValue, initialValue:initialValue),
+                sliderUpdateCallback: {(filter, sliderValue) in
+                    filter.sharpness = 0.50
+            },
+                filterOperationType:.blend
+            )
+            return
         }
         
         if self.removeColor == .green {
@@ -213,7 +226,7 @@ class DGStreamLocalVideoView: UIView {
                 titleName:"Chroma Key (Green)",
                 sliderConfiguration:.enabled(minimumValue:0.0, maximumValue:maxValue, initialValue:initialValue),
                 sliderUpdateCallback: {(filter, sliderValue) in
-                    filter.thresholdSensitivity = sliderValue - 0.35
+                    filter.thresholdSensitivity = sliderValue
                     filter.colorToReplace = .white
             },
                 filterOperationType:.blend
