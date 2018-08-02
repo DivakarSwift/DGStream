@@ -10,6 +10,7 @@ protocol DGStreamChatViewControllerDelegate {
     func chat(viewController: DGStreamChatViewController, backButtonTapped sender:Any?)
     func chat(viewController: DGStreamChatViewController, tapped image:UIImage)
     func chat(viewController: DGStreamChatViewController, didReceiveMessage message: DGStreamMessage)
+    func chatViewControllerDidFinishTakingPicture()
 }
 
 
@@ -246,13 +247,26 @@ class DGStreamChatViewController: UIViewController {
                 return
             }
             
-            let photoPicker = UIImagePickerController()
-            photoPicker.sourceType = .camera
-            photoPicker.delegate = self
-            photoPicker.modalPresentationStyle = .custom
-            self.present(photoPicker, animated: true) {
-                
+            let message = QBChatMessage()
+            message.recipientID = self.chatConversation.userIDs.filter({ (id) -> Bool in
+                return id != DGStreamCore.instance.currentUser?.userID
+            }).first?.uintValue ?? 0
+            message.senderID = DGStreamCore.instance.currentUser?.userID?.uintValue ?? 0
+            message.text = "takingPicture"
+            DispatchQueue.global().async {
+                let photoPicker = UIImagePickerController()
+                photoPicker.sourceType = .camera
+                photoPicker.delegate = self
+                photoPicker.modalPresentationStyle = .custom
+                DispatchQueue.main.async {
+                    self.present(photoPicker, animated: false) {
+                        QBChat.instance.sendSystemMessage(message, completion: { (error) in
+                            
+                        })
+                    }
+                }
             }
+            
         }))
         alert.addAction(UIAlertAction(title: "Library", style: .default, handler: { (action: UIAlertAction) in
             guard UIImagePickerController.isSourceTypeAvailable(.savedPhotosAlbum) else {
@@ -265,14 +279,23 @@ class DGStreamChatViewController: UIViewController {
                 return
             }
             
+            let message = QBChatMessage()
+            message.recipientID = self.chatConversation.userIDs.filter({ (id) -> Bool in
+                return id != DGStreamCore.instance.currentUser?.userID
+            }).first?.uintValue ?? 0
+            message.senderID = DGStreamCore.instance.currentUser?.userID?.uintValue ?? 0
+            message.text = "takingPicture"
+            
             self.checkPermission(completion: { (granted) in
                 if granted {
                     let photoPicker = UIImagePickerController()
                     photoPicker.sourceType = .savedPhotosAlbum
                     photoPicker.delegate = self
                     photoPicker.modalPresentationStyle = .custom
-                    self.present(photoPicker, animated: true) {
-                        
+                    self.present(photoPicker, animated: false) {
+                        QBChat.instance.sendSystemMessage(message, completion: { (error) in
+                            
+                        })
                     }
                 }
                 else {
@@ -509,12 +532,16 @@ extension DGStreamChatViewController: UIImagePickerControllerDelegate, UINavigat
         }
     }
     @objc func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-        
+        defer {
+            picker.dismiss(animated: false)
+            self.delegate.chatViewControllerDidFinishTakingPicture()
+        }
     }
     @objc func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         
         defer {
-            picker.dismiss(animated: true)
+            picker.dismiss(animated: false)
+            self.delegate.chatViewControllerDidFinishTakingPicture()
         }
         
         print(info)

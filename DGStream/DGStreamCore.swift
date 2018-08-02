@@ -1196,6 +1196,14 @@ extension DGStreamCore: QBChatDelegate {
             else if text.hasPrefix("mergeEnd"), let callVC = self.presentedViewController as? DGStreamCallViewController {
                 callVC.returnToStreamMode(hideModeButtons: true)
             }
+                // PDF PAGE CHANGE
+            else if text.hasPrefix("pageChange"), let callVC = self.presentedViewController as? DGStreamCallViewController, let customParams = message.customParameters, let pageIndexString = customParams["index"] as? String, let pageIndex = Int(pageIndexString), let incrementString = customParams["increment"] as? String, let increment = Int(incrementString) {
+                callVC.changeToPage(index: pageIndex, increment: increment)
+            }
+                // PDF PAGE SELECTION
+            else if text.hasPrefix("pageSelection"), let callVC = self.presentedViewController as? DGStreamCallViewController, let customParams = message.customParameters, let pageSelection = customParams["string"] as? String, let incrementString = customParams["increment"] as? String, let increment = Int(incrementString) {
+                callVC.changeToPage(selection: pageSelection, increment: increment)
+            }
                 // PERSPECTIVE REQUEST
             else if text.hasPrefix("perspectiveRequest"), let perspectiveRequestView = UINib(nibName: "DGStreamAlertView", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiate(withOwner: self, options: nil).first as? DGStreamAlertView, let callVC = self.presentedViewController as? DGStreamCallViewController, let currentUser = self.currentUser, let currentUserID = currentUser.userID {
                 
@@ -1389,6 +1397,16 @@ extension DGStreamCore: QBChatDelegate {
                     message.isSystem = true
                     callVC.chatPeekView.addCellWith(message: message)
                 }
+            }
+            else if text.hasPrefix("takingPicture"), let callVC = self.presentedViewController as? DGStreamCallViewController {
+                var fromUsername = ""
+                if let fromUser = self.getOtherUserWith(userID: senderID), let username = fromUser.username {
+                    fromUsername = username
+                }
+                let message = DGStreamMessage()
+                message.isSystem = true
+                message.message = "\(fromUsername) is taking a photo."
+                callVC.chatPeekView.addCellWith(message: message)
             }
         }
         

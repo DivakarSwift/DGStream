@@ -34,7 +34,7 @@ class DGStreamScreenCapture: QBRTCVideoCapture {
         }
         UIGraphicsBeginImageContextWithOptions(self.view.frame.size, false, 1.0)
         let context = UIGraphicsGetCurrentContext()
-        context?.interpolationQuality = CGInterpolationQuality.medium
+        context?.interpolationQuality = CGInterpolationQuality.high
         context?.setFillColor(UIColor.clear.cgColor)
         context?.synchronize()
     }

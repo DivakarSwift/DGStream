@@ -43,13 +43,12 @@ class DGStreamLocalVideoView: UIView {
     var removeIntensity: Float = 0.6
     var removeColor: UIColor = .green
     
-    func configureWith(orientation: UIDeviceOrientation, isFront: Bool, isChromaKey: Bool, removeColor: UIColor, removeIntensity: Float, delegate: DGStreamLocalVideoViewDelegate, backgroundImage: UIImage) {
+    func configureWith(orientation: UIDeviceOrientation, isFront: Bool, isChromaKey: Bool, removeColor: UIColor, removeIntensity: Float, delegate: DGStreamLocalVideoViewDelegate) {
         self.backgroundColor = .clear
         self.isChromaKey = isChromaKey
         self.removeColor = removeColor
         self.removeIntensity = removeIntensity
         self.delegate = delegate
-        self.backgroundImage = backgroundImage
         self.isFront = isFront
         self.setUpFilter()
         self.addRenderView()
@@ -111,7 +110,7 @@ class DGStreamLocalVideoView: UIView {
         return imageOrientation
     }
     
-    func adjust(orientation: UIDeviceOrientation, newSize: CGSize, newBackgroundImage: UIImage) {
+    func adjust(orientation: UIDeviceOrientation, newSize: CGSize) {
         var imageOrientation: ImageOrientation = .portraitUpsideDown
         var portraitOrientation:ImageOrientation = .portraitUpsideDown
         if self.camera.location == .backFacing {
@@ -130,7 +129,7 @@ class DGStreamLocalVideoView: UIView {
             imageOrientation = portraitOrientation
         }
         self.renderView.orientation = imageOrientation
-        self.blendImage = PictureInput(image: newBackgroundImage, smoothlyScaleOutput: true, orientation: imageOrientation)
+        self.blendImage = PictureInput(image: UIImage(color: .clear, size: self.bounds.size)!, smoothlyScaleOutput: true, orientation: imageOrientation)
         self.blendImage?.addTarget(self.filterOperation.filter)
         self.blendImage?.processImage()
     }
@@ -149,7 +148,7 @@ class DGStreamLocalVideoView: UIView {
         self.renderView.backgroundRenderColor = .transparent
         self.renderView.backgroundColor = .clear
         self.renderView.boundInside(container: self)
-        self.renderView.fillMode = .preserveAspectRatioAndFill
+        self.renderView.fillMode = .stretch
         self.renderView.orientation = self.getOrientation()
         if self.isChromaKey, self.removeColor == .black {
             self.alpha = 0.5
@@ -227,7 +226,7 @@ class DGStreamLocalVideoView: UIView {
                 titleName:"Chroma Key (Green)",
                 sliderConfiguration:.enabled(minimumValue:0.0, maximumValue:maxValue, initialValue:initialValue),
                 sliderUpdateCallback: {(filter, sliderValue) in
-                    filter.sharpness = 0.15
+                    filter.sharpness = 0.50
             },
                 filterOperationType:.blend
             )
@@ -287,13 +286,14 @@ class DGStreamLocalVideoView: UIView {
         
         // Configure the filter chain, ending with the view
         if let view = self.renderView {
+            
             switch self.filterOperation.filterOperationType {
             case .singleInput:
                 self.camera.addTarget(self.filterOperation.filter)
                 self.filterOperation.filter.addTarget(view)
             case .blend:
                 self.camera.addTarget(self.filterOperation.filter)
-                self.blendImage = PictureInput(image: self.backgroundImage, smoothlyScaleOutput: true, orientation: self.getOrientation())
+                self.blendImage = PictureInput(image: UIImage(color: .clear, size: self.bounds.size)!, smoothlyScaleOutput: true, orientation: self.getOrientation())
                 self.blendImage?.addTarget(self.filterOperation.filter)
                 self.blendImage?.processImage()
                 self.filterOperation.filter.addTarget(view)
@@ -301,7 +301,7 @@ class DGStreamLocalVideoView: UIView {
                 self.filterOperation.configureCustomFilter(setupFunction(videoCamera, self.filterOperation.filter, view))
             }
             
-            self.camera.startCapture()
+            videoCamera.startCapture()
             
             self.configureFor(callMode: .stream)
         }

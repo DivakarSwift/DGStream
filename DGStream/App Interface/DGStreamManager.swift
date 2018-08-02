@@ -149,7 +149,7 @@ public class DGStreamManager: NSObject {
                 return
             }
             
-            self.notification.pushNotification(title: "Incoming Call", body: fromUsername)
+            //self.notification.pushNotification(title: "Incoming Call", body: fromUsername)
         }
 
     }

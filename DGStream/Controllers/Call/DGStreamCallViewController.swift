@@ -281,6 +281,7 @@ public class DGStreamCallViewController: UIViewController {
     var undoImage2:UIImage?
     
     var latestRemoteDrawID:Int = 0
+    var latestRemotePageIncrement:Int = 0
     
     var popover: UIViewController?
 
@@ -668,8 +669,8 @@ public class DGStreamCallViewController: UIViewController {
 //                self.lastGreenScreenOrientation = orientation
 //            }
             
-            if let lv = self.localBroadcastView, let backgroundImage = self.takeClearImage() {
-                lv.adjust(orientation: UIDevice.current.orientation, newSize: self.remoteVideoViewContainer.bounds.size, newBackgroundImage: backgroundImage)
+            if let lv = self.localBroadcastView {
+                lv.adjust(orientation: UIDevice.current.orientation, newSize: self.remoteVideoViewContainer.bounds.size)
             }
         }
         
@@ -712,7 +713,7 @@ public class DGStreamCallViewController: UIViewController {
             self.localBroadcastView = nil
         }
         self.localBroadcastView = DGStreamLocalVideoView(frame: self.remoteVideoViewContainer.frame)
-        self.localBroadcastView!.configureWith(orientation: UIDevice.current.orientation, isFront: isFront, isChromaKey: isChromaKey, removeColor: self.mergeOptionColor, removeIntensity: self.mergeOptionIntensity, delegate: self, backgroundImage: self.takeClearImage()!)
+        self.localBroadcastView!.configureWith(orientation: UIDevice.current.orientation, isFront: isFront, isChromaKey: isChromaKey, removeColor: self.mergeOptionColor, removeIntensity: self.mergeOptionIntensity, delegate: self)
         self.localBroadcastView?.boundInside(container: container)
         self.localBroadcastView?.alpha = 1.0
         if isChromaKey {
@@ -2998,11 +2999,14 @@ public class DGStreamCallViewController: UIViewController {
         }
         
         self.mergeOptionsButton.alpha = 0
-        self.shareButton.isEnabled = true
-        self.shareButton.tintColor = UIColor.dgBlueDark()
-        self.shareButtonContainer.layer.borderColor = UIColor.dgBlueDark().cgColor
-        self.shareButton.setTitleColor(UIColor.dgBlueDark(), for: .normal)
-        self.shareButtonLabel.textColor = UIColor.dgBlueDark()
+        
+        if !self.isSharing || !self.isSharingVideo || !self.isBeingSharedWith || !self.isBeingSharedWithVideo {
+            self.shareButton.isEnabled = true
+            self.shareButton.tintColor = UIColor.dgBlueDark()
+            self.shareButtonContainer.layer.borderColor = UIColor.dgBlueDark().cgColor
+            self.shareButton.setTitleColor(UIColor.dgBlueDark(), for: .normal)
+            self.shareButtonLabel.textColor = UIColor.dgBlueDark()
+        }
         
 //        self.mergeButton.isEnabled = false
 //        self.mergeButton.tintColor = .lightGray
@@ -3024,6 +3028,8 @@ public class DGStreamCallViewController: UIViewController {
         }
         
         DGStreamCore.instance.audioPlayer.stopAllSounds()
+        
+        self.latestRemotePageIncrement = 0
         
         if self.isFrozen {
             self.freezeButtonTapped(self)
@@ -3053,10 +3059,12 @@ public class DGStreamCallViewController: UIViewController {
             self.whiteBoardButton.tintColor = UIColor.dgBlueDark()
             self.whiteBoardButtonContainer.layer.borderColor = UIColor.dgBlueDark().cgColor
             
-            self.shareButtonLabel.textColor = UIColor.dgBlueDark()
-            self.shareButton.tintColor = UIColor.dgBlueDark()
-            self.shareButtonContainer.layer.borderColor = UIColor.dgBlueDark().cgColor
-            self.shareButton.isEnabled = true
+            if !self.isSharing || !self.isSharingVideo || !self.isBeingSharedWith || !self.isBeingSharedWithVideo {
+                self.shareButtonLabel.textColor = UIColor.dgBlueDark()
+                self.shareButton.tintColor = UIColor.dgBlueDark()
+                self.shareButtonContainer.layer.borderColor = UIColor.dgBlueDark().cgColor
+                self.shareButton.isEnabled = true
+            }
             
             self.statusBar.backgroundColor = UIColor.dgBlueDark()
             self.statusBarBackButton.alpha = 0
@@ -4154,6 +4162,40 @@ extension DGStreamCallViewController: DGStreamChatViewControllerDelegate {
     func chat(viewController: DGStreamChatViewController, tapped image: UIImage) {
         self.performSegue(withIdentifier: "image", sender: image)
     }
+    func chatViewControllerDidFinishTakingPicture() {
+        // The Image Picker was using the camera
+        // Restart users camera
+        
+        if self.callMode == .board {
+            return
+        }
+        
+        var isFront: Bool = false
+        var isChromaKey: Bool = false
+        var container: UIView!
+        
+        if self.callMode == .stream {
+            isFront = true
+            isChromaKey = false
+            container = self.localVideoViewContainer
+        }
+        
+        if self.callMode == .merge {
+            isFront = false
+            isChromaKey = true
+            container = self.remoteVideoViewContainer
+        }
+        if self.callMode == .perspective {
+            isFront = false
+            isChromaKey = false
+            container = self.remoteVideoViewContainer
+        }
+        self.setUpLocalVideoViewIn(container: container, isFront: isFront, isChromaKey: isChromaKey)
+        
+        if self.callMode == .perspective && !self.isCurrentUserPerspective {
+            self.localBroadcastView?.alpha = 0
+        }
+    }
 }
 
 extension DGStreamCallViewController: DGStreamCallColorViewControllerDelegate, DGStreamCallStampsViewControllerDelegate {
@@ -4605,6 +4647,8 @@ extension DGStreamCallViewController: DGStreamCallShareSelectViewControllerDeleg
 //            self.chatPeekView.addCellWith(message: message)
 //        }
         
+        self.latestRemotePageIncrement = 0
+        
         if let rv = self.recordingView {
             rv.removeFromSuperview()
             self.recordingView = nil
@@ -4823,7 +4867,8 @@ extension DGStreamCallViewController: DGStreamDocumentsViewControllerDelegate {
             self.isSharingDocument = true
             self.updateUIForShareStart()
             self.documentView = DGStreamDocumentView(frame: self.remoteVideoViewContainer.bounds)
-            self.documentView?.configureIn(container: self.remoteVideoViewContainer, pdfData: data)
+            self.documentView?.configureIn(container: self.remoteVideoViewContainer, pdfData: data, recipientID: self.selectedUser)
+
         }
         else {
             let alert = UIAlertController(title: "Error", message: "There is no data associated with this document.", preferredStyle: .alert)
@@ -4840,6 +4885,20 @@ extension DGStreamCallViewController: DGStreamDocumentsViewControllerDelegate {
         if let docView = self.documentView {
             docView.removeFromSuperview()
             self.documentView = nil
+        }
+    }
+    
+    func changeToPage(index: Int, increment: Int) {
+        if increment > self.latestRemotePageIncrement, let docView = self.documentView {
+            docView.goToPage(index: index)
+            self.latestRemotePageIncrement = increment
+        }
+    }
+    
+    func changeToPage(selection: String, increment: Int) {
+        if increment > self.latestRemotePageIncrement, let docView = self.documentView {
+            docView.goToPage(selection: selection)
+            self.latestRemotePageIncrement = increment
         }
     }
     
