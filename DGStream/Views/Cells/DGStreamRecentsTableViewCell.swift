@@ -8,7 +8,7 @@
 
 import UIKit
 
-class DGStreamRecentsTableViewCell: UITableViewCell {
+class DGStreamRecentsTableViewCell: UICollectionViewCell {
     
     @IBOutlet weak var accessoryButton: UIButton!
     @IBOutlet weak var nameLabel: UILabel!

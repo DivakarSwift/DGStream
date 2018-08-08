@@ -58,10 +58,43 @@ public class DGStreamCallViewController: UIViewController {
     @IBOutlet weak var statusBarDoneButton: UIButton!
     @IBOutlet weak var statusBarTitle: UILabel!
     
-    @IBOutlet weak var dropDownContainer: UIView!
-    @IBOutlet weak var dropDownContainerHeightConstraint: NSLayoutConstraint!
+    @IBOutlet weak var optionsContainerConstraint: NSLayoutConstraint!
+    @IBOutlet weak var optionsContainer: UIView!
+    @IBOutlet weak var optionsContainerButton: UIButton!
+    @IBOutlet weak var optionsButtonContainer: UIView!
     
-    @IBOutlet weak var mergeSwitch: UISwitch!
+    @IBOutlet weak var drawButton: UIButton!
+    
+
+    @IBOutlet weak var selectColorLabel: UILabel!
+    
+    @IBOutlet weak var colorBlackButton: UIButton!
+    @IBOutlet weak var colorBlackView: UIView!
+    @IBOutlet weak var colorBlackViewIndicator: UIView!
+    
+    @IBOutlet weak var colorWhiteButton: UIButton!
+    @IBOutlet weak var colorWhiteView: UIView!
+    @IBOutlet weak var colorWhiteViewIndicator: UIView!
+    
+    @IBOutlet weak var colorRedButton: UIButton!
+    @IBOutlet weak var colorRedView: UIView!
+    @IBOutlet weak var colorRedViewIndicator: UIView!
+    
+    @IBOutlet weak var selectSizeLabel: UILabel!
+    
+    @IBOutlet weak var sizeSmallButton: UIButton!
+    @IBOutlet weak var sizeSmallView: UIView!
+    @IBOutlet weak var sizeSmallViewIndicator: UIView!
+    
+    
+    @IBOutlet weak var sizeMediumButton: UIButton!
+    @IBOutlet weak var sizeMediumView: UIView!
+    @IBOutlet weak var sizeMediumViewIndicator: UIView!
+    
+    @IBOutlet weak var sizeLargeButton: UIButton!
+    @IBOutlet weak var sizeLargeView: UIView!
+    @IBOutlet weak var sizeLargeViewIndicator: UIView!
+    
     
     var dropDown:DGStreamDropDownMenu!
     var dropDownManager: DGStreamDropDownManager!
@@ -85,10 +118,6 @@ public class DGStreamCallViewController: UIViewController {
     var remoteVideoViewContainerCenterXConstraint: NSLayoutConstraint?
     var remoteVideoViewContainerCenterYConstraint: NSLayoutConstraint?
     
-    @IBOutlet weak var drawButton: UIButton! //80
-    
-    @IBOutlet weak var colorButton: UIButton!
-    
     @IBOutlet weak var mergeButtonContainer: UIView!
     @IBOutlet weak var mergeButton: UIButton! //10
     @IBOutlet weak var mergeButtonLabel: UILabel!
@@ -100,7 +129,6 @@ public class DGStreamCallViewController: UIViewController {
     @IBOutlet weak var hangUpButtonContainer: UIView!
     @IBOutlet weak var hangUpButton: UIButton!
     
-    @IBOutlet weak var recordButtonContainer: UIView!
     @IBOutlet weak var recordButton: UIButton!
     
     @IBOutlet weak var shareButtonContainer: UIView!
@@ -112,26 +140,31 @@ public class DGStreamCallViewController: UIViewController {
     
     @IBOutlet weak var whiteBoardButtonLabel: UILabel!
     
-    @IBOutlet weak var freezeButtonContainer: UIView!
     @IBOutlet weak var freezeButton: UIButton!
     var freezeImageView: UIImageView?
     var isFrozen: Bool = false
     var freezeFrame: UIImage?
     var freezeRotation: QBRTCVideoRotation?
     
-    @IBOutlet weak var snapshotButtonContainer: UIView!
     @IBOutlet weak var snapshotButton: UIButton!
     
     @IBOutlet weak var stampsButton: UIButton!
     
     @IBOutlet weak var undoButton: UIButton!
+    @IBOutlet weak var undoButtonLabel: UILabel!
     
     @IBOutlet weak var clearAllButton: UIButton!
+    @IBOutlet weak var clearAllButtonLabel: UILabel!
     
-    @IBOutlet weak var mergeOptionsButton: UIButton!
+    @IBOutlet weak var mergeColorButton: UIButton!
+    @IBOutlet weak var mergeColorButtonLabel: UILabel!
+    
+    @IBOutlet weak var mergeIntensityButton: UIButton!
+    @IBOutlet weak var mergeIntensityButtonLabel: UILabel!
     
     @IBOutlet weak var chatButtonContainer: UIView!
     @IBOutlet weak var chatButton: UIButton!
+    @IBOutlet weak var chatButtonLabel: UILabel!
     @IBOutlet weak var chatContainerHeightConstraint: NSLayoutConstraint!
     
     @IBOutlet weak var chatPeekViewContainer: UIView!
@@ -321,6 +354,7 @@ public class DGStreamCallViewController: UIViewController {
                 initCall()
                 self.loadMergeOptions()
                 self.setUpButtons()
+                self.setUpOptions()
                 self.setUpChat()
                 self.setUpDrawView()
             }
@@ -356,11 +390,6 @@ public class DGStreamCallViewController: UIViewController {
         super.viewWillAppear(animated)
         
         if shouldLoadData {
-            DispatchQueue.main.async {
-                self.dropDownContainerHeightConstraint.constant = 179 + 45
-            }
-            
-            
             
             self.statusBar.backgroundColor = UIColor.dgBlueDark()
             
@@ -380,13 +409,10 @@ public class DGStreamCallViewController: UIViewController {
             self.hangUpButton.alpha = 1
         
             self.mergeButtonContainer.alpha = 0
-            //self.recordButtonContainer.alpha = 0
-            self.freezeButtonContainer.alpha = 0
-            self.snapshotButtonContainer.alpha = 0
             self.chatButtonContainer.alpha = 0
             
             if self.isAudioCall {
-                self.hideModeButtons()
+
             }
             
             // Drop Down
@@ -741,8 +767,6 @@ public class DGStreamCallViewController: UIViewController {
         
         if isAudioCall {
             self.mergeButtonContainer.isHidden = true
-            self.freezeButtonContainer.isHidden = true
-            self.snapshotButtonContainer.isHidden = true
             self.session?.localMediaStream.videoTrack.isEnabled = false
             self.audioCallContainer.isHidden = false
             
@@ -862,19 +886,13 @@ public class DGStreamCallViewController: UIViewController {
         
         self.topViews.append(self.statusBar)
         
-        self.dropDownContainer.alpha = 0
-        self.dropDownContainer.layer.cornerRadius = 6
-        self.dropDownContainer.layer.borderColor = UIColor.dgBlueDark().cgColor
-        self.dropDownContainer.layer.borderWidth = 1
-        self.dropDownContainer.clipsToBounds = true
-        
-        self.dropDownSeperator1.backgroundColor = UIColor.dgBlueDark()
-        self.dropDownSeperator2.backgroundColor = UIColor.dgBlueDark()
-        self.dropDownSeperator3.backgroundColor = UIColor.dgBlueDark()
-        self.dropDownSeperator4.backgroundColor = UIColor.dgBlueDark()
-        self.dropDownSeperator5.backgroundColor = UIColor.dgBlueDark()
-        
-        self.topViews.append(self.dropDownContainer)
+        var radius:CGFloat = 6.0
+        if Display.phone {
+            radius = 22
+        }
+        else {
+            radius = 30
+        }
         
         // Hang up
         self.hangUpButtonContainer.layer.borderColor = UIColor.red.cgColor
@@ -886,7 +904,9 @@ public class DGStreamCallViewController: UIViewController {
         self.hangUpButton.contentHorizontalAlignment = .fill
         self.hangUpButton.contentVerticalAlignment = .fill
         self.hangUpButton.contentMode = .scaleAspectFill
-        self.hangUpButton.imageEdgeInsets =  UIEdgeInsetsMake(8, 8, 8, 8)
+        if Display.pad {
+            self.hangUpButton.imageEdgeInsets =  UIEdgeInsetsMake(8, 8, 8, 8)
+        }
         self.hangUpButtonContainer.layer.cornerRadius = self.hangUpButtonContainer.frame.size.width / 2
         
         self.topViews.append(self.hangUpButtonContainer)
@@ -896,7 +916,7 @@ public class DGStreamCallViewController: UIViewController {
         self.mergeButtonContainer.layer.borderColor = UIColor.dgBlueDark().cgColor
         self.mergeButtonContainer.layer.borderWidth = 1
         self.mergeButtonContainer.clipsToBounds = true
-        self.mergeButtonContainer.layer.cornerRadius = self.mergeButtonContainer.frame.size.width / 2
+        self.mergeButtonContainer.layer.cornerRadius = radius
         self.mergeButtonContainer.backgroundColor = .clear
         self.mergeButton.backgroundColor = .clear
         self.mergeButton.setImage(mergeImage?.withRenderingMode(.alwaysTemplate), for: .normal)
@@ -904,7 +924,9 @@ public class DGStreamCallViewController: UIViewController {
         self.mergeButton.contentVerticalAlignment = .fill
         self.mergeButton.contentHorizontalAlignment = .fill
         self.mergeButton.contentMode = .scaleAspectFill
-        self.mergeButton.imageEdgeInsets = UIEdgeInsetsMake(12, 12, 12, 12)
+        if Display.pad {
+            self.mergeButton.imageEdgeInsets = UIEdgeInsetsMake(12, 12, 12, 12)
+        }
         self.mergeButtonLabel.text = "Merge"
         self.mergeButtonLabel.textColor = UIColor.dgBlueDark()
         
@@ -916,14 +938,16 @@ public class DGStreamCallViewController: UIViewController {
         self.perspectiveButtonContainer.layer.borderWidth = 1
         self.perspectiveButtonContainer.clipsToBounds = true
         self.perspectiveButton.backgroundColor = .clear
-        self.perspectiveButtonContainer.layer.cornerRadius = self.perspectiveButtonContainer.frame.size.width / 2
+        self.perspectiveButtonContainer.layer.cornerRadius = radius
         self.perspectiveButtonContainer.backgroundColor = .clear
         self.perspectiveButton.setImage(perspectiveImage?.withRenderingMode(.alwaysTemplate), for: .normal)
         self.perspectiveButton.tintColor = UIColor.dgBlueDark()
         self.perspectiveButton.contentVerticalAlignment = .fill
         self.perspectiveButton.contentHorizontalAlignment = .fill
         self.perspectiveButton.contentMode = .scaleAspectFill
-        self.perspectiveButton.imageEdgeInsets = UIEdgeInsetsMake(12, 12, 12, 12)
+        if Display.pad {
+            self.perspectiveButton.imageEdgeInsets = UIEdgeInsetsMake(12, 12, 12, 12)
+        }
         self.perspectiveButtonLabel.text = "Perspective"
         self.perspectiveButtonLabel.textColor = UIColor.dgBlueDark()
         
@@ -936,14 +960,16 @@ public class DGStreamCallViewController: UIViewController {
         self.shareButtonContainer.layer.borderWidth = 1
         self.shareButtonContainer.clipsToBounds = true
         self.shareButton.backgroundColor = .clear
-        self.shareButtonContainer.layer.cornerRadius = self.shareButtonContainer.frame.size.width / 2
+        self.shareButtonContainer.layer.cornerRadius = radius
         self.shareButtonContainer.backgroundColor = .clear
         self.shareButton.setImage(shareImage?.withRenderingMode(.alwaysTemplate), for: .normal)
         self.shareButton.tintColor = UIColor.dgBlueDark()
         self.shareButton.contentVerticalAlignment = .fill
         self.shareButton.contentHorizontalAlignment = .fill
         self.shareButton.contentMode = .scaleAspectFill
-        self.shareButton.imageEdgeInsets = UIEdgeInsetsMake(12, 12, 12, 12)
+        if Display.pad {
+            self.shareButton.imageEdgeInsets = UIEdgeInsetsMake(12, 12, 12, 12)
+        }
         self.shareButtonLabel.text = "Share..."
         self.shareButtonLabel.textColor = UIColor.dgBlueDark()
         
@@ -956,14 +982,16 @@ public class DGStreamCallViewController: UIViewController {
         self.whiteBoardButtonContainer.layer.borderWidth = 1
         self.whiteBoardButtonContainer.clipsToBounds = true
         self.whiteBoardButtonContainer.backgroundColor = .clear
-        self.whiteBoardButtonContainer.layer.cornerRadius = self.whiteBoardButtonContainer.frame.size.width / 2
+        self.whiteBoardButtonContainer.layer.cornerRadius = radius
         self.whiteBoardButton.backgroundColor = .clear
         self.whiteBoardButton.setImage(whiteBoardImage?.withRenderingMode(.alwaysTemplate), for: .normal)
         self.whiteBoardButton.tintColor = UIColor.dgBlueDark()
         self.whiteBoardButton.contentHorizontalAlignment = .fill
         self.whiteBoardButton.contentVerticalAlignment = .fill
         self.whiteBoardButton.contentMode = .scaleAspectFill
-        self.whiteBoardButton.imageEdgeInsets = UIEdgeInsetsMake(12, 12, 12, 12)
+        if Display.pad {
+            self.whiteBoardButton.imageEdgeInsets = UIEdgeInsetsMake(12, 12, 12, 12)
+        }
         self.whiteBoardButtonLabel.text = "Whiteboard"
         self.whiteBoardButtonLabel.textColor = UIColor.dgBlueDark()
         
@@ -971,55 +999,33 @@ public class DGStreamCallViewController: UIViewController {
         self.topViews.append(self.whiteBoardButtonLabel)
         
         // Record
-        self.recordButtonContainer.alpha = 0
-        self.recordButtonContainer.clipsToBounds = true
-        self.recordButtonContainer.layer.borderColor = UIColor.dgBlueDark().cgColor
-        self.recordButtonContainer.layer.borderWidth = 1
-        self.recordButtonContainer.layer.cornerRadius = 6
-        self.recordButtonContainer.backgroundColor = .clear
         self.recordButton.backgroundColor = .clear
         self.recordButton.setImage(recordImage?.withRenderingMode(.alwaysTemplate), for: .normal)
-        self.recordButton.tintColor = UIColor.dgBlueDark()
+        self.recordButton.tintColor = .red
         self.recordButton.contentHorizontalAlignment = .center
         self.recordButton.contentVerticalAlignment = .center
         self.recordButton.contentMode = .scaleAspectFill
-        self.recordButton.setTitle("Record", for: .normal)
-        
-        self.topViews.append(self.recordButtonContainer)
+        self.recordButton.alpha = 0
         
         // Freeze
-        self.freezeButtonContainer.alpha = 0
-        self.freezeButtonContainer.layer.borderColor = UIColor.dgBlueDark().cgColor
-        self.freezeButtonContainer.clipsToBounds = true
-        self.freezeButtonContainer.layer.borderWidth = 1
-        self.freezeButtonContainer.layer.cornerRadius = 6
-        self.freezeButtonContainer.backgroundColor = .clear
         self.freezeButton.backgroundColor = .clear
         self.freezeButton.setImage(UIImage.init(named: "freeze", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
         self.freezeButton.imageEdgeInsets = UIEdgeInsetsMake(8, 8, 8, 12)
-        self.freezeButton.tintColor = UIColor.dgBlueDark()
+        self.freezeButton.tintColor = .white
         self.freezeButton.contentHorizontalAlignment = .center
         self.freezeButton.contentVerticalAlignment = .center
         self.freezeButton.contentMode = .scaleAspectFill
-        
-        self.topViews.append(self.freezeButtonContainer)
+        self.freezeButton.alpha = 0
         
         // Snapshot
-        self.snapshotButtonContainer.alpha = 0
-        self.snapshotButtonContainer.layer.borderColor = UIColor.dgBlueDark().cgColor
-        self.snapshotButtonContainer.clipsToBounds = true
-        self.snapshotButtonContainer.layer.borderWidth = 1
-        self.snapshotButtonContainer.layer.cornerRadius = 6
-        self.snapshotButtonContainer.backgroundColor = .clear
         self.snapshotButton.backgroundColor = .clear
         self.snapshotButton.setImage(UIImage.init(named: "capture", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
         self.snapshotButton.imageEdgeInsets = UIEdgeInsetsMake(8, 8, 8, 12)
-        self.snapshotButton.tintColor = UIColor.dgBlueDark()
+        self.snapshotButton.tintColor = .white
         self.snapshotButton.contentHorizontalAlignment = .center
         self.snapshotButton.contentVerticalAlignment = .center
         self.snapshotButton.contentMode = .scaleAspectFill
-        
-        self.topViews.append(self.snapshotButtonContainer)
+        self.snapshotButton.alpha = 0
         
         // Draw
         self.drawButton.backgroundColor = .clear
@@ -1027,85 +1033,36 @@ public class DGStreamCallViewController: UIViewController {
         self.drawButton.titleLabel?.textAlignment = .center
         self.drawButton.setImage(UIImage.init(named: "EditPencil", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
         self.drawButton.imageEdgeInsets = UIEdgeInsetsMake(12, 12, 12, 12)
-        self.drawButton.tintColor = UIColor.dgBlueDark()
+        self.drawButton.tintColor = .white
         self.drawButton.contentHorizontalAlignment = .center
         self.drawButton.contentVerticalAlignment = .center
         self.drawButton.contentMode = .scaleAspectFill
-        
-        // Color
-        self.colorButton.backgroundColor = .clear
-//        self.colorButton.setTitle("Color", for: .normal)
-        self.colorButton.setTitleColor(UIColor.dgBlueDark(), for: .normal)
-        self.colorButton.setImage(UIImage.init(named: "colorDot", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
-        self.colorButton.imageEdgeInsets = UIEdgeInsetsMake(12, 12, 12, 12)
-        self.colorButton.tintColor = self.dropDownSelectedColor
-        self.colorButton.contentHorizontalAlignment = .center
-        self.colorButton.contentVerticalAlignment = .center
-        self.colorButton.contentMode = .scaleAspectFill
+        self.drawButton.alpha = 0
         
         // Stamps
-        self.stampsButton.backgroundColor = .clear
-//        self.stampsButton.setTitle("Stamps", for: .normal)
+        self.stampsButton.backgroundColor = .white
+        self.stampsButton.setTitle("Stamps", for: .normal)
         self.stampsButton.setTitleColor(UIColor.dgBlueDark(), for: .normal)
-        self.stampsButton.setImage(UIImage.init(named: "text", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
+        self.stampsButton.titleLabel?.textColor = UIColor.dgBlueDark()
         self.stampsButton.imageEdgeInsets = UIEdgeInsetsMake(12, 12, 12, 12)
-        self.stampsButton.tintColor = UIColor.dgBlueDark()
-        self.stampsButton.contentHorizontalAlignment = .center
-        self.stampsButton.contentVerticalAlignment = .center
-        self.stampsButton.contentMode = .scaleAspectFill
-        
-        // Undo
-        self.undoButton.backgroundColor = .clear
-//        self.undoButton.setTitle("Undo", for: .normal)
-        self.undoButton.setTitleColor(UIColor.dgBlueDark(), for: .normal)
-        self.undoButton.setImage(UIImage.init(named: "undo", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
-        self.undoButton.imageEdgeInsets = UIEdgeInsetsMake(12, 12, 12, 12)
-        self.undoButton.tintColor = UIColor.dgBlueDark()
-        self.undoButton.contentHorizontalAlignment = .center
-        self.undoButton.contentVerticalAlignment = .center
-        self.undoButton.contentMode = .scaleAspectFill
-        self.undoButton.isEnabled = false
-        self.undoButton.tintColor = .lightGray
-        
-        self.clearAllButton.isEnabled = false
-        self.clearAllButton.tintColor = .lightGray
-        self.clearAllButton.setTitleColor(.lightGray, for: .normal)
-        self.clearAllButton.titleLabel?.textColor = .lightGray
-        self.clearAllButton.alpha = 0.25
-        
-        // Merge Options
-        self.mergeOptionsButton.backgroundColor = .clear
-        self.mergeOptionsButton.setTitleColor(self.mergeOptionColor, for: .normal)
-        self.mergeOptionsButton.setImage(UIImage.init(named: "merge", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
-        self.mergeOptionsButton.imageEdgeInsets = UIEdgeInsetsMake(12, 12, 12, 12)
-        self.mergeOptionsButton.tintColor = self.mergeOptionColor
-        self.mergeOptionsButton.contentHorizontalAlignment = .center
-        self.mergeOptionsButton.contentVerticalAlignment = .center
-        self.mergeOptionsButton.contentMode = .scaleAspectFill
-        self.mergeOptionsButton.alpha = 0
+        self.stampsButton.layer.cornerRadius = 6
         
         // Chat
         self.chatButtonContainer.alpha = 0
         self.chatButtonContainer.layer.borderColor = UIColor.dgBlueDark().cgColor
         self.chatButtonContainer.clipsToBounds = true
         self.chatButtonContainer.layer.borderWidth = 1
-        self.chatButtonContainer.layer.cornerRadius = 6
+        self.chatButtonContainer.layer.cornerRadius = radius
         self.chatButtonContainer.backgroundColor = .clear
-        self.chatButtonContainer.layer.cornerRadius = 6
         self.chatButton.backgroundColor = .clear
         self.chatButton.setImage(UIImage.init(named: "message", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
         self.chatButton.tintColor = UIColor.dgBlueDark()
-        self.chatButton.imageEdgeInsets = UIEdgeInsetsMake(8, 8, 8, 8)
+        if Display.pad {
+            self.chatButton.imageEdgeInsets = UIEdgeInsetsMake(8, 8, 8, 8)
+        }
+        self.chatButtonLabel.textColor = UIColor.dgBlueDark()
         
         self.topViews.append(self.chatButtonContainer)
-        
-        // Merge Switch
-        //self.shaderName = "blackScreen"
-        self.mergeSwitch.isOn = true
-        self.mergeSwitch.onTintColor = .black
-        self.mergeSwitch.tintColor = .black
-        self.mergeSwitch.thumbTintColor = .white
-        self.mergeSwitch.alpha = 0
         
         var hangUpButtonWH:CGFloat = 0
         var otherButtonsWH:CGFloat = 0
@@ -1144,9 +1101,110 @@ public class DGStreamCallViewController: UIViewController {
         self.blackoutCallBackButton.layer.cornerRadius = self.blackoutCallBackButton.frame.size.width / 2
         self.blackoutCallBackButton.layer.borderColor = UIColor.dgBlack().cgColor
         self.blackoutCallBackButton.layer.borderWidth = 0.5
-        self.hideModeButtons()
         self.disableDrawButtons()
         self.view.layoutIfNeeded()
+    }
+    
+    func setUpOptions() {
+        
+        self.optionsContainer.backgroundColor = UIColor.dgBlueDark()
+        self.optionsContainer.layer.shadowColor = UIColor.black.cgColor
+        self.optionsContainer.layer.shadowOffset = CGSize(width: 0, height: 1)
+        self.optionsContainer.layer.shadowRadius = 6
+        self.optionsContainer.layer.shadowOpacity = 0.75
+        
+        self.optionsButtonContainer.backgroundColor = UIColor.dgBlueDark()
+        self.optionsButtonContainer.layer.shadowColor = UIColor.black.cgColor
+        self.optionsButtonContainer.layer.shadowOffset = CGSize(width: 0, height: 1)
+        self.optionsButtonContainer.layer.shadowRadius = 6
+        self.optionsButtonContainer.layer.shadowOpacity = 0.75
+        self.optionsButtonContainer.layer.cornerRadius = 6
+        self.optionsButtonContainer.alpha = 0
+        
+        self.optionsContainerButton.setImage(UIImage.init(named: "back", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
+        self.optionsContainerButton.backgroundColor = .clear
+        self.optionsContainerButton.tintColor = .white
+        self.optionsContainerButton.alpha = 0
+        
+        self.colorBlackView.backgroundColor = .black
+        self.colorBlackView.layer.cornerRadius = self.colorBlackView.frame.size.width / 2
+        self.colorBlackViewIndicator.backgroundColor = .clear
+        self.colorBlackViewIndicator.layer.cornerRadius = self.colorBlackViewIndicator.frame.size.width / 2
+        self.colorBlackViewIndicator.layer.borderColor = UIColor.white.cgColor
+        self.colorBlackViewIndicator.layer.borderWidth = 2.0
+        
+        self.colorWhiteView.backgroundColor = .white
+        self.colorWhiteView.layer.cornerRadius = self.colorWhiteView.frame.size.width / 2
+        self.colorWhiteViewIndicator.backgroundColor = .clear
+
+        self.colorRedView.backgroundColor = .red
+        self.colorRedView.layer.cornerRadius = self.colorRedView.frame.size.width / 2
+        self.colorRedViewIndicator.backgroundColor = .clear
+
+        self.sizeSmallView.backgroundColor = .white
+        self.sizeSmallView.layer.cornerRadius = self.sizeSmallView.frame.size.width / 2
+        self.sizeSmallViewIndicator.backgroundColor = .clear
+        self.sizeSmallViewIndicator.layer.cornerRadius = self.sizeSmallViewIndicator.frame.size.width / 2
+        self.sizeSmallViewIndicator.layer.borderColor = UIColor.white.cgColor
+        self.sizeSmallViewIndicator.layer.borderWidth = 2.0
+        
+        self.sizeMediumView.backgroundColor = .white
+        self.sizeMediumView.layer.cornerRadius = self.sizeMediumView.frame.size.width / 2
+        self.sizeMediumViewIndicator.backgroundColor = .clear
+        
+        self.sizeLargeView.backgroundColor = .white
+        self.sizeLargeView.layer.cornerRadius = self.sizeLargeView.frame.size.width / 2
+        self.sizeLargeViewIndicator.backgroundColor = .clear
+        
+        self.undoButton.backgroundColor = .white
+        self.undoButton.setImage(UIImage.init(named: "undo", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
+        self.undoButton.imageEdgeInsets = UIEdgeInsetsMake(12, 12, 12, 12)
+        self.undoButton.tintColor = UIColor.dgBlueDark()
+        self.undoButton.contentHorizontalAlignment = .center
+        self.undoButton.contentVerticalAlignment = .center
+        self.undoButton.contentMode = .scaleAspectFill
+        self.undoButton.isEnabled = false
+//        self.undoButton.tintColor = .lightGray
+        self.undoButton.layer.cornerRadius = self.undoButton.frame.size.width / 2
+        
+        self.clearAllButton.backgroundColor = .white
+        self.clearAllButton.setImage(UIImage.init(named: "trash", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
+        self.clearAllButton.imageEdgeInsets = UIEdgeInsetsMake(12, 12, 12, 12)
+        self.clearAllButton.tintColor = UIColor.dgBlueDark()
+        self.clearAllButton.contentHorizontalAlignment = .center
+        self.clearAllButton.contentVerticalAlignment = .center
+        self.clearAllButton.contentMode = .scaleAspectFill
+        self.clearAllButton.isEnabled = false
+//        self.clearAllButton.tintColor = .lightGray
+        self.clearAllButton.layer.cornerRadius = self.clearAllButton.frame.size.width / 2
+        
+        self.clearAllButton.isEnabled = false
+        self.clearAllButton.tintColor = .lightGray
+        self.clearAllButton.setTitleColor(.lightGray, for: .normal)
+        self.clearAllButton.titleLabel?.textColor = .lightGray
+        self.clearAllButton.alpha = 0.25
+        
+        self.mergeColorButton.backgroundColor = .white
+        self.mergeColorButton.setImage(UIImage.init(named: "colorDot", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
+        self.mergeColorButton.imageEdgeInsets = UIEdgeInsetsMake(12, 12, 12, 12)
+        self.mergeColorButton.tintColor = .black
+        self.mergeColorButton.contentHorizontalAlignment = .center
+        self.mergeColorButton.contentVerticalAlignment = .center
+        self.mergeColorButton.contentMode = .scaleAspectFill
+//        self.mergeColorButton.isEnabled = false
+        self.mergeColorButton.layer.cornerRadius = self.mergeColorButton.frame.size.width / 2
+        
+        self.mergeIntensityButton.backgroundColor = .white
+        self.mergeIntensityButton.setTitle("48%", for: .normal)
+        self.mergeIntensityButton.setTitleColor(UIColor.dgBlueDark(), for: .normal)
+        self.mergeIntensityButton.titleLabel?.textColor = UIColor.dgBlueDark()
+        self.mergeIntensityButton.imageEdgeInsets = UIEdgeInsetsMake(12, 12, 12, 12)
+        self.mergeIntensityButton.contentHorizontalAlignment = .center
+        self.mergeIntensityButton.contentVerticalAlignment = .center
+        self.mergeIntensityButton.contentMode = .scaleAspectFill
+//        self.mergeIntensityButton.isEnabled = false
+        self.mergeIntensityButton.layer.cornerRadius = self.mergeColorButton.frame.size.width / 2
+        
     }
     
     func setUpChat() {
@@ -1171,31 +1229,14 @@ public class DGStreamCallViewController: UIViewController {
         if self.dropDownManager != nil {
             self.dropDownManager = nil
         }
-        self.dropDownContainer.backgroundColor = .clear
-        self.dropDownContainer.layer.borderColor = UIColor.dgBlueDark().cgColor
-        self.dropDownContainer.layer.borderWidth = 1
-        //self.dropDownManager = DGStreamDropDownManager()
-//        self.dropDownManager.configureWith(container: self.dropDownContainer, type: .color, selectedSizeIndex: self.dropDownSelectedSize, selectedColorIndex: self.dropDownSelectedColor, delegate: self)
-//        self.dropDown = DGStreamDropDownMenu(frame: self.dropDownContainer.frame, dropDownViews: dropDownViews, dropDownViewTitles: dropDownViewTitles)
-//        var size:CGFloat = 14
-//        if Display.pad {
-//            size = 24
-//        }
-//        self.dropDown.setLabel(font: UIFont(name: "HelveticaNeue-Bold", size: size)!)
-//        self.dropDown.setLabelColorWhen(normal: UIColor.dgBlack(), selected: UIColor.dgBlack(), disabled: UIColor.dgBlack())
-//        self.view.insertSubview(self.dropDown, belowSubview: self.statusBar)
-//        self.dropDown.setImageWhen(normal: UIImage.init(named: "down", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil), selected: UIImage.init(named: "up", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil), disabled: nil)
-//        self.dropDown.backgroundBlurEnabled = false
     }
     
     func animateButtons() {
         UIView.animate(withDuration: 0.25) {
             self.mergeButton.alpha = 1
-            self.drawButton.alpha = 1
             self.hangUpButton.alpha = 1
             self.whiteBoardButton.alpha = 1
             self.recordButton.alpha = 1
-            self.freezeButtonContainer.alpha = 1
         }
     }
     
@@ -1220,14 +1261,16 @@ public class DGStreamCallViewController: UIViewController {
         }
         // In-Call Screen
         else {
-            if Display.pad {
-                wh = 160
-                y = 70
-            }
-            else {
-                wh = 100
-                y = UIScreen.main.bounds.height - (wh + 40)
-            }
+//            if Display.pad {
+//                wh = 160
+//                y = 70
+//            }
+//            else {
+//                wh = 100
+//                y = UIScreen.main.bounds.height - (wh + 40)
+//            }
+            wh = 100
+            y = UIScreen.main.bounds.height - (wh + 40)
             x = 10
         }
         return CGRect(x: x, y: y, width: wh, height: wh)
@@ -1307,7 +1350,6 @@ public class DGStreamCallViewController: UIViewController {
         self.statusBarBackButton.alpha = 0
         self.statusBarDoneButton.alpha = 0
         self.statusBarTitle.alpha = 0
-        self.dropDownContainer.alpha = 0
         self.hangUpButtonContainer.alpha = 0
         self.chatContainer.alpha = 0
         self.chatVC.view.alpha = 0
@@ -1318,10 +1360,8 @@ public class DGStreamCallViewController: UIViewController {
         self.shareButtonContainer.alpha = 0
         self.mergeButtonLabel.alpha = 0
         self.mergeButtonContainer.alpha = 0
-        self.mergeSwitch.alpha = 0
         self.whiteBoardButtonLabel.alpha = 0
         self.whiteBoardButtonContainer.alpha = 0
-        self.hideModeButtons()
         //self.hideDropDown(animated: false)
         let newFrame = self.frameForLocalVideo(isCenter: true)
         self.localBroadcastView?.frame = CGRect(x: 0, y: 0, width: newFrame.size.width, height: newFrame.size.height)
@@ -1510,6 +1550,12 @@ public class DGStreamCallViewController: UIViewController {
                 self.statusBarDoneButton.alpha = 1
                 self.chatButtonContainer.alpha = 1
                 self.perspectiveButtonContainer.alpha = 1
+                self.recordButton.alpha = 1
+                self.freezeButton.alpha = 1
+                self.snapshotButton.alpha = 1
+                self.drawButton.alpha = 1
+                self.optionsContainerButton.alpha = 1
+                self.optionsButtonContainer.alpha = 1
                 self.localBroadcastView?.frame = CGRect(x: 0, y: 0, width: newFrame.size.width, height: newFrame.size.height)
                 self.localBroadcastView?.layoutIfNeeded()
                 self.localVideoViewContainer?.frame = newFrame
@@ -1524,31 +1570,6 @@ public class DGStreamCallViewController: UIViewController {
             self.freezeImageView?.alpha = 0
         }
     
-    }
-    
-    func showModeButtons() {
-        UIView.animate(withDuration: 0.25) {
-            self.recordButtonContainer.alpha = 1
-            self.freezeButtonContainer.alpha = 1
-            self.snapshotButtonContainer.alpha = 1
-            self.dropDownContainer.alpha = 1
-            if self.isMergeHelper {
-                self.mergeOptionsButton.alpha = 1
-            }
-            else {
-                self.mergeOptionsButton.alpha = 0
-            }
-        }
-    }
-    
-    func hideModeButtons() {
-        UIView.animate(withDuration: 0.25) {
-            self.recordButtonContainer.alpha = 0
-            self.freezeButtonContainer.alpha = 0
-            self.snapshotButtonContainer.alpha = 0
-            self.dropDownContainer.alpha = 0
-            self.mergeOptionsButton.alpha = 0
-        }
     }
     
     func showDropDown(animated: Bool) {
@@ -1612,10 +1633,7 @@ public class DGStreamCallViewController: UIViewController {
         UIView.animate(withDuration: 0.25) {
             self.hangUpButtonContainer.alpha = 1
             if self.callMode != .stream || (self.isSharing || self.isBeingSharedWith) {
-                self.dropDownContainer.alpha = 1
-                self.recordButtonContainer.alpha = 1
-                self.freezeButtonContainer.alpha = 1
-                self.snapshotButtonContainer.alpha = 1
+               
             }
             if self.callMode != .board {
                 self.localVideoViewContainer.alpha = 1
@@ -1638,12 +1656,8 @@ public class DGStreamCallViewController: UIViewController {
     func hideControls() {
         self.isShowingControls = false
         UIView.animate(withDuration: 0.25) {
-            self.dropDownContainer.alpha = 0
             self.hangUpButtonContainer.alpha = 0
             self.localVideoViewContainer.alpha = 0
-            self.recordButtonContainer.alpha = 0
-            self.freezeButtonContainer.alpha = 0
-            self.snapshotButtonContainer.alpha = 0
             self.perspectiveButtonLabel.alpha = 0
             self.perspectiveButtonContainer.alpha = 0
             self.shareButtonLabel.alpha = 0
@@ -1738,7 +1752,6 @@ public class DGStreamCallViewController: UIViewController {
         }
         self.recordButton.tintColor = .red
         self.recordButton.setTitleColor(.red, for: .normal)
-        self.recordButtonContainer.layer.borderColor = UIColor.red.cgColor
         self.statusBarBackButton.setTitle("Stop Recording", for: .normal)
         self.statusBarBackButton.alpha = 1
         self.statusBar.backgroundColor = .red
@@ -1791,7 +1804,7 @@ public class DGStreamCallViewController: UIViewController {
             
             self.recordButton.tintColor = UIColor.dgBlueDark()
             self.recordButton.setTitleColor(UIColor.dgBlueDark(), for: .normal)
-            self.recordButtonContainer.layer.borderColor = UIColor.dgBlueDark().cgColor
+        
             self.isRecording = false
             
             // Stop Audio Recording
@@ -1934,6 +1947,40 @@ public class DGStreamCallViewController: UIViewController {
         self.performSegue(withIdentifier: "color", sender: nil)
     }
     
+    
+    @IBAction func optionsButtonTapped(_ sender: Any) {
+        if self.optionsContainerConstraint.constant == 0 {
+            self.optionsContainerConstraint.constant = -170
+            UIView.animate(withDuration: 0.18) {
+                self.view.layoutIfNeeded()
+            }
+        }
+        else {
+            self.optionsContainerConstraint.constant = 0
+            UIView.animate(withDuration: 0.18) {
+                self.view.layoutIfNeeded()
+            }
+        }
+    }
+    
+    @IBAction func colorBlackButtonTapped(_ sender: Any) {
+    }
+    
+    @IBAction func colorWhiteButtonTapped(_ sender: Any) {
+    }
+    
+    @IBAction func colorRedButtonTapped(_ sender: Any) {
+    }
+    
+    @IBAction func sizeSmallButtonTapped(_ sender: Any) {
+    }
+    
+    @IBAction func sizeMediumButtonTapped(_ sender: Any) {
+    }
+    
+    @IBAction func sizeLargeButtonTapped(_ sender: Any) {
+    }
+    
     @IBAction func stampsButtonTapped(_ sender: Any) {
         self.performSegue(withIdentifier: "stamps", sender: nil)
     }
@@ -1969,9 +2016,13 @@ public class DGStreamCallViewController: UIViewController {
         }
     }
     
-    @IBAction func mergeOptionsButtonTapped(_ sender: Any) {
-        self.performSegue(withIdentifier: "mergeOptions", sender: nil)
+    @IBAction func mergeColorButtonTapped(_ sender: Any) {
     }
+    
+    
+    @IBAction func mergeIntensityButtonTapped(_ sender: Any) {
+    }
+    
     
     @IBAction func shareButtonTapped(_ sender: Any) {
         
@@ -2374,23 +2425,6 @@ public class DGStreamCallViewController: UIViewController {
         NotificationCenter.default.removeObserver(self, name: Notification.Name.UIKeyboardWillShow, object: nil)
     }
     
-    @IBAction func mergeSwitchValueChanged(_ sender: UISwitch) {
-        if sender.isOn {
-            //self.shaderName = "blackScreen"
-            self.mergeSwitch.onTintColor = .black
-            self.mergeSwitch.tintColor = .black
-            self.mergeSwitch.thumbTintColor = .white
-        }
-        else {
-            //self.shaderName = "whiteScreen"
-            self.mergeSwitch.onTintColor = .white
-            self.mergeSwitch.tintColor = .white
-            self.mergeSwitch.thumbTintColor = .black
-        }
-        print("SHADER IS \(self.shaderName)")
-        //self.resetGreenScreen()
-    }
-    
     func freeze() {
         
         // Other device has frozen the screen. This would be your screen.
@@ -2407,7 +2441,6 @@ public class DGStreamCallViewController: UIViewController {
             self.isFrozen = true
             
             self.freezeButton.tintColor = UIColor.dgMergeMode()
-            self.freezeButtonContainer.layer.borderColor = UIColor.dgMergeMode().cgColor
             self.freezeButton.setTitleColor(UIColor.dgMergeMode(), for: .normal)
             
             if let user = DGStreamCore.instance.getOtherUserWith(userID: self.selectedUser), let username = user.username {
@@ -2446,7 +2479,6 @@ public class DGStreamCallViewController: UIViewController {
             self.freezeFrame = nil
             self.isFrozen = false
 //            self.changedFreeze()
-            self.freezeButtonContainer.layer.borderColor = UIColor.dgBlueDark().cgColor
             self.freezeButton.setTitleColor(UIColor.dgBlueDark(), for: .normal)
             self.freezeButton.tintColor = UIColor.dgBlueDark()
             self.freezeImageView?.alpha = 0
@@ -2471,7 +2503,7 @@ public class DGStreamCallViewController: UIViewController {
             else {
                 self.localBroadcastView?.alpha = 1.0
             }
-            self.freezeButtonContainer.layer.borderColor = UIColor.dgBlueDark().cgColor
+    
             self.freezeButton.setTitleColor(UIColor.dgBlueDark(), for: .normal)
             self.freezeButton.tintColor = UIColor.dgBlueDark()
             self.freezeFrame = nil
@@ -2504,7 +2536,6 @@ public class DGStreamCallViewController: UIViewController {
                     self.isFrozen = true
                     
                     self.freezeButton.tintColor = UIColor.dgMergeMode()
-                    self.freezeButtonContainer.layer.borderColor = UIColor.dgMergeMode().cgColor
                     self.freezeButton.setTitleColor(UIColor.dgMergeMode(), for: .normal)
                     
                     let freezeMessage = QBChatMessage()
@@ -2712,8 +2743,6 @@ public class DGStreamCallViewController: UIViewController {
                 recordingView.alpha = 0
             }
             
-            self.showModeButtons()
-            
             if self.isFrozen {
                 self.freezeButtonTapped(self)
             }
@@ -2780,16 +2809,12 @@ public class DGStreamCallViewController: UIViewController {
             
             if mode == .merge {
                 if self.isMergeHelper {
-                    self.mergeOptionsButton.alpha = 1
                     self.shareButton.isEnabled = false
                     self.shareButton.tintColor = UIColor.lightGray
                     self.shareButtonContainer.layer.borderColor = UIColor.lightGray.cgColor
                     self.shareButton.setTitleColor(UIColor.lightGray, for: .normal)
                     self.shareButtonLabel.textColor = .lightGray
                     self.setUpLocalVideoViewIn(container: self.remoteVideoViewContainer, isFront: false, isChromaKey: true)
-                    UIView.animate(withDuration: 0.25, animations: {
-                        self.dropDownContainerHeightConstraint.constant = 224 + 45
-                    })
                 }
                 else {
                     self.setUpLocalVideoViewIn(container: self.remoteVideoViewContainer, isFront: false, isChromaKey: false)
@@ -2829,9 +2854,6 @@ public class DGStreamCallViewController: UIViewController {
         self.screenCapture = nil
         if self.isMergeHelper {
             self.localBroadcastView?.boundInside(container: self.localVideoViewContainer)
-            UIView.animate(withDuration: 0.25, animations: {
-                self.dropDownContainerHeightConstraint.constant = 179 + 45
-            })
         }
         else if self.isBeingSharedWithVideo {
             self.recordingView?.alpha = 1
@@ -2850,8 +2872,6 @@ public class DGStreamCallViewController: UIViewController {
         else {
             self.setUpLocalVideoViewIn(container: self.localVideoViewContainer, isFront: true, isChromaKey: false)
         }
-        
-        self.mergeOptionsButton.alpha = 0
         
         if !self.isSharing || !self.isSharingVideo || !self.isBeingSharedWith || !self.isBeingSharedWithVideo {
             self.shareButton.isEnabled = true
@@ -2963,10 +2983,6 @@ public class DGStreamCallViewController: UIViewController {
         
         DGStreamCore.instance.flipCamera(toFront: true)
         
-        if hideModeButtons {
-            self.hideModeButtons()
-        }
-        
         self.isCurrentUserPerspective = false
         
         self.callMode = .stream
@@ -2985,10 +3001,6 @@ public class DGStreamCallViewController: UIViewController {
     override public func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         if let touch = touches.first {
             let touchPoint = touch.location(in: self.view)
-            let viewPoint:CGPoint = self.dropDownContainer.convert(touchPoint, from: self.view)
-            if self.dropDownContainer.point(inside: viewPoint, with: event) {
-                self.didTapDropDownContainer = true
-            }
         }
     }
     
@@ -3090,29 +3102,25 @@ public class DGStreamCallViewController: UIViewController {
     }
     
     func enableDrawButtons() {
-        let enabledColor = UIColor.dgBlueDark()
-        self.colorButton.isEnabled = true
-        self.colorButton.tintColor = self.dropDownSelectedColor
-        self.stampsButton.isEnabled = true
-        self.stampsButton.tintColor = enabledColor
-        if hasDrawings() {
-            self.clearAllButton.tintColor = UIColor.dgBlueDark()
-            self.clearAllButton.setTitleColor(UIColor.dgBlueDark(), for: .normal)
-        }
-        else {
-            self.clearAllButton.tintColor = .gray
-            self.clearAllButton.setTitleColor(.lightGray, for: .normal)
-        }
+//        let enabledColor = UIColor.dgBlueDark()
+//        self.stampsButton.isEnabled = true
+//        self.stampsButton.tintColor = enabledColor
+//        if hasDrawings() {
+//            self.clearAllButton.tintColor = UIColor.dgBlueDark()
+//            self.clearAllButton.setTitleColor(UIColor.dgBlueDark(), for: .normal)
+//        }
+//        else {
+//            self.clearAllButton.tintColor = .gray
+//            self.clearAllButton.setTitleColor(.lightGray, for: .normal)
+//        }
     }
     
     func disableDrawButtons() {
-        let disabledColor = UIColor.lightGray
-        self.colorButton.isEnabled = false
-        self.colorButton.tintColor = disabledColor
-        self.stampsButton.isEnabled = false
-        self.stampsButton.tintColor = disabledColor
-        self.undoButton.tintColor = .lightGray
-        self.clearAllButton.setTitleColor(.lightGray, for: .normal)
+//        let disabledColor = UIColor.lightGray
+//        self.stampsButton.isEnabled = false
+//        self.stampsButton.tintColor = disabledColor
+//        self.undoButton.tintColor = .lightGray
+//        self.clearAllButton.setTitleColor(.lightGray, for: .normal)
     }
     
     func hasDrawings() -> Bool {
@@ -3668,7 +3676,7 @@ extension DGStreamCallViewController {
                 self.returnToStreamMode(hideModeButtons: false)
             }
             else if self.isShowingControls {
-                self.showModeButtons()
+
             }
             
             self.hideLocalVideo()
@@ -3695,7 +3703,6 @@ extension DGStreamCallViewController {
                 self.drawButton.tintColor = UIColor.dgMergeMode()
                 self.statusBarBackButton.alpha = 1
                 self.freezeButton.tintColor = UIColor.lightGray
-                self.freezeButtonContainer.layer.borderColor = UIColor.lightGray.cgColor
                 self.freezeButton.setTitleColor(UIColor.lightGray, for: .normal)
                 
                 self.shareButton.isEnabled = false
@@ -3718,8 +3725,6 @@ extension DGStreamCallViewController {
     
     func endWhiteBoard(sendNotification: Bool) {
         if self.callMode == .board {
-            
-            self.hideModeButtons()
             
             if didSelectToHideLocalVideo == false {
                 self.showLocalVideo()
@@ -3768,7 +3773,6 @@ extension DGStreamCallViewController {
                 self.statusBar.backgroundColor = UIColor.dgBlueDark()
                 self.statusBarBackButton.alpha = 0
                 self.freezeButton.tintColor = UIColor.dgBlueDark()
-                self.freezeButtonContainer.layer.borderColor = UIColor.dgBlueDark().cgColor
                 self.freezeButton.setTitleColor(UIColor.dgBlueDark(), for: .normal)
                 if self.isDrawing == false {
                     self.drawButton.layer.borderColor = UIColor.dgBlueDark().cgColor
@@ -4062,7 +4066,6 @@ extension DGStreamCallViewController: DGStreamCallColorViewControllerDelegate, D
             self.dropDownSelectedColor = color
             self.drawColor = color
             jot.drawingColor = self.drawColor
-            self.colorButton.tintColor = color
         }
     }
     
@@ -4075,11 +4078,10 @@ extension DGStreamCallViewController: DGStreamCallColorViewControllerDelegate, D
     
     func showDropDownFor(type: DGStreamDropDownType) {
         self.dropDownManager.loadFor(type: type)
-        self.dropDownContainer.alpha = 1
     }
     
     func hideDropDown() {
-        self.dropDownContainer.alpha = 0
+
     }
     
     func startSettingText() {
@@ -4513,7 +4515,7 @@ extension DGStreamCallViewController: DGStreamCallShareSelectViewControllerDeleg
         if self.isFrozen {
             self.unfreeze()
         }
-        self.freezeButtonContainer.layer.borderColor = UIColor.lightGray.cgColor
+        
         self.freezeButton.tintColor = .lightGray
         self.freezeButton.setTitleColor(.lightGray, for: .normal)
         
@@ -4527,7 +4529,6 @@ extension DGStreamCallViewController: DGStreamCallShareSelectViewControllerDeleg
 
         self.orderDrawViews()
         
-        self.showModeButtons()
     }
     
     func updateUIForShareEnd() {
@@ -4541,10 +4542,9 @@ extension DGStreamCallViewController: DGStreamCallShareSelectViewControllerDeleg
         }
         
         if self.callMode == .stream {
-            self.hideModeButtons()
+
         }
         
-        self.freezeButtonContainer.layer.borderColor = UIColor.dgBlueDark().cgColor
         self.freezeButton.tintColor = UIColor.dgBlueDark()
         self.freezeButton.setTitleColor(UIColor.dgBlueDark(), for: .normal)
         
@@ -4588,7 +4588,6 @@ extension DGStreamCallViewController: DGStreamCallMergeOptionsDelegate {
         self.mergeOptionIntensity = intensity
         self.localBroadcastView?.adjust(intensity: i)
         if color != self.mergeOptionColor {
-            self.mergeOptionsButton.tintColor = color
             self.mergeOptionColor = color
             self.setUpLocalVideoViewIn(container: self.remoteVideoViewContainer, isFront: false, isChromaKey: true)
         }

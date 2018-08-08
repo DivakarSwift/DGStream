@@ -8,7 +8,7 @@
 
 import UIKit
 
-class DGStreamConversationsTableViewCell: UITableViewCell {
+class DGStreamConversationsTableViewCell: UICollectionViewCell {
 
     @IBOutlet weak var accessoryButton: UIButton!
     @IBOutlet weak var userImageView: UIImageView!

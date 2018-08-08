@@ -344,7 +344,7 @@ class DGStreamCore: NSObject {
                 if let tab = self.presentedViewController as? DGStreamTabBarViewController {
                     tab.loadRecents(searchText: tab.searchBar.text)
                     tab.loadContactsWith(option: tab.selectedContactsOption, searchText: tab.searchBar.text)
-                    tab.tableView.reloadData()
+                    tab.collectionView.reloadData()
                     print("\n\nRELOADED USERS\n\n")
                 }
             }
@@ -1705,21 +1705,21 @@ extension DGStreamCore: QBRTCClientDelegate {
                             if mode == .incomingAudioCall {
                                 callVC.isAudioCall = true
                                 DispatchQueue.main.async {
-                                    if let navigationController = vc.navigationController {
-                                        navigationController.pushViewController(callVC, animated: true)
+                                    if let split = vc.splitViewController {
+                                        split.present(callVC, animated: false, completion: nil)
                                     }
                                     else {
-                                        vc.present(callVC, animated: true, completion: nil)
+                                        vc.present(callVC, animated: false, completion: nil)
                                     }
                                 }
                             }
                             else {
                                 DispatchQueue.main.async {
-                                    if let navigationController = vc.navigationController {
-                                        navigationController.pushViewController(callVC, animated: true)
+                                    if let split = vc.splitViewController {
+                                        split.present(callVC, animated: false, completion: nil)
                                     }
                                     else {
-                                        vc.present(callVC, animated: true, completion: nil)
+                                        vc.present(callVC, animated: false, completion: nil)
                                     }
                                 }
                             }

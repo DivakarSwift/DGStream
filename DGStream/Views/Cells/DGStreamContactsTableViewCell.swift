@@ -14,9 +14,8 @@ protocol DGStreamTableViewCellDelegate {
     func userButtonTapped(userID: NSNumber)
 }
 
-class DGStreamContactsTableViewCell: UITableViewCell {
+class DGStreamContactsTableViewCell: UICollectionViewCell {
 
-    @IBOutlet weak var accessoryButton: UIButton!
     @IBOutlet weak var abrevLabel: UILabel!
     @IBOutlet weak var userImageView: UIImageView!
     @IBOutlet weak var nameLabel: UILabel!
@@ -36,13 +35,13 @@ class DGStreamContactsTableViewCell: UITableViewCell {
         self.userImageView.layer.borderColor = UIColor.clear.cgColor
         self.userImageView.layer.borderWidth = 3
         
-        let accessoryImage = UIImage(named: "info", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)
-        self.accessoryButton.setImage(accessoryImage?.withRenderingMode(.alwaysTemplate), for: .normal)
-        self.accessoryButton.imageEdgeInsets = UIEdgeInsetsMake(8, 8, 8, 8)
-        self.accessoryButton.tintColor = UIColor.dgButtonColor()
-        self.accessoryButton.layer.borderColor = UIColor.dgButtonColor().cgColor
-        self.accessoryButton.layer.borderWidth = 0.5
-        self.accessoryButton.layer.cornerRadius = self.accessoryButton.frame.size.width / 2
+//        let accessoryImage = UIImage(named: "info", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)
+//        self.accessoryButton.setImage(accessoryImage?.withRenderingMode(.alwaysTemplate), for: .normal)
+//        self.accessoryButton.imageEdgeInsets = UIEdgeInsetsMake(8, 8, 8, 8)
+//        self.accessoryButton.tintColor = UIColor.dgButtonColor()
+//        self.accessoryButton.layer.borderColor = UIColor.dgButtonColor().cgColor
+//        self.accessoryButton.layer.borderWidth = 0.5
+//        self.accessoryButton.layer.cornerRadius = self.accessoryButton.frame.size.width / 2
         
         self.setUpGradient()
     }

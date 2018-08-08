@@ -149,6 +149,8 @@
 		0CB8161C1F916A6A0079728E /* DGStreamChatViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CB8161B1F916A6A0079728E /* DGStreamChatViewController.swift */; };
 		0CB8161E1F91984F0079728E /* DGStreamChatTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CB8161D1F91984F0079728E /* DGStreamChatTableViewCell.swift */; };
 		0CB816201F9199070079728E /* DGStreamMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CB8161F1F9199070079728E /* DGStreamMessage.swift */; };
+		0CBAE92C2113DD6700E74FD4 /* DGStreamDetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CBAE92B2113DD6700E74FD4 /* DGStreamDetailViewController.swift */; };
+		0CBAE92E2114DA9900E74FD4 /* DGStreamCollectionViewLayoutTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CBAE92D2114DA9900E74FD4 /* DGStreamCollectionViewLayoutTable.swift */; };
 		0CD79AB91F74A1E80034D2B4 /* GSGreenScreenEffect.h in Headers */ = {isa = PBXBuildFile; fileRef = 0CD79AB71F74A1E80034D2B4 /* GSGreenScreenEffect.h */; };
 		0CD79ABA1F74A1E80034D2B4 /* GSGreenScreenEffect.m in Sources */ = {isa = PBXBuildFile; fileRef = 0CD79AB81F74A1E80034D2B4 /* GSGreenScreenEffect.m */; };
 		0CD79ABD1F74A1F60034D2B4 /* UtilityEffect.h in Headers */ = {isa = PBXBuildFile; fileRef = 0CD79ABB1F74A1F60034D2B4 /* UtilityEffect.h */; };
@@ -1197,6 +1199,8 @@
 		0CB8161B1F916A6A0079728E /* DGStreamChatViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamChatViewController.swift; sourceTree = "<group>"; };
 		0CB8161D1F91984F0079728E /* DGStreamChatTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamChatTableViewCell.swift; sourceTree = "<group>"; };
 		0CB8161F1F9199070079728E /* DGStreamMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamMessage.swift; sourceTree = "<group>"; };
+		0CBAE92B2113DD6700E74FD4 /* DGStreamDetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamDetailViewController.swift; sourceTree = "<group>"; };
+		0CBAE92D2114DA9900E74FD4 /* DGStreamCollectionViewLayoutTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DGStreamCollectionViewLayoutTable.swift; sourceTree = "<group>"; };
 		0CD79AB71F74A1E80034D2B4 /* GSGreenScreenEffect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GSGreenScreenEffect.h; sourceTree = "<group>"; };
 		0CD79AB81F74A1E80034D2B4 /* GSGreenScreenEffect.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GSGreenScreenEffect.m; sourceTree = "<group>"; };
 		0CD79ABB1F74A1F60034D2B4 /* UtilityEffect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = UtilityEffect.h; sourceTree = "<group>"; };
@@ -1336,6 +1340,7 @@
 		0C08FA3A1F671A2E00B03CB2 /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
+				0CBAE91F2113DD2900E74FD4 /* Detail */,
 				0CB1FF5920EE8FC6005B9915 /* Documents */,
 				0C2A84F320AB80D900CBCD5F /* Recording */,
 				0C5003001F99DB4200732730 /* TabBar */,
@@ -1660,6 +1665,7 @@
 			children = (
 				0C5003011F99DB5400732730 /* TabBar.storyboard */,
 				0C5003031F99DB9D00732730 /* DGStreamTabBarViewController.swift */,
+				0CBAE92D2114DA9900E74FD4 /* DGStreamCollectionViewLayoutTable.swift */,
 			);
 			path = TabBar;
 			sourceTree = "<group>";
@@ -3128,6 +3134,14 @@
 			path = Chat;
 			sourceTree = "<group>";
 		};
+		0CBAE91F2113DD2900E74FD4 /* Detail */ = {
+			isa = PBXGroup;
+			children = (
+				0CBAE92B2113DD6700E74FD4 /* DGStreamDetailViewController.swift */,
+			);
+			path = Detail;
+			sourceTree = "<group>";
+		};
 		0CD79AB21F74A0C30034D2B4 /* Green Screen */ = {
 			isa = PBXGroup;
 			children = (
@@ -3683,8 +3697,10 @@
 				0C24BDE71FCF4B2500E251D9 /* DGStreamDropDownViewController.swift in Sources */,
 				0CF1C86C20F80BC4004CCF93 /* ExclusionFilter.metal in Sources */,
 				0CD79ABE1F74A1F60034D2B4 /* UtilityEffect.m in Sources */,
+				0CBAE92C2113DD6700E74FD4 /* DGStreamDetailViewController.swift in Sources */,
 				0CF1C88320F80BC4004CCF93 /* LuminosityFilter.metal in Sources */,
 				0CB8161E1F91984F0079728E /* DGStreamChatTableViewCell.swift in Sources */,
+				0CBAE92E2114DA9900E74FD4 /* DGStreamCollectionViewLayoutTable.swift in Sources */,
 				0CF1C85D20F80BC4004CCF93 /* BrightnessFilter.swift in Sources */,
 				0C24BDE91FCF4B8B00E251D9 /* DGStreamDropDownCollectionViewCell.swift in Sources */,
 				0C218C52207248BD00337786 /* DGStreamTempRecording.swift in Sources */,
