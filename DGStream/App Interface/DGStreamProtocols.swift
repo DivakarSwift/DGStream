@@ -15,6 +15,12 @@ public protocol DGStreamUserProtocol {
     var dgImage: Data? { get }
 }
 
+public protocol DGStreamUserDetailProtocol {
+    var dgTitle: String { get }
+    var dgValue: String { get }
+    var dgPriority: Int { get }
+}
+
 public protocol DGStreamConversationProtocol {
     var dgConversationID: String { get }
     var dgUserIDs: [NSNumber] { get }

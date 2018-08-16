@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14113" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+    <device id="retina4_7" orientation="portrait">
+        <adaptation id="fullscreen"/>
+    </device>
+    <dependencies>
+        <deployment identifier="iOS"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
+        <capability name="Aspect ratio constraints" minToolsVersion="5.1"/>
+        <capability name="Safe area layout guides" minToolsVersion="9.0"/>
+        <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
+    </dependencies>
+    <objects>
+        <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner"/>
+        <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>
+        <collectionViewCell opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" reuseIdentifier="Cell" id="gTV-IL-0wX" customClass="DGStreamCollaborateCellCollectionViewCell" customModule="DGStream" customModuleProvider="target">
+            <rect key="frame" x="0.0" y="0.0" width="80" height="80"/>
+            <autoresizingMask key="autoresizingMask"/>
+            <view key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center">
+                <rect key="frame" x="0.0" y="0.0" width="80" height="80"/>
+                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                <subviews>
+                    <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Video Call" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="Obk-ho-buQ">
+                        <rect key="frame" x="0.0" y="66" width="80" height="14"/>
+                        <constraints>
+                            <constraint firstAttribute="height" constant="22" id="n0O-UA-Fv4">
+                                <variation key="heightClass=regular-widthClass=compact" constant="14"/>
+                            </constraint>
+                        </constraints>
+                        <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="14"/>
+                        <color key="textColor" white="0.33333333329999998" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                        <nil key="highlightedColor"/>
+                    </label>
+                    <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="zYy-Zn-UmB">
+                        <rect key="frame" x="8" y="0.0" width="64" height="64"/>
+                        <constraints>
+                            <constraint firstAttribute="width" secondItem="zYy-Zn-UmB" secondAttribute="height" multiplier="1:1" id="9Sd-oC-9mD"/>
+                        </constraints>
+                    </imageView>
+                </subviews>
+            </view>
+            <constraints>
+                <constraint firstItem="zYy-Zn-UmB" firstAttribute="centerX" secondItem="gTV-IL-0wX" secondAttribute="centerX" id="2ce-LS-sIM"/>
+                <constraint firstItem="zYy-Zn-UmB" firstAttribute="top" secondItem="gTV-IL-0wX" secondAttribute="top" id="KMg-0S-QFy"/>
+                <constraint firstAttribute="bottom" secondItem="Obk-ho-buQ" secondAttribute="bottom" id="Qke-0N-5Al"/>
+                <constraint firstItem="Obk-ho-buQ" firstAttribute="leading" secondItem="gTV-IL-0wX" secondAttribute="leading" id="UnK-eo-eWD"/>
+                <constraint firstItem="Obk-ho-buQ" firstAttribute="top" secondItem="zYy-Zn-UmB" secondAttribute="bottom" constant="2" id="blX-jg-uS4"/>
+                <constraint firstAttribute="trailing" secondItem="Obk-ho-buQ" secondAttribute="trailing" id="cGv-RX-hp3"/>
+            </constraints>
+            <viewLayoutGuide key="safeArea" id="ZTg-uK-7eu"/>
+            <size key="customSize" width="80" height="80"/>
+            <connections>
+                <outlet property="cellImageView" destination="zYy-Zn-UmB" id="1WH-OY-C1K"/>
+                <outlet property="cellLabel" destination="Obk-ho-buQ" id="92Z-a3-z5k"/>
+            </connections>
+            <point key="canvasLocation" x="111" y="69"/>
+        </collectionViewCell>
+    </objects>
+</document>

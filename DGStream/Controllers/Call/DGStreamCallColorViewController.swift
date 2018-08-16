@@ -18,15 +18,11 @@ protocol DGStreamCallMergeOptionsDelegate {
 }
 
 class DGStreamCallColorViewController: UIViewController {
-
-    @IBOutlet weak var colorLabel: UILabel!
-    @IBOutlet weak var sizeLabel: UILabel!
     
     @IBOutlet weak var sizeSlider: UISlider!
-    @IBOutlet weak var sizeValueLabel: UILabel!
+    @IBOutlet weak var sliderLabel: UILabel!
     
     @IBOutlet weak var colorCollectionView: UICollectionView!
-    @IBOutlet weak var colorValueLabel: UILabel!
     
     var selectedIntensity: Float = 0.525
     var selectedColor: UIColor!
@@ -53,8 +49,6 @@ class DGStreamCallColorViewController: UIViewController {
         else {
             self.sizeSlider.minimumValue = 0.20
             self.sizeSlider.maximumValue = 0.80
-            self.sizeLabel.text = "Intensity:"
-            self.colorLabel.text = "Remove Color:"
             collection = self.mergeOptionColors
         }
         
@@ -76,28 +70,26 @@ class DGStreamCallColorViewController: UIViewController {
         self.colorCollectionView.collectionViewLayout = format
         self.colorCollectionView.reloadData()
         
-        self.colorValueLabel.text = self.stringFor(color: self.selectedColor)
-        
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         if self.mergeOptionsDelegate != nil {
             if self.selectedColor == .black {
-                self.sizeValueLabel.text = "N/A"
+                self.sliderLabel.text = "N/A"
                 self.sizeSlider.isEnabled = false
                 self.sizeSlider.alpha = 0.0
             }
             else {
                 self.sizeSlider.setValue(self.selectedIntensity, animated: false)
                 self.sizeSlider.value = self.selectedIntensity
-                self.sizeValueLabel.text = self.stringForSliderValue()
+                self.sliderLabel.text = self.stringForSliderValue()
             }
         }
         else {
             self.sizeSlider.setValue(Float(self.selectedSize), animated: false)
             self.sizeSlider.value = Float(self.selectedSize)
-            self.sizeValueLabel.text = "\(Int(self.selectedSize))"
+            self.sliderLabel.text = "\(Int(self.selectedSize))"
         }
     }
     
@@ -113,12 +105,12 @@ class DGStreamCallColorViewController: UIViewController {
     @IBAction func sizeSliderValueChanged(_ sender: Any) {
         let value = self.sizeSlider.value
         if let mergeOptionsDelegate = self.mergeOptionsDelegate {
-            self.sizeValueLabel.text = self.stringForSliderValue()
+            self.sliderLabel.text = self.stringForSliderValue()
             self.selectedIntensity = value
             mergeOptionsDelegate.mergeOptionSelected(color: self.selectedColor, intensity: value)
         }
         else {
-            self.sizeValueLabel.text = "\(Int(value))"
+            self.sliderLabel.text = "\(Int(value))"
             self.selectedSize = CGFloat(Int(value))
             self.delegate.sizeSelected(size: CGFloat(value))
         }
@@ -234,22 +226,20 @@ extension DGStreamCallColorViewController: UICollectionViewDataSource, UICollect
             if self.selectedColor == .black {
                 self.sizeSlider.isEnabled = false
                 self.sizeSlider.alpha = 0.0
-                self.sizeValueLabel.text = "N/A"
+                self.sliderLabel.text = "N/A"
             }
             else {
                 self.sizeSlider.isEnabled = true
                 self.sizeSlider.alpha = 1.0
-                self.sizeValueLabel.text = self.stringForSliderValue()
+                self.sliderLabel.text = self.stringForSliderValue()
             }
             mergeOptionsDelegate.mergeOptionSelected(color: self.selectedColor, intensity: self.selectedIntensity)
-            self.colorValueLabel.text = self.stringFor(color: color)
             self.storeValues()
         }
         else {
             let color = self.colors[indexPath.item]
             self.selectedColor = color
             self.delegate.colorSelected(color: color)
-            self.colorValueLabel.text = self.stringFor(color: color)
         }
         
         // Remove The Old

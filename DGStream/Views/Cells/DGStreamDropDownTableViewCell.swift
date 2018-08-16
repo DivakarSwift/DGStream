@@ -26,7 +26,8 @@ class DGStreamDropDownTableViewCell: UITableViewCell {
     
     func configureWith(title: String) {
         self.label.text = title
-        self.label.textColor = UIColor.dgButtonColor()
+        self.label.textColor = UIColor.dgBlack()
+        self.label.font = UIFont(name: "HelveticaNeue-Bold", size: 18)
     }
     
     override func prepareForReuse() {

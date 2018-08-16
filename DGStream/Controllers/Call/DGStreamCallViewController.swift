@@ -58,6 +58,7 @@ public class DGStreamCallViewController: UIViewController {
     @IBOutlet weak var statusBarDoneButton: UIButton!
     @IBOutlet weak var statusBarTitle: UILabel!
     
+    
     @IBOutlet weak var optionsContainerConstraint: NSLayoutConstraint!
     @IBOutlet weak var optionsContainer: UIView!
     @IBOutlet weak var optionsContainerButton: UIButton!
@@ -95,6 +96,7 @@ public class DGStreamCallViewController: UIViewController {
     @IBOutlet weak var sizeLargeView: UIView!
     @IBOutlet weak var sizeLargeViewIndicator: UIView!
     
+    @IBOutlet weak var showHideButtonsButton: UIButton!
     
     var dropDown:DGStreamDropDownMenu!
     var dropDownManager: DGStreamDropDownManager!
@@ -599,8 +601,8 @@ public class DGStreamCallViewController: UIViewController {
             self.popover = stampsVC
         }
         
-        if segue.identifier == "mergeOptions", let colorVC = segue.destination as? DGStreamCallColorViewController {
-            colorVC.preferredContentSize = CGSize(width: 280, height: 244)
+        if segue.identifier == "mergeColor" || segue.identifier == "mergeIntensity", let colorVC = segue.destination as? DGStreamCallColorViewController {
+            colorVC.preferredContentSize = CGSize(width: 280, height: 44)
             colorVC.selectedColor = self.mergeOptionColor
             colorVC.selectedIntensity = self.mergeOptionIntensity
             colorVC.mergeOptionsDelegate = self
@@ -2017,12 +2019,13 @@ public class DGStreamCallViewController: UIViewController {
     }
     
     @IBAction func mergeColorButtonTapped(_ sender: Any) {
+        self.performSegue(withIdentifier: "mergeColor", sender: nil)
     }
     
     
     @IBAction func mergeIntensityButtonTapped(_ sender: Any) {
+        self.performSegue(withIdentifier: "mergeIntensity", sender: nil)
     }
-    
     
     @IBAction func shareButtonTapped(_ sender: Any) {
         

@@ -21,6 +21,7 @@ public class DGStreamUser: NSObject {
     public var image: Data?
     var lastSeen: Date?
     var isOnline: Bool = false
+    var details:[DGStreamUserDetail] = []
     
     class func fromQuickblox(user: QBUUser) -> DGStreamUser? {
         if user.id != 0, let username = user.login {

@@ -21,6 +21,7 @@ class DGStreamContactsTableViewCell: UICollectionViewCell {
     @IBOutlet weak var nameLabel: UILabel!
     var gradient: CAGradientLayer?
     var contact: DGStreamContact!
+    var user: DGStreamUser?
     var delegate: DGStreamTableViewCellDelegate!
     
     override func awakeFromNib() {
@@ -43,7 +44,7 @@ class DGStreamContactsTableViewCell: UICollectionViewCell {
 //        self.accessoryButton.layer.borderWidth = 0.5
 //        self.accessoryButton.layer.cornerRadius = self.accessoryButton.frame.size.width / 2
         
-        self.setUpGradient()
+        //self.setUpGradient()
     }
 
     func configureWith(contact: DGStreamContact, delegate: DGStreamTableViewCellDelegate) {
@@ -67,6 +68,27 @@ class DGStreamContactsTableViewCell: UICollectionViewCell {
                 self.abrevLabel.text = abrev
             }
             
+        }
+        
+    }
+    
+    func configureWith(user: DGStreamUser, delegate: DGStreamTableViewCellDelegate) {
+        self.delegate = delegate
+        
+        self.user = user
+        
+        if let username = user.username, username != "" {
+            self.nameLabel.text = username
+        }
+        
+        self.setOnline(status: DGStreamCore.instance.onlineStatusFor(user: user))
+        
+        if let imageData = user.image, let image = UIImage(data: imageData) {
+            self.userImageView.image = image
+        }
+        else if let username = user.username {
+            let abrev = NSString(string: username).substring(to: 1)
+            self.abrevLabel.text = abrev
         }
         
     }

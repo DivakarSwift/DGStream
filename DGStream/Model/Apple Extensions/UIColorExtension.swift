@@ -34,6 +34,9 @@ extension UIColor {
     class func dgBlack() -> UIColor {
         return UIColor(red: (85/255.0), green: (85/255.0), blue: (85/255.0), alpha: 1)
     }
+    class func dgBlackHalf() -> UIColor {
+        return UIColor(red: (205/255.0), green: (205/255.0), blue: (215/255.0), alpha: 1)
+    }
     class func dgBlueDark() -> UIColor {
         return UIColor(red: (39/255.0), green: (100/255.0), blue: (156/255.0), alpha: 1.0)
     }
@@ -69,6 +72,11 @@ extension UIColor {
     class func dgButtonColor() -> UIColor {
 //        return UIColor(red: (0/255.0), green: (122/255.0), blue: (255/255.0), alpha: 0.5)
         return UIColor(red: (0/255.0), green: (122/255.0), blue: (1.0), alpha: 1.0)
+    }
+    
+    class func dgBG() -> UIColor {
+        //154 164 176 33%
+        return UIColor(red: (218/255.0), green: (226/255.0), blue: (234/255.0), alpha: 1)
     }
 }
 

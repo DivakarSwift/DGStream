@@ -1,15 +1,15 @@
 //
-//  DGStreamCollectionViewLayoutTable.swift
+//  DGStreamUserDetailsFlowLayout.swift
 //  DGStream
 //
-//  Created by Brandon on 8/3/18.
+//  Created by Brandon on 8/14/18.
 //  Copyright © 2018 Dataglance. All rights reserved.
 //
 
 import UIKit
 
-class DGStreamCollectionViewLayoutTable: UICollectionViewFlowLayout {
-    
+class DGStreamUserDetailsFlowLayout: UICollectionViewFlowLayout {
+
     private var isSetup = false
     
     override func prepare() {
@@ -21,16 +21,13 @@ class DGStreamCollectionViewLayoutTable: UICollectionViewFlowLayout {
     }
     
     private func setup() {
-        scrollDirection = .vertical
+        scrollDirection = .horizontal
         minimumLineSpacing = 0
-        itemSize = CGSize(width: collectionView!.bounds.width, height: 60)
-        
-        let inset:CGFloat = 0
-        collectionView!.contentInset = .init(top: 0, left: inset, bottom: 0, right: inset)
+        itemSize = CGSize(width: collectionView?.bounds.width ?? 0, height: 50)
     }
     
     override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
         return true
     }
-
+    
 }

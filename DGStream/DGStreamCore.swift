@@ -261,7 +261,7 @@ class DGStreamCore: NSObject {
     }
     
     func getAllUsers(completion: @escaping () -> Void) {
-
+        
         // If there is connection check against Quickblox to find possible new users
         if DGStreamCore.instance.isReachable,
             let currentUser = self.currentUser,
@@ -653,6 +653,17 @@ class DGStreamCore: NSObject {
                 UserDefaults.standard.set(newFavorites, forKey: "Favorites")
                 UserDefaults.standard.synchronize()
             }
+        }
+    }
+    
+    func toggleFavoriteFor(userID: NSNumber) -> Bool {
+        if self.isFavorite(userID: userID) {
+            self.removeFavorite(userID: userID)
+            return false
+        }
+        else {
+            self.addFavorite(userID: userID)
+            return true
         }
     }
 
