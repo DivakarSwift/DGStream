@@ -20,7 +20,8 @@ extension UIColor {
     }
     
     class func dgMergeMode() -> UIColor {
-        return UIColor.dgYellow()
+//        return UIColor.dgYellow()
+        return .orange
     }
     
     class func dgDrawMode() -> UIColor {

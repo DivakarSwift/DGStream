@@ -64,37 +64,17 @@ public class DGStreamCallViewController: UIViewController {
     @IBOutlet weak var optionsContainerButton: UIButton!
     @IBOutlet weak var optionsButtonContainer: UIView!
     
-    @IBOutlet weak var drawButton: UIButton!
-    
-
+    @IBOutlet weak var selectColorContainer: UIView!
     @IBOutlet weak var selectColorLabel: UILabel!
+    @IBOutlet weak var selectColorCollectionView: UICollectionView!
     
-    @IBOutlet weak var colorBlackButton: UIButton!
-    @IBOutlet weak var colorBlackView: UIView!
-    @IBOutlet weak var colorBlackViewIndicator: UIView!
-    
-    @IBOutlet weak var colorWhiteButton: UIButton!
-    @IBOutlet weak var colorWhiteView: UIView!
-    @IBOutlet weak var colorWhiteViewIndicator: UIView!
-    
-    @IBOutlet weak var colorRedButton: UIButton!
-    @IBOutlet weak var colorRedView: UIView!
-    @IBOutlet weak var colorRedViewIndicator: UIView!
-    
+    @IBOutlet weak var selectSizeContainer: UIView!
     @IBOutlet weak var selectSizeLabel: UILabel!
+    @IBOutlet weak var selectSizeCollectionView: UICollectionView!
     
-    @IBOutlet weak var sizeSmallButton: UIButton!
-    @IBOutlet weak var sizeSmallView: UIView!
-    @IBOutlet weak var sizeSmallViewIndicator: UIView!
+    @IBOutlet weak var optionsButtonsContainer: UIView!
     
-    
-    @IBOutlet weak var sizeMediumButton: UIButton!
-    @IBOutlet weak var sizeMediumView: UIView!
-    @IBOutlet weak var sizeMediumViewIndicator: UIView!
-    
-    @IBOutlet weak var sizeLargeButton: UIButton!
-    @IBOutlet weak var sizeLargeView: UIView!
-    @IBOutlet weak var sizeLargeViewIndicator: UIView!
+    @IBOutlet weak var drawButton: UIButton!
     
     @IBOutlet weak var showHideButtonsButton: UIButton!
     
@@ -284,12 +264,6 @@ public class DGStreamCallViewController: UIViewController {
     
     var topViews:[UIView] = [] // The views that must be on top (sent to the front) after each draw
     
-    @IBOutlet weak var dropDownSeperator1: UIView!
-    @IBOutlet weak var dropDownSeperator2: UIView!
-    @IBOutlet weak var dropDownSeperator3: UIView!
-    @IBOutlet weak var dropDownSeperator4: UIView!
-    @IBOutlet weak var dropDownSeperator5: UIView!
-    
     var didTapDropDownContainer: Bool = false
     
     var dropDownVC: UIViewController?
@@ -321,6 +295,13 @@ public class DGStreamCallViewController: UIViewController {
     var popover: UIViewController?
     
     var remoteScreenSize:CGSize?
+    
+    let colors:[UIColor] = [.black, .white, .gray, .red, .blue, .green, .yellow, .orange, .purple]
+    let mergeOptionColors:[UIColor] = [.green, .blue, .red, .white, .black]
+    
+    var selectedIntensity: Float = 0.525
+    
+    var selectedIndex:Int = 0
 
     override public func viewDidLoad() {
         super.viewDidLoad()
@@ -550,6 +531,10 @@ public class DGStreamCallViewController: UIViewController {
     
     override public func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
+        if segue.identifier == "Media", let vc = segue.destination as? DGStreamMediaViewController {
+            vc.isShare = true
+        }
+        
         if segue.identifier == "Recording", let nav = segue.destination as? UINavigationController, let recordingsVC = nav.viewControllers[0] as? DGStreamRecordingCollectionsViewController {
             recordingsVC.delegate = self
             nav.preferredContentSize = CGSize(width: 280, height: 300)
@@ -605,7 +590,6 @@ public class DGStreamCallViewController: UIViewController {
             colorVC.preferredContentSize = CGSize(width: 280, height: 44)
             colorVC.selectedColor = self.mergeOptionColor
             colorVC.selectedIntensity = self.mergeOptionIntensity
-            colorVC.mergeOptionsDelegate = self
             colorVC.modalPresentationStyle = .popover
             colorVC.popoverPresentationController?.delegate = self
             colorVC.isModalInPopover = false
@@ -886,6 +870,9 @@ public class DGStreamCallViewController: UIViewController {
         self.statusBarDoneButton.setTitleColor(.white, for: .normal)
         self.statusBarDoneButton.alpha = 0
         
+        self.showHideButtonsButton.setTitleColor(.white, for: .normal)
+        self.showHideButtonsButton.titleLabel?.textColor = .white
+        
         self.topViews.append(self.statusBar)
         
         var radius:CGFloat = 6.0
@@ -1003,7 +990,7 @@ public class DGStreamCallViewController: UIViewController {
         // Record
         self.recordButton.backgroundColor = .clear
         self.recordButton.setImage(recordImage?.withRenderingMode(.alwaysTemplate), for: .normal)
-        self.recordButton.tintColor = .red
+        self.recordButton.tintColor = .white
         self.recordButton.contentHorizontalAlignment = .center
         self.recordButton.contentVerticalAlignment = .center
         self.recordButton.contentMode = .scaleAspectFill
@@ -1109,59 +1096,41 @@ public class DGStreamCallViewController: UIViewController {
     
     func setUpOptions() {
         
-        self.optionsContainer.backgroundColor = UIColor.dgBlueDark()
-        self.optionsContainer.layer.shadowColor = UIColor.black.cgColor
-        self.optionsContainer.layer.shadowOffset = CGSize(width: 0, height: 1)
-        self.optionsContainer.layer.shadowRadius = 6
-        self.optionsContainer.layer.shadowOpacity = 0.75
+        self.optionsContainer.backgroundColor = UIColor.dgBG()
+        self.optionsContainer.layer.borderColor = UIColor.dgBlack().cgColor
+        self.optionsContainer.layer.borderWidth = 0.5
         
-        self.optionsButtonContainer.backgroundColor = UIColor.dgBlueDark()
-        self.optionsButtonContainer.layer.shadowColor = UIColor.black.cgColor
-        self.optionsButtonContainer.layer.shadowOffset = CGSize(width: 0, height: 1)
-        self.optionsButtonContainer.layer.shadowRadius = 6
-        self.optionsButtonContainer.layer.shadowOpacity = 0.75
+        self.optionsButtonContainer.backgroundColor = .clear
+        self.optionsButtonContainer.layer.borderColor = UIColor.dgBlueDark().cgColor
+        self.optionsButtonContainer.layer.borderWidth = 0.5
         self.optionsButtonContainer.layer.cornerRadius = 6
         self.optionsButtonContainer.alpha = 0
         
+        self.selectColorContainer.layer.borderColor = UIColor.dgBlack().cgColor
+        self.selectColorContainer.layer.borderWidth = 0.5
+        self.selectColorContainer.backgroundColor = UIColor.dgBlueDark()
+        self.selectColorCollectionView.dataSource = self
+        self.selectColorCollectionView.delegate = self
+        self.selectColorCollectionView.tag = 100
+        self.selectColorCollectionView.reloadData()
+        
+        self.selectSizeContainer.layer.borderColor = UIColor.dgBlack().cgColor
+        self.selectSizeContainer.layer.borderWidth = 0.5
+        self.selectSizeLabel.backgroundColor = UIColor.dgBlueDark()
+        self.selectSizeCollectionView.dataSource = self
+        self.selectSizeCollectionView.delegate = self
+        self.selectSizeCollectionView.tag = 99
+        self.selectSizeCollectionView.reloadData()
+        
         self.optionsContainerButton.setImage(UIImage.init(named: "back", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
         self.optionsContainerButton.backgroundColor = .clear
-        self.optionsContainerButton.tintColor = .white
+        self.optionsContainerButton.tintColor = UIColor.dgBlueDark()
         self.optionsContainerButton.alpha = 0
-        
-        self.colorBlackView.backgroundColor = .black
-        self.colorBlackView.layer.cornerRadius = self.colorBlackView.frame.size.width / 2
-        self.colorBlackViewIndicator.backgroundColor = .clear
-        self.colorBlackViewIndicator.layer.cornerRadius = self.colorBlackViewIndicator.frame.size.width / 2
-        self.colorBlackViewIndicator.layer.borderColor = UIColor.white.cgColor
-        self.colorBlackViewIndicator.layer.borderWidth = 2.0
-        
-        self.colorWhiteView.backgroundColor = .white
-        self.colorWhiteView.layer.cornerRadius = self.colorWhiteView.frame.size.width / 2
-        self.colorWhiteViewIndicator.backgroundColor = .clear
-
-        self.colorRedView.backgroundColor = .red
-        self.colorRedView.layer.cornerRadius = self.colorRedView.frame.size.width / 2
-        self.colorRedViewIndicator.backgroundColor = .clear
-
-        self.sizeSmallView.backgroundColor = .white
-        self.sizeSmallView.layer.cornerRadius = self.sizeSmallView.frame.size.width / 2
-        self.sizeSmallViewIndicator.backgroundColor = .clear
-        self.sizeSmallViewIndicator.layer.cornerRadius = self.sizeSmallViewIndicator.frame.size.width / 2
-        self.sizeSmallViewIndicator.layer.borderColor = UIColor.white.cgColor
-        self.sizeSmallViewIndicator.layer.borderWidth = 2.0
-        
-        self.sizeMediumView.backgroundColor = .white
-        self.sizeMediumView.layer.cornerRadius = self.sizeMediumView.frame.size.width / 2
-        self.sizeMediumViewIndicator.backgroundColor = .clear
-        
-        self.sizeLargeView.backgroundColor = .white
-        self.sizeLargeView.layer.cornerRadius = self.sizeLargeView.frame.size.width / 2
-        self.sizeLargeViewIndicator.backgroundColor = .clear
         
         self.undoButton.backgroundColor = .white
         self.undoButton.setImage(UIImage.init(named: "undo", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
         self.undoButton.imageEdgeInsets = UIEdgeInsetsMake(12, 12, 12, 12)
-        self.undoButton.tintColor = UIColor.dgBlueDark()
+        self.undoButton.tintColor = .white
         self.undoButton.contentHorizontalAlignment = .center
         self.undoButton.contentVerticalAlignment = .center
         self.undoButton.contentMode = .scaleAspectFill
@@ -1169,10 +1138,10 @@ public class DGStreamCallViewController: UIViewController {
 //        self.undoButton.tintColor = .lightGray
         self.undoButton.layer.cornerRadius = self.undoButton.frame.size.width / 2
         
-        self.clearAllButton.backgroundColor = .white
+        self.clearAllButton.backgroundColor = UIColor.dgBlueDark()
         self.clearAllButton.setImage(UIImage.init(named: "trash", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
         self.clearAllButton.imageEdgeInsets = UIEdgeInsetsMake(12, 12, 12, 12)
-        self.clearAllButton.tintColor = UIColor.dgBlueDark()
+        self.clearAllButton.tintColor = .white
         self.clearAllButton.contentHorizontalAlignment = .center
         self.clearAllButton.contentVerticalAlignment = .center
         self.clearAllButton.contentMode = .scaleAspectFill
@@ -1186,20 +1155,20 @@ public class DGStreamCallViewController: UIViewController {
         self.clearAllButton.titleLabel?.textColor = .lightGray
         self.clearAllButton.alpha = 0.25
         
-        self.mergeColorButton.backgroundColor = .white
+        self.mergeColorButton.backgroundColor = UIColor.dgBlueDark()
         self.mergeColorButton.setImage(UIImage.init(named: "colorDot", in: Bundle.init(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
         self.mergeColorButton.imageEdgeInsets = UIEdgeInsetsMake(12, 12, 12, 12)
-        self.mergeColorButton.tintColor = .black
+        self.mergeColorButton.tintColor = self.mergeOptionColor
         self.mergeColorButton.contentHorizontalAlignment = .center
         self.mergeColorButton.contentVerticalAlignment = .center
         self.mergeColorButton.contentMode = .scaleAspectFill
 //        self.mergeColorButton.isEnabled = false
         self.mergeColorButton.layer.cornerRadius = self.mergeColorButton.frame.size.width / 2
         
-        self.mergeIntensityButton.backgroundColor = .white
-        self.mergeIntensityButton.setTitle("48%", for: .normal)
-        self.mergeIntensityButton.setTitleColor(UIColor.dgBlueDark(), for: .normal)
-        self.mergeIntensityButton.titleLabel?.textColor = UIColor.dgBlueDark()
+        self.mergeIntensityButton.backgroundColor = UIColor.dgBlueDark()
+        self.mergeIntensityButton.setTitle("\(stringFor(float: self.mergeOptionIntensity))%", for: .normal)
+        self.mergeIntensityButton.setTitleColor(.white, for: .normal)
+        self.mergeIntensityButton.titleLabel?.textColor = .white
         self.mergeIntensityButton.imageEdgeInsets = UIEdgeInsetsMake(12, 12, 12, 12)
         self.mergeIntensityButton.contentHorizontalAlignment = .center
         self.mergeIntensityButton.contentVerticalAlignment = .center
@@ -1207,6 +1176,7 @@ public class DGStreamCallViewController: UIViewController {
 //        self.mergeIntensityButton.isEnabled = false
         self.mergeIntensityButton.layer.cornerRadius = self.mergeColorButton.frame.size.width / 2
         
+        self.hideOptions(animated: false)
     }
     
     func setUpChat() {
@@ -1700,6 +1670,7 @@ public class DGStreamCallViewController: UIViewController {
             self.audioRecorder?.record()
             self.session?.recorder?.startRecord(withFileURL: remoteAudioURL)
             self.isRecording = true
+            self.recordButton.tintColor = .red
         }
         catch let error {
             print("Error recording Audio \(error.localizedDescription)")
@@ -1756,7 +1727,6 @@ public class DGStreamCallViewController: UIViewController {
         self.recordButton.setTitleColor(.red, for: .normal)
         self.statusBarBackButton.setTitle("Stop Recording", for: .normal)
         self.statusBarBackButton.alpha = 1
-        self.statusBar.backgroundColor = .red
         self.hideControls()
         if #available(iOS 11.0, *) {
             self.recorder.startCapture(handler: { (sample, sampleBufferType, error) in
@@ -1804,8 +1774,8 @@ public class DGStreamCallViewController: UIViewController {
 
         if #available(iOS 11.0, *) {
             
-            self.recordButton.tintColor = UIColor.dgBlueDark()
-            self.recordButton.setTitleColor(UIColor.dgBlueDark(), for: .normal)
+            self.recordButton.tintColor = .white
+            self.recordButton.setTitleColor(.white, for: .normal)
         
             self.isRecording = false
             
@@ -2068,32 +2038,34 @@ public class DGStreamCallViewController: UIViewController {
         else {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.20) {
                 
-                let alert = UIAlertController(title: "Choose Option", message: nil, preferredStyle: .actionSheet)
-                alert.addAction(UIAlertAction(title: "Recordings", style: .default, handler: { (action: UIAlertAction) in
-                    alert.dismiss(animated: false, completion: nil)
-                    self.performSegue(withIdentifier: "Recording", sender: nil)
-                }))
-                alert.addAction(UIAlertAction(title: "Photo Library", style: .default, handler: { (action: UIAlertAction) in
-                    alert.dismiss(animated: false, completion: nil)
-                    let imagePicker = UIImagePickerController()
-                    imagePicker.delegate = self
-                    imagePicker.sourceType = .photoLibrary
-                    imagePicker.allowsEditing = false
-                    imagePicker.modalPresentationStyle = .popover
-                    imagePicker.popoverPresentationController?.sourceView = self.view
-                    imagePicker.popoverPresentationController?.sourceRect = CGRect(x: self.shareButtonLabel.frame.origin.x + self.shareButtonLabel.frame.size.width / 2, y: self.shareButtonLabel.frame.y, width: self.shareButtonLabel.frame.width, height: 20)
-                    self.present(imagePicker, animated: true) {
-                        
-                        
-                    }
-                }))
-                alert.addAction(UIAlertAction(title: "Documents", style: .default, handler: { (action: UIAlertAction) in
-                    alert.dismiss(animated: false, completion: nil)
-                    self.performSegue(withIdentifier: "documents", sender: nil)
-                }))
-                alert.popoverPresentationController?.sourceView = self.view
-                alert.popoverPresentationController?.sourceRect = CGRect(x: self.shareButtonLabel.frame.origin.x + self.shareButtonLabel.frame.size.width / 2, y: self.shareButtonLabel.frame.y, width: self.shareButtonLabel.frame.width, height: 20)
-                self.present(alert, animated: true, completion: nil)
+                self.performSegue(withIdentifier: "Media", sender: nil)
+                
+//                let alert = UIAlertController(title: "Choose Option", message: nil, preferredStyle: .actionSheet)
+//                alert.addAction(UIAlertAction(title: "Recordings", style: .default, handler: { (action: UIAlertAction) in
+//                    alert.dismiss(animated: false, completion: nil)
+//                    self.performSegue(withIdentifier: "Recording", sender: nil)
+//                }))
+//                alert.addAction(UIAlertAction(title: "Photo Library", style: .default, handler: { (action: UIAlertAction) in
+//                    alert.dismiss(animated: false, completion: nil)
+//                    let imagePicker = UIImagePickerController()
+//                    imagePicker.delegate = self
+//                    imagePicker.sourceType = .photoLibrary
+//                    imagePicker.allowsEditing = false
+//                    imagePicker.modalPresentationStyle = .popover
+//                    imagePicker.popoverPresentationController?.sourceView = self.view
+//                    imagePicker.popoverPresentationController?.sourceRect = CGRect(x: self.shareButtonLabel.frame.origin.x + self.shareButtonLabel.frame.size.width / 2, y: self.shareButtonLabel.frame.y, width: self.shareButtonLabel.frame.width, height: 20)
+//                    self.present(imagePicker, animated: true) {
+//
+//
+//                    }
+//                }))
+//                alert.addAction(UIAlertAction(title: "Documents", style: .default, handler: { (action: UIAlertAction) in
+//                    alert.dismiss(animated: false, completion: nil)
+//                    self.performSegue(withIdentifier: "documents", sender: nil)
+//                }))
+//                alert.popoverPresentationController?.sourceView = self.view
+//                alert.popoverPresentationController?.sourceRect = CGRect(x: self.shareButtonLabel.frame.origin.x + self.shareButtonLabel.frame.size.width / 2, y: self.shareButtonLabel.frame.y, width: self.shareButtonLabel.frame.width, height: 20)
+//                self.present(alert, animated: true, completion: nil)
             }
         }
     }
@@ -2739,6 +2711,10 @@ public class DGStreamCallViewController: UIViewController {
             
             self.endWhiteBoard(sendNotification: false)
             
+            if mode != .stream {
+                self.showOptions()
+            }
+            
             if mode == .merge && self.isMergeHelper {
                 self.stopSharing()
             }
@@ -2907,6 +2883,8 @@ public class DGStreamCallViewController: UIViewController {
         if self.drawingUsers.contains(self.selectedUser) {
             self.drawEndWith(userID: self.selectedUser)
         }
+        
+        self.hideOptions(animated: false)
         
         UIView.animate(withDuration: 0.18) {
             self.mergeButtonLabel.textColor = UIColor.dgBlueDark()
@@ -3733,6 +3711,8 @@ extension DGStreamCallViewController {
                 self.showLocalVideo()
             }
             
+            self.hideOptions(animated: false)
+            
             // To end on other users device
             if sendNotification {
                 let whiteboardEndMessage = QBChatMessage()
@@ -3811,21 +3791,21 @@ extension DGStreamCallViewController {
     
 }
 
-//MARK:- UICollectionView
-extension DGStreamCallViewController: UICollectionViewDataSource, UICollectionViewDelegate {
-    public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return self.users.count
-    }
-    
-    public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "Cell", for: indexPath) as! DGStreamCollectionViewCell
-        let user = self.users[indexPath.item]
-        if let userID = user.userID, let videoView = self.videoViewWith(userID: userID) {
-            cell.set(videoView: videoView)
-        }
-        return cell
-    }
-}
+//MARK:- UICollectionView Users
+//extension DGStreamCallViewController: UICollectionViewDataSource, UICollectionViewDelegate {
+//    public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+//        return self.users.count
+//    }
+//
+//    public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+//        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "Cell", for: indexPath) as! DGStreamCollectionViewCell
+//        let user = self.users[indexPath.item]
+//        if let userID = user.userID, let videoView = self.videoViewWith(userID: userID) {
+//            cell.set(videoView: videoView)
+//        }
+//        return cell
+//    }
+//}
 
 //MARK:- Transition To Size
 extension DGStreamCallViewController {
@@ -4585,7 +4565,96 @@ extension DGStreamCallViewController: GLKViewControllerDelegate, DGStreamLocalVi
 }
 
 // MARK:- MERGE OPTIONS
-extension DGStreamCallViewController: DGStreamCallMergeOptionsDelegate {
+extension DGStreamCallViewController: UICollectionViewDataSource, UICollectionViewDelegate {
+    public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        
+        let oldSelectedIndex = self.selectedIndex
+        
+        if indexPath.item == oldSelectedIndex {
+            return
+        }
+        
+        self.selectedIndex = indexPath.item
+        
+        if collectionView.tag == 99 {
+            let color = self.mergeOptionColors[indexPath.item]
+            self.mergeOptionColor = color
+            if self.mergeOptionColor == .black {
+//                self.sizeSlider.isEnabled = false
+//                self.sizeSlider.alpha = 0.0
+//                self.sliderLabel.text = "N/A"
+            }
+            else {
+//                self.sizeSlider.isEnabled = true
+//                self.sizeSlider.alpha = 1.0
+//                self.sliderLabel.text = self.stringForSliderValue()
+            }
+            mergeOptionSelected(color: self.mergeOptionColor, intensity: self.selectedIntensity)
+            self.storeValues()
+        }
+        else {
+            let color = self.colors[indexPath.item]
+            self.drawColor = color
+            colorSelected(color: color)
+        }
+        
+        // Remove The Old
+        if oldSelectedIndex != 100, let cell = collectionView.cellForItem(at: IndexPath(item: oldSelectedIndex, section: 0)) {
+            cell.contentView.layer.borderColor = UIColor.dgBlack().cgColor
+            cell.contentView.layer.borderWidth = 0.5
+        }
+        
+        // Add the New
+        if let cell = collectionView.cellForItem(at: IndexPath(item: indexPath.item, section: 0)) {
+            cell.contentView.layer.borderColor = UIColor.dgBlueDark().cgColor
+            cell.contentView.layer.borderWidth = 4
+        }
+        
+    }
+    public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        if collectionView.tag == 99 {
+            return self.mergeOptionColors.count
+        }
+        else {
+            return self.colors.count
+        }
+    }
+    public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "Cell", for: indexPath)
+        var color: UIColor
+        if collectionView.tag == 99 {
+            color = self.mergeOptionColors[indexPath.item]
+            cell.contentView.backgroundColor = color
+            if color == .white {
+                let subview = UIView(frame: CGRect(x: 4, y: 4, width: cell.contentView.bounds.size.width - 8, height: cell.contentView.bounds.size.height - 8))
+                subview.layer.cornerRadius = subview.frame.size.width / 2
+                subview.backgroundColor = .white
+                _ = cell.contentView.addGradientBackground(firstColor: .white, secondColor: .black, height: cell.contentView.bounds.size.height)
+                cell.contentView.addSubview(subview)
+            }
+            if color == .black {
+                _ = cell.contentView.addGradientBackground(firstColor: .white, secondColor: .gray, height: cell.contentView.bounds.size.height)
+            }
+        }
+        else {
+            color = self.colors[indexPath.item]
+            cell.contentView.backgroundColor = color
+            if color == self.drawColor {
+                cell.contentView.layer.borderColor = UIColor.dgBlueDark().cgColor
+                cell.contentView.layer.borderWidth = 4
+            }
+            else {
+                cell.contentView.layer.borderColor = UIColor.dgBlack().cgColor
+                cell.contentView.layer.borderWidth = 0.5
+            }
+        }
+        
+        cell.contentView.clipsToBounds = true
+        cell.clipsToBounds = true
+        cell.contentView.layer.cornerRadius = cell.contentView.frame.size.width / 2
+        return cell
+    }
+    
     func mergeOptionSelected(color: UIColor, intensity: Float) {
         let i = self.getTrue(intensity: intensity, for: color)
         self.mergeOptionIntensity = intensity
@@ -4608,6 +4677,58 @@ extension DGStreamCallViewController: DGStreamCallMergeOptionsDelegate {
         }
         return i
     }
+    
+    func stringFor(float: Float) -> String {
+        let stringValue = String(float)
+        let splice = stringValue.components(separatedBy: ".")[1]
+        let spliceString = NSString(string: splice)
+        var string = ""
+        if spliceString.length > 1 {
+            string = NSString(string: spliceString).substring(to: 2)
+        }
+        else {
+            string = NSString(string: spliceString).substring(to: 1)
+            string.append("0")
+        }
+        return "\(string)%"
+    }
+    
+    func storeValues() {
+        
+        var color = ""
+        if self.mergeOptionColor == .green {
+            color = "green"
+        }
+        else if self.mergeOptionColor == .blue {
+            color = "blue"
+        }
+        else if self.mergeOptionColor == .red {
+            color = "red"
+        }
+        else if self.mergeOptionColor == .white {
+            color = "white"
+        }
+        else {
+            color = "black"
+        }
+        
+        UserDefaults.standard.set(color, forKey: "MergeColor")
+        UserDefaults.standard.set(self.selectedIntensity, forKey: "MergeIntensity")
+        UserDefaults.standard.synchronize()
+    }
+    
+    func showOptions() {
+        self.optionsContainerConstraint.constant = -170
+        self.view.layoutIfNeeded()
+        self.optionsContainer.alpha = 1
+    }
+    
+    func hideOptions(animated: Bool) {
+        self.optionsContainerConstraint.constant = -170
+        self.view.layoutIfNeeded()
+        self.optionsContainer.alpha = 0
+    }
+
 }
 
 // MARK:- DOCUMENTS

@@ -9,7 +9,7 @@
 import UIKit
 
 protocol DGStreamUserDropDownViewControllerDelegate {
-    func recordingsButtonTapped()
+    func mediaButtonTapped()
     func logoutTapped()
     func userButtonTapped()
 }
@@ -25,7 +25,7 @@ class DGStreamUserDropDownViewController: UIViewController {
         
         self.isModalInPopover = false
         
-        titles.append(NSLocalizedString("Recordings", comment: ""))
+        titles.append(NSLocalizedString("Media", comment: ""))
         titles.append(NSLocalizedString("Logout", comment: ""))
 
         // Do any additional setup after loading the view.
@@ -43,7 +43,7 @@ extension DGStreamUserDropDownViewController: UITableViewDelegate, UITableViewDa
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         self.dismiss(animated: true, completion: nil)
         if indexPath.row == 0 {
-            self.delegate.recordingsButtonTapped()
+            self.delegate.mediaButtonTapped()
             self.dismiss(animated: true) {
                 
             }

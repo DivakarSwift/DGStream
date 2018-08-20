@@ -99,10 +99,10 @@ class DGStreamDetailViewController: UIViewController {
         
         if segue.identifier == "UserDropDown" {
             
-            var size = CGSize(width: 320, height: 270)
-            if Display.pad {
-                size = CGSize(width: 400, height: 270)
-            }
+            let size = CGSize(width: 320, height: 270)
+//            if Display.pad {
+//                size = CGSize(width: 320, height: 270)
+//            }
             
             let dropDownVC = segue.destination as! DGStreamUserDropDownViewController
             dropDownVC.preferredContentSize = size
@@ -414,9 +414,9 @@ extension DGStreamDetailViewController: UITabBarDelegate {
 
 extension DGStreamDetailViewController: DGStreamUserDropDownViewControllerDelegate {
     
-    func recordingsButtonTapped() {
-        if let recordingsCollectionNav = UIStoryboard(name: "Recording", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() {
-            self.present(recordingsCollectionNav, animated: true, completion: nil)
+    func mediaButtonTapped() {
+        if let media = UIStoryboard(name: "Media", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() {
+            self.present(media, animated: true, completion: nil)
         }
     }
     
