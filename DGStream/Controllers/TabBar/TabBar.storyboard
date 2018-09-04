@@ -92,6 +92,14 @@
             </objects>
             <point key="canvasLocation" x="830" y="-2328"/>
         </scene>
+        <!--DetailPad-->
+        <scene sceneID="wwT-4O-OuG">
+            <objects>
+                <viewControllerPlaceholder storyboardName="DetailPad" id="Bag-6l-mnO" sceneMemberID="viewController"/>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="DHB-9j-EhW" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="786" y="-1166"/>
+        </scene>
         <!--Stream User Drop Down View Controller-->
         <scene sceneID="bi7-4U-C0z">
             <objects>
@@ -337,6 +345,16 @@
                                                         <constraint firstAttribute="height" constant="0.5" id="rZR-kO-dGm"/>
                                                     </constraints>
                                                 </view>
+                                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="detailDisclosure" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="udE-56-Fa4">
+                                                    <rect key="frame" x="278" y="14" width="32" height="32"/>
+                                                    <constraints>
+                                                        <constraint firstAttribute="width" constant="32" id="8MW-Rp-KY8"/>
+                                                        <constraint firstAttribute="height" constant="32" id="MHF-5p-f8G"/>
+                                                    </constraints>
+                                                    <connections>
+                                                        <action selector="infoButtonTapped:" destination="pHY-1d-lW2" eventType="touchUpInside" id="WkU-di-2f8"/>
+                                                    </connections>
+                                                </button>
                                             </subviews>
                                         </view>
                                         <constraints>
@@ -348,12 +366,15 @@
                                             <constraint firstAttribute="bottom" secondItem="qx4-zF-gna" secondAttribute="bottom" id="Qxh-VP-NpO"/>
                                             <constraint firstItem="qx4-zF-gna" firstAttribute="leading" secondItem="pHY-1d-lW2" secondAttribute="leading" constant="10" id="Wpg-We-YdJ"/>
                                             <constraint firstItem="ML7-HG-R6j" firstAttribute="top" secondItem="pHY-1d-lW2" secondAttribute="top" constant="10" id="jBo-be-Kyh"/>
+                                            <constraint firstItem="udE-56-Fa4" firstAttribute="centerY" secondItem="pHY-1d-lW2" secondAttribute="centerY" id="jgv-1h-8Rt"/>
+                                            <constraint firstAttribute="trailing" secondItem="udE-56-Fa4" secondAttribute="trailing" constant="10" id="kjE-ls-Rrq"/>
                                             <constraint firstItem="a4G-Wu-0l1" firstAttribute="leading" secondItem="xer-45-Y9B" secondAttribute="trailing" constant="10" id="rs7-hU-IE8"/>
                                             <constraint firstItem="xer-45-Y9B" firstAttribute="top" secondItem="pHY-1d-lW2" secondAttribute="top" constant="10" id="vRm-h8-183"/>
                                             <constraint firstAttribute="trailing" secondItem="qx4-zF-gna" secondAttribute="trailing" id="wSa-D1-Kum"/>
                                         </constraints>
                                         <connections>
                                             <outlet property="abrevLabel" destination="ML7-HG-R6j" id="WiY-a7-3X3"/>
+                                            <outlet property="infoButton" destination="udE-56-Fa4" id="LgZ-g9-ILd"/>
                                             <outlet property="nameLabel" destination="a4G-Wu-0l1" id="vdW-vh-Nup"/>
                                             <outlet property="userImageView" destination="xer-45-Y9B" id="X3T-cX-52L"/>
                                         </connections>
@@ -670,7 +691,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="xf1-eM-Ys6" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="785.9375" y="-1689.2578125"/>
+            <point key="canvasLocation" x="874" y="-1689"/>
         </scene>
         <!--Stream Split View Controller-->
         <scene sceneID="hau-xE-IdQ">
@@ -679,6 +700,7 @@
                     <splitViewMasterSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
                     <connections>
                         <segue destination="Kyh-LB-Cxh" kind="relationship" relationship="masterViewController" id="9jt-O3-7Mx"/>
+                        <segue destination="Bag-6l-mnO" kind="relationship" relationship="detailViewController" id="3oz-ud-79E"/>
                     </connections>
                 </splitViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="upq-sP-8iv" userLabel="First Responder" sceneMemberID="firstResponder"/>

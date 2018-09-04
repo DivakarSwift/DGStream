@@ -73,6 +73,7 @@ class DGStreamSendRecordingOperationQueue: OperationQueue {
                 // SEND VIDEO FRAME
                 if let pixelBuffer : CVPixelBuffer = CMSampleBufferGetImageBuffer(copy), let videoFrame = QBRTCVideoFrame(pixelBuffer: pixelBuffer, videoRotation: ._0), let sendBlock = self.sendBlock {
                     sendBlock(videoFrame)
+                    print("Send Video Frame")
                     DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(fps)) {
                         self.loadNextFrames()
                     }

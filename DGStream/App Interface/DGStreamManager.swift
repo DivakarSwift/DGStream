@@ -24,7 +24,7 @@ public protocol DGStreamManagerDataSource {
     func streamManager(_ manager: DGStreamManager, usersExceptUserID: NSNumber) -> [DGStreamUserProtocol]
     
     func streamManager(_ manager: DGStreamManager, recordingCollectionsForUserID userID: NSNumber) -> [DGStreamRecordingCollectionProtocol]
-    func streamManager(_ manager: DGStreamManager, recordingsForUserID userID:NSNumber, documentNumber: String, title: String?) -> [DGStreamRecordingProtocol]
+    func streamManager(_ manager: DGStreamManager, recordingsWithPredicates predicates: [NSPredicate]) -> [DGStreamRecordingProtocol]
     
     func streamManager(_ manager: DGStreamManager, documentsForUserID userID: NSNumber) -> [DGStreamDocumentProtocol]
     
@@ -49,6 +49,7 @@ public protocol DGStreamManagerDelegate {
 public class DGStreamManager: NSObject {
     
     public static let instance = DGStreamManager()
+    public var mediaViewControllerDelegate: DGStreamMediaViewControllerProtocol?
     var parentViewController: UIViewController?
     var frameworkContainer: UIView!
     
@@ -211,5 +212,34 @@ extension DGStreamManager {
     }
     func returnToFramework() {
         // When the button is tapped within the application to return to call
+    }
+}
+
+extension DGStreamManager: DGStreamMediaCollectionViewControllerDelegate {
+    public func didLoadAnd(hasNoData: Bool) {
+        if let mediaViewController = DGStreamCore.instance.presentedViewController as? DGStreamMediaViewController{
+            if hasNoData {
+                mediaViewController.collectionViewContainer.isHidden = true
+                mediaViewController.selectButton.isEnabled = false
+            }
+            else {
+                mediaViewController.collectionViewContainer.isHidden = false
+                mediaViewController.selectButton.isEnabled = true
+            }
+        }
+    }
+    
+    public func didSelect(recording: DGStreamRecordingProtocol) {
+        if let mediaViewController = DGStreamCore.instance.presentedViewController as? DGStreamMediaViewController{
+            //mediaViewController.
+            if let rec = DGStreamRecording.createDGStreamRecordingsFor(protocols: [recording]).first {
+                mediaViewController.didSelect(recording: rec)
+            }
+        }
+    }
+    public func didMakeSelection() {
+        if let mediaViewController = DGStreamCore.instance.presentedViewController as? DGStreamMediaViewController{
+            mediaViewController.deleteButtonItem.isEnabled = true
+        }
     }
 }

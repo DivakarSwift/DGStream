@@ -159,7 +159,6 @@ class DGStreamAlertView: UIView {
             self.acceptButton.backgroundColor = UIColor.dgMergeMode()
             self.acceptButton.tintColor = UIColor.dgWhite()
             self.acceptButton.imageEdgeInsets = UIEdgeInsetsMake(10, 10, 10, 10)
-            self.acceptButton.backgroundColor = .yellow
             
             self.declineButton.setImage(declineImage, for: .normal)
             self.declineButton.tintColor = UIColor.dgWhite()
@@ -202,7 +201,6 @@ class DGStreamAlertView: UIView {
             self.acceptButton.backgroundColor = UIColor.dgMergeMode()
             self.acceptButton.tintColor = UIColor.dgWhite()
             self.acceptButton.imageEdgeInsets = UIEdgeInsetsMake(10, 10, 10, 10)
-            self.acceptButton.backgroundColor = .yellow
             
             self.declineButton.setImage(declineImage, for: .normal)
             self.declineButton.tintColor = UIColor.dgWhite()
@@ -233,7 +231,6 @@ class DGStreamAlertView: UIView {
             self.acceptButton.backgroundColor = UIColor.dgMergeMode()
             self.acceptButton.tintColor = UIColor.dgWhite()
             self.acceptButton.imageEdgeInsets = UIEdgeInsetsMake(10, 10, 10, 10)
-            self.acceptButton.backgroundColor = .yellow
             
             self.declineButton.setImage(declineImage, for: .normal)
             self.declineButton.tintColor = UIColor.dgWhite()

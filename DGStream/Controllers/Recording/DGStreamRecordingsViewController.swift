@@ -48,8 +48,8 @@ class DGStreamRecordingsViewController: UIViewController {
     }
     
     func loadRecordings() {
-        self.recordings = DGStreamRecording.createDGStreamRecordingsFor(protocols: DGStreamManager.instance.dataSource.streamManager(DGStreamManager.instance, recordingsForUserID: DGStreamCore.instance.currentUser?.userID ?? 0, documentNumber: self.collection.documentNumber, title: nil))
-        self.collectionView.reloadData()
+        //self.recordings = DGStreamRecording.createDGStreamRecordingsFor(protocols: DGStreamManager.instance.dataSource.streamManager(DGStreamManager.instance, recordingsForUserID: DGStreamCore.instance.currentUser?.userID ?? 0, documentNumber: self.collection.documentNumber, title: nil))
+        //self.collectionView.reloadData()
     }
 
     @IBAction func backButtonTapped(_ sender: Any) {

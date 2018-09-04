@@ -67,6 +67,13 @@ public protocol DGStreamRecordingProtocol {
     var dgCreatedDate: Date { get }
     var dgCreatedBy: NSNumber { get }
     var dgIsPhoto: Bool { get }
+    var dgIsDocument: Bool { get }
+}
+
+public protocol DGStreamMediaMonthProtocol {
+    var dgCreatedDate: Date { get }
+    var dgMonth: String { get }
+    var dgYear: String { get }
 }
 
 public protocol DGStreamDocumentProtocol {
@@ -81,4 +88,14 @@ public protocol DGStreamDocumentProtocol {
 public protocol DGStreamImageProtocol {
     var dgID: String { get }
     var dgImageData: Data? { get }
+}
+
+public protocol DGStreamMediaViewControllerProtocol {
+    func loadRecordingsWith(predicates: [NSPredicate])
+}
+
+public protocol DGStreamMediaCollectionViewControllerDelegate {
+    func didSelect(recording: DGStreamRecordingProtocol)
+    func didMakeSelection()
+    func didLoadAnd(hasNoData: Bool)
 }

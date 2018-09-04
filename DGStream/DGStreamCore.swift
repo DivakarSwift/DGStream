@@ -150,7 +150,7 @@ class DGStreamCore: NSObject {
     func willEnterForeground() {
         if let user = DGStreamCore.instance.currentUser?.asQuickbloxUser() {
             QBChat.instance.connect(with: user) { (user) in
-                
+            
             }
         }
     }
@@ -207,6 +207,9 @@ class DGStreamCore: NSObject {
         }
 
         if let username = user.username {
+            
+            user.createDocumentSubfolders()
+            
             QBRequest.logIn(withUserLogin: username, password: "dataglance", successBlock: { (response, qbU4ser) in
                 
                 if let loggedInDGUser = DGStreamUser.fromQuickblox(user: qbU4ser) {
@@ -223,27 +226,6 @@ class DGStreamCore: NSObject {
                     self.getAllUsers {
                         self.connectToChatWith(user: qbU4ser)
                         self.startRefreshTimer()
-                        
-                        // TODO: REMOVE FOR PRODUCTION
-                        QBRequest.downloadFile(withID: 8998848, successBlock: { (response, data) in
-                            
-                            let fileID = "8998848"
-                            let documentsPath = DGStreamFileManager.applicationDocumentsDirectory()
-                            let newPDFPath = documentsPath.appendingPathComponent(fileID).appendingPathExtension("pdf")
-                            do {
-                                try data.write(to: newPDFPath)
-                                print("Write Move Item")
-                            }
-                            catch let error {
-                                print("Could Not Write Item \(error.localizedDescription)")
-                            }
-                            
-                        }, statusBlock: { (request, status) in
-                            
-                        }, errorBlock: { (response) in
-                            print(response.error?.error?.localizedDescription ?? "No Error")
-                        })
-    
                     }
                 }
                 else {
@@ -822,7 +804,7 @@ extension DGStreamCore: QBChatDelegate {
                             document.url = "\(id).pdf"
                             
                             callVC.isBeingSharedWith = true
-                            callVC.placePDF(document: document)
+                            callVC.placePDF(data: data)
 
                         }, statusBlock: { (request, status) in
                             
@@ -914,11 +896,6 @@ extension DGStreamCore: QBChatDelegate {
                             
                             QBChat.instance.sendSystemMessage(declinedMessage, completion: { (error) in
                                 print("Sent Declined Message With \(error?.localizedDescription ?? "NO ERROR")")
-                                
-                                let message = DGStreamMessage()
-                                message.message = "\(fromUsername) declined perspective."
-                                message.isSystem = true
-                                callVC.chatPeekView.addCellWith(message: message)
                             })
                             
                         }
@@ -1065,7 +1042,7 @@ extension DGStreamCore: QBChatDelegate {
                         }
                     }
                     
-                    if callVC.latestRemoteDrawID > drawID {
+                    if callVC.latestRemoteDrawID > drawID || callVC.drawingUsers.contains(senderID) == false {
                         return
                     }
                     
@@ -1074,7 +1051,7 @@ extension DGStreamCore: QBChatDelegate {
                         if let id = attachment.id, let attachmentID = UInt(id) {
                             
                             QBRequest.downloadFile(withID: attachmentID, successBlock: { (response, data) in
-                                if callVC.latestRemoteDrawID > drawID {
+                                if callVC.latestRemoteDrawID > drawID || callVC.drawingUsers.contains(senderID) == false{
                                     return
                                 }
                                 callVC.drawWithImage(id: drawID, data: data)
@@ -1666,8 +1643,6 @@ extension DGStreamCore: QBRTCClientDelegate {
                     
                     if didAccept {
                         
-                        session.acceptCall(nil)
-                        
                         let recent = DGStreamRecent()
                         recent.date = Date()
                         recent.duration = 1.0
@@ -1682,28 +1657,32 @@ extension DGStreamCore: QBRTCClientDelegate {
                         DGStreamManager.instance.dataStore.streamManager(DGStreamManager.instance, store: recent)
                         
                         // CALL VC
-                        if vc is DGStreamCallViewController {
+                        if let existingCallVC = vc as? DGStreamCallViewController {
                             //callVC.hangUpButtonTapped(self)
 //                            if let alertView = self.alertView {
 //                                
 //                            }
+                            
+                            
+                            
+                            existingCallVC.session?.hangUp(["hangup" : "hang up"])
+                            existingCallVC.session = nil
+                            existingCallVC.closeOut()
+                            session.acceptCall(nil)
                             NotificationCenter.default.post(name: Notification.Name("AcceptIncomingCall"), object: session)
+                            
                         }
                         // TAB BAR
-                        else if let tabBarVC = vc as? DGStreamTabBarViewController, let callVC = UIStoryboard(name: "Call", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamCallViewController, let chatVC = UIStoryboard.init(name: "Chat", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamChatViewController {
+                        else if let callVC = UIStoryboard(name: "Call", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamCallViewController, let chatVC = UIStoryboard.init(name: "Chat", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamChatViewController {
                             
                             print("GETTING CONVERSATION WITH \(fromUserID)")
                             
-                            print("Total conversations \(tabBarVC.conversations.count)")
-                            
-                            for c in tabBarVC.conversations {
-                                print("\(c.conversationID) | \(c.userIDs)")
-                                if c.userIDs.contains(fromUserID) {
-                                    let proto = DGStreamConversation.createDGStreamConversationFrom(proto: c)
-                                    let newConversation = DGStreamConversation.createDGStreamConversationFrom(proto: proto)
+                            // print("Total conversations \(tabBarVC.conversations.count)")
+                            for convo in DGStreamManager.instance.dataSource.streamManager(DGStreamManager.instance, conversationsWithCurrentUser: currentUserID) {
+                                if convo.dgUserIDs.contains(fromUserID) {
+                                    let newConversation = DGStreamConversation.createDGStreamConversationFrom(proto: convo)
                                     newConversation.type = .callConversation
                                     chatVC.chatConversation = newConversation
-                                    print("SET NEW CONVERSATION")
                                     break
                                 }
                             }
@@ -1712,6 +1691,8 @@ extension DGStreamCore: QBRTCClientDelegate {
                             callVC.chatVC = chatVC
                             callVC.session = session
                             callVC.selectedUser = fromUserID
+                            
+                            session.acceptCall(nil)
                             
                             if mode == .incomingAudioCall {
                                 callVC.isAudioCall = true
@@ -1760,6 +1741,8 @@ extension DGStreamCore: QBRTCClientDelegate {
                                 callVC.session = session
                                 callVC.selectedUser = fromUserID
                                 
+                                session.acceptCall(nil)
+                                
                                 if mode == .incomingAudioCall {
                                     callVC.isAudioCall = true
                                     DispatchQueue.main.async {
@@ -1807,6 +1790,8 @@ extension DGStreamCore: QBRTCClientDelegate {
                                 callVC.chatVC = chatVC
                                 callVC.session = session
                                 callVC.selectedUser = fromUserID
+                                
+                                session.acceptCall(nil)
                                 
                                 if mode == .incomingAudioCall {
                                     callVC.isAudioCall = true

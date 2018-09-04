@@ -76,6 +76,21 @@ public class DGStreamUser: NSObject {
         return user
     }
     
+    func createDocumentSubfolders() {
+        guard let username = self.username else {
+            return
+        }
+        _ = DGStreamFileManager.createFilesAppSubFolder(folderName: username, subFolder: NSLocalizedString("Videos", comment: ""))
+        _ = DGStreamFileManager.createFilesAppSubFolder(folderName: username, subFolder: NSLocalizedString("Photos", comment: ""))
+        _ = DGStreamFileManager.createFilesAppSubFolder(folderName: username, subFolder: NSLocalizedString("Documents", comment: ""))
+    }
+    
+    func hasAddedMediaFromFilesApp() {
+        guard let username = self.username else {
+            return
+        }
+    }
+    
 }
 
 extension DGStreamUser: DGStreamUserProtocol {

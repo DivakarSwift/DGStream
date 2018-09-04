@@ -54,6 +54,30 @@ class DGStreamDetailViewController: UIViewController {
     
     @IBOutlet weak var navBarView: UIView!
     
+    @IBOutlet weak var stackViewRightConstraint: NSLayoutConstraint!
+    
+    @IBOutlet weak var collectionViewBottomConstraint: NSLayoutConstraint!
+    
+    @IBOutlet weak var videoButtonContainerHeight: NSLayoutConstraint!
+    
+    @IBOutlet weak var videoButtonContainerWidth: NSLayoutConstraint!
+    
+    @IBOutlet weak var videoCallButton2: UIButton!
+    
+    @IBOutlet weak var audioButtonContainerHeight: NSLayoutConstraint!
+    
+    @IBOutlet weak var audioButtonContainerWidth: NSLayoutConstraint!
+    
+    
+    @IBOutlet weak var audioCallButton2: UIButton!
+    
+    @IBOutlet weak var messageButtonContainerHeight: NSLayoutConstraint!
+    
+    @IBOutlet weak var messageButtonContainerWidth: NSLayoutConstraint!
+    
+    @IBOutlet weak var messageButton2: UIButton!
+    
+    
     var videoOrientation:UIDeviceOrientation = .portrait
     
     var user: DGStreamUser?
@@ -79,6 +103,9 @@ class DGStreamDetailViewController: UIViewController {
         let camera = UITabBarItem(title: "Camera", image: UIImage(named: "capture", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil), tag: 1)
         items.append(camera)
         
+        let media = UITabBarItem(title: "Media", image: UIImage(named: "media", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil), tag: 2)
+        items.append(media)
+        
         self.tabBar.tintColor = .orange
         self.tabBar.unselectedItemTintColor = .lightGray
         self.tabBar.setItems(items, animated: false)
@@ -88,6 +115,99 @@ class DGStreamDetailViewController: UIViewController {
         
         self.setUpViews()
         self.setUpButtons()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        if Display.pad {
+            return
+        }
+        
+        let orientation = UIDevice.current.orientation
+        
+        if orientation == .landscapeLeft || orientation == .landscapeRight {
+            self.setUIFor(landscape: true)
+        }
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        NotificationCenter.default.addObserver(self, selector: #selector(deviceOrientationDidChange(notification:)), name: Notification.Name.UIDeviceOrientationDidChange, object: nil)
+        DGStreamCore.instance.presentedViewController = self
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        NotificationCenter.default.removeObserver(self, name: Notification.Name.UIDeviceOrientationDidChange, object: nil)
+    }
+    
+    func deviceOrientationDidChange(notification: Notification) {
+        
+        if Display.pad {
+            return
+        }
+        
+        guard let device = notification.object as? UIDevice else {
+            return
+        }
+        
+        let orientation = device.orientation
+        
+        if !orientation.isFlat {
+            if orientation == .landscapeLeft || orientation == .landscapeRight {
+                self.setUIFor(landscape: true)
+            }
+            else {
+                self.setUIFor(landscape: false)
+            }
+        }
+    }
+    
+    func setUIFor(landscape: Bool) {
+        
+        UIView.animate(withDuration: 0.20) {
+            if landscape {
+                self.stackViewRightConstraint.constant = -70
+                
+                self.videoCallButtonContainer.alpha = 0
+                self.videoCallLabel.alpha = 0
+                self.audioCallButtonContainer.alpha = 0
+                self.audioCallLabel.alpha = 0
+                self.messageButtonContainer.alpha = 0
+                self.messageLabel.alpha = 0
+                
+                self.videoCallButton2.alpha = 1
+                self.audioCallButton2.alpha = 1
+                self.messageButton2.alpha = 1
+                
+                self.collectionViewBottomConstraint.constant = 10
+                
+            }
+            else {
+                self.stackViewRightConstraint.constant = 0
+                
+                self.videoCallButtonContainer.alpha = 1
+                self.videoCallLabel.alpha = 1
+                self.audioCallButtonContainer.alpha = 1
+                self.audioCallLabel.alpha = 1
+                self.messageButtonContainer.alpha = 1
+                self.messageLabel.alpha = 1
+                
+                self.videoCallButton2.alpha = 0
+                self.audioCallButton2.alpha = 0
+                self.messageButton2.alpha = 0
+                
+                if Display.typeIsLike == .iphone6plus || Display.typeIsLike == .iphone7plus {
+                    self.collectionViewBottomConstraint.constant = 154
+                }
+                else {
+                    self.collectionViewBottomConstraint.constant = 134
+                }
+                
+            }
+            self.view.layoutIfNeeded()
+        }
     }
 
     override func didReceiveMemoryWarning() {
@@ -99,11 +219,11 @@ class DGStreamDetailViewController: UIViewController {
         
         if segue.identifier == "UserDropDown" {
             
-            let size = CGSize(width: 320, height: 270)
+//            let size = CGSize(width: 320, height: 270)
 //            if Display.pad {
 //                size = CGSize(width: 320, height: 270)
 //            }
-            
+            let size = CGSize(width: 320, height: 220)
             let dropDownVC = segue.destination as! DGStreamUserDropDownViewController
             dropDownVC.preferredContentSize = size
             dropDownVC.modalPresentationStyle = .popover
@@ -159,6 +279,16 @@ class DGStreamDetailViewController: UIViewController {
         self.videoCallButtonContainer.layer.borderWidth = 1
         self.videoCallButtonContainer.layer.cornerRadius = self.videoCallButtonContainer.bounds.size.width / 2
         
+        videoCallButton2.setImage(UIImage(named: "video", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
+        videoCallButton2.backgroundColor = .orange
+        videoCallButton2.tintColor = UIColor.dgBlack()
+        videoCallButton2.addTarget(self, action: #selector(videoCallButtonTapped), for: .touchUpInside)
+        videoCallButton2.clipsToBounds = true
+        videoCallButton2.layer.borderColor = UIColor.dgBlack().cgColor
+        videoCallButton2.layer.borderWidth = 0.5
+        videoCallButton2.layer.cornerRadius = videoCallButton2.bounds.size.width / 2
+        videoCallButton2.alpha = 0
+
         let audioCallButton = UIButton(frame: self.audioCallButtonContainer.bounds)
         audioCallButton.boundInside(container: self.audioCallButtonContainer)
         audioCallButton.setImage(UIImage(named: "audio", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
@@ -170,6 +300,16 @@ class DGStreamDetailViewController: UIViewController {
         self.audioCallButtonContainer.layer.borderWidth = 1
         self.audioCallButtonContainer.layer.cornerRadius = self.audioCallButtonContainer.bounds.size.width / 2
         
+        audioCallButton2.setImage(UIImage(named: "audio", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
+        audioCallButton2.backgroundColor = .orange
+        audioCallButton2.tintColor = UIColor.dgBlack()
+        audioCallButton2.addTarget(self, action: #selector(audioCallButtonTapped), for: .touchUpInside)
+        audioCallButton2.clipsToBounds = true
+        audioCallButton2.layer.borderColor = UIColor.dgBlack().cgColor
+        audioCallButton2.layer.borderWidth = 0.5
+        audioCallButton2.layer.cornerRadius = audioCallButton2.bounds.size.width / 2
+        audioCallButton2.alpha = 0
+        
         let messageButton = UIButton(frame: self.messageButtonContainer.bounds)
         messageButton.boundInside(container: self.messageButtonContainer)
         messageButton.setImage(UIImage(named: "message", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
@@ -180,6 +320,40 @@ class DGStreamDetailViewController: UIViewController {
         self.messageButtonContainer.layer.borderColor = UIColor.dgBlack().cgColor
         self.messageButtonContainer.layer.borderWidth = 1
         self.messageButtonContainer.layer.cornerRadius = self.messageButtonContainer.bounds.size.width / 2
+        
+        messageButton2.setImage(UIImage(named: "message", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
+        messageButton2.backgroundColor = .orange
+        messageButton2.tintColor = UIColor.dgBlack()
+        messageButton2.addTarget(self, action: #selector(messageButtonTapped), for: .touchUpInside)
+        messageButton2.clipsToBounds = true
+        messageButton2.layer.borderColor = UIColor.dgBlack().cgColor
+        messageButton2.layer.borderWidth = 0.5
+        messageButton2.layer.cornerRadius = messageButton2.bounds.size.width / 2
+        messageButton2.alpha = 0
+        
+        if Display.phone && Display.typeIsLike != .iphone6plus && Display.typeIsLike != .iphone7plus{
+            let wh: CGFloat = 70
+            self.videoButtonContainerHeight.constant = wh
+            self.videoButtonContainerWidth.constant = wh
+            self.audioButtonContainerWidth.constant = wh
+            self.audioButtonContainerHeight.constant = wh
+            self.messageButtonContainerWidth.constant = wh
+            self.messageButtonContainerHeight.constant = wh
+            
+            let font = UIFont(name: "HelveticaNeue-Bold", size: 14)
+            self.videoCallLabel.font = font
+            self.audioCallLabel.font = font
+            self.messageLabel.font = font
+            
+            let orientation = UIDevice.current.orientation
+            if orientation == .landscapeRight || orientation == .landscapeLeft {
+                self.collectionViewBottomConstraint.constant = 10
+            }
+            else {
+                self.collectionViewBottomConstraint.constant = 134
+            }
+        }
+        
     }
     
     func load(user: DGStreamUser) {
@@ -221,6 +395,7 @@ class DGStreamDetailViewController: UIViewController {
         self.messageButtonContainer.alpha = 1
         self.messageLabel.alpha = 1
         
+        
         if DGStreamCore.instance.isFavorite(userID: userID) {
             self.favoriteButton.tintColor = .orange
         }
@@ -247,7 +422,15 @@ class DGStreamDetailViewController: UIViewController {
     
     
     @IBAction func menuButtonTapped(_ sender: Any) {
-        if let split = self.splitViewController {
+        if Display.phone, let nav = self.navigationController {
+            if let tabVC = nav.viewControllers[0] as? DGStreamTabBarViewController {
+                UIView.animate(withDuration: 0.10) {
+                    tabVC.tabBar.alpha = 1
+                }
+            }
+            nav.popViewController(animated: true)
+        }
+        else if let split = self.splitViewController {
             if split.displayMode == .primaryHidden {
                 split.preferredDisplayMode = .allVisible
             }
@@ -374,7 +557,7 @@ extension DGStreamDetailViewController: UITabBarDelegate {
         if item.tag == 0 {
             
         }
-        else {
+        else if item.tag == 1 {
             let alert = UIAlertController(title: "Choose Option", message: nil, preferredStyle: .actionSheet)
             alert.addAction(UIAlertAction(title: "Video", style: .default, handler: { (action: UIAlertAction) in
                 let imagePicker = UIImagePickerController()
@@ -405,9 +588,13 @@ extension DGStreamDetailViewController: UITabBarDelegate {
                     self.collectionView.reloadData()
                 }
             }))
+            
             alert.popoverPresentationController?.sourceView = self.view
-            alert.popoverPresentationController?.sourceRect = CGRect(x: self.view.bounds.size.width - 80, y: self.tabBar.frame.y, width: 44, height: 44)
+            alert.popoverPresentationController?.sourceRect = CGRect(x: self.view.bounds.size.width / 2, y: self.tabBar.frame.y, width: 1, height: 1)
             self.present(alert, animated: true, completion: nil)
+        }
+        else {
+            mediaButtonTapped()
         }
     }
 }
@@ -495,6 +682,11 @@ extension DGStreamDetailViewController: UIImagePickerControllerDelegate, UINavig
         
         defer {
             picker.dismiss(animated: true)
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.10) {
+                self.mediaButtonTapped()
+            }
+            
         }
         
         if picker.view.tag == 99 {
@@ -507,8 +699,8 @@ extension DGStreamDetailViewController: UIImagePickerControllerDelegate, UINavig
                 
                 let recordingTitle = UUID().uuidString.components(separatedBy: "-").first!
                 
-                var recordingURL = DGStreamFileManager.applicationDocumentsDirectory()
-                recordingURL.appendPathComponent("\(recordingTitle)")
+                var recordingURL = DGStreamFileManager.createPathFor(mediaType: .video, fileName: recordingTitle)!
+                recordingURL.deletePathExtension()
                 recordingURL.appendPathExtension("mov")
                 
                 do {
@@ -619,9 +811,7 @@ extension DGStreamDetailViewController: UIImagePickerControllerDelegate, UINavig
                 DGStreamManager.instance.dataStore.streamManager(DGStreamManager.instance, store: recording, into: recordingCollection)
             }
             
-            var path = DGStreamFileManager.applicationDocumentsDirectory()
-            path.appendPathComponent(recordingTitle)
-            path.appendPathExtension("jpeg")
+            let path = DGStreamFileManager.createPathFor(mediaType: .photo, fileName: recordingTitle)!
             
             if let data = UIImageJPEGRepresentation(image, 1.0),
                 !FileManager.default.fileExists(atPath: path.path) {

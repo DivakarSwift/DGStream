@@ -256,6 +256,15 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
 //                self.animateInitialViews()
 //            })
 //        }
+        DGStreamCore.instance.presentedViewController = self
+        if let alertString = DGStreamFileManager.checkForNewMedia() {
+            
+            let alert = UIAlertController(title: "New Media", message: alertString, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .cancel, handler: { (action: UIAlertAction) in
+                alert.dismiss(animated: true, completion: nil)
+            }))
+            self.present(alert, animated: true, completion: nil)
+        }
     
     }
     
@@ -609,7 +618,7 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
     }
     
     func acceptCallWith(session: QBRTCSession) {
-        if let callVC = UIStoryboard(name: "Call", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamCallViewController, let chatVC = UIStoryboard.init(name: "Chat", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamChatViewController {
+        if let presented = DGStreamCore.instance.presentedViewController, let presenting = presented.presentingViewController, let callVC = UIStoryboard(name: "Call", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamCallViewController, let chatVC = UIStoryboard.init(name: "Chat", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamChatViewController {
             
             let otherUserID = session.initiatorID
             
@@ -634,8 +643,10 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
             }
             
             DGStreamCore.instance.audioPlayer.ringFor(receiver: false)
-            self.navigationController?.popToViewController(self, animated: false)
-            self.navigationController?.pushViewController(callVC, animated: false)
+            
+            presented.dismiss(animated: false, completion: nil)
+            presenting.present(callVC, animated: false, completion: nil)
+            
         }
     }
     
@@ -969,9 +980,9 @@ extension DGStreamTabBarViewController: UICollectionViewDelegate, UICollectionVi
             }
             self.selectedRows.removeAll()
         }
-        else if Display.typeIsLike == .iphone6plus || Display.typeIsLike == .iphone7plus {
-            
-        }
+//        else if Display.typeIsLike == .iphone6plus || Display.typeIsLike == .iphone7plus {
+//
+//        }
         else {
             switch selectedItem {
             case .recents:
@@ -1187,16 +1198,33 @@ extension DGStreamTabBarViewController: DGStreamTableViewCellDelegate {
         }
     }
     func userButtonTapped(userID:NSNumber) {
-        if let userVC = UIStoryboard(name: "User", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamUserViewController {
-            userVC.user = DGStreamCore.instance.getOtherUserWith(userID: userID)!
-            userVC.delegate = self
-            if let nav = self.navigationController {
-                nav.pushViewController(userVC, animated: true)
-            }
-            else {
-                self.present(userVC, animated: true, completion: nil)
-            }
+        
+        guard let nav = self.navigationController as? DGStreamNavigationController else {
+            return
         }
+        
+        guard let user = DGStreamCore.instance.getOtherUserWith(userID: userID) else {
+            return
+        }
+        
+        UIView.animate(withDuration: 0.10) {
+            self.tabBar.alpha = 0
+        }
+        
+        nav.loadDetailFor(user: user)
+//
+//        split.showDetail()
+        
+//        if let userVC = UIStoryboard(name: "User", bundle: Bundle(identifier: "com.dataglance.DGStream")).instantiateInitialViewController() as? DGStreamUserViewController {
+//            userVC.user = DGStreamCore.instance.getOtherUserWith(userID: userID)!
+//            userVC.delegate = self
+//            if let nav = self.navigationController {
+//                nav.pushViewController(userVC, animated: true)
+//            }
+//            else {
+//                self.present(userVC, animated: true, completion: nil)
+//            }
+//        }
     }
     func accessoryButtonTapped(userID: NSNumber) {
         self.userButtonTapped(userID: userID)
@@ -1235,6 +1263,7 @@ extension DGStreamTabBarViewController: DGStreamUserViewControllerDelegate {
             chatVC.view.alpha = 1
             chatVC.chatConversation = conversation
             chatVC.isInCall = false
+            chatVC.delegate = self
             self.present(chatVC, animated: true, completion: nil)
         }
     }
@@ -1257,7 +1286,23 @@ extension DGStreamTabBarViewController: DGStreamContactsDropDownViewControllerDe
     }
 }
 
-extension DGStreamTabBarViewController: UIPopoverPresentationControllerDelegate {
+extension DGStreamTabBarViewController: UIPopoverPresentationControllerDelegate, DGStreamChatViewControllerDelegate {
+    func chat(viewController: DGStreamChatViewController, backButtonTapped sender: Any?) {
+        
+    }
+    
+    func chat(viewController: DGStreamChatViewController, tapped image: UIImage) {
+        
+    }
+    
+    func chat(viewController: DGStreamChatViewController, didReceiveMessage message: DGStreamMessage) {
+        
+    }
+    
+    func chatViewControllerDidFinishTakingPicture() {
+        
+    }
+    
     func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
         return .none
     }

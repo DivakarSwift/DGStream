@@ -16,6 +16,7 @@ protocol DGStreamTableViewCellDelegate {
 
 class DGStreamContactsTableViewCell: UICollectionViewCell {
 
+    @IBOutlet weak var infoButton: UIButton!
     @IBOutlet weak var abrevLabel: UILabel!
     @IBOutlet weak var userImageView: UIImageView!
     @IBOutlet weak var nameLabel: UILabel!
@@ -35,6 +36,10 @@ class DGStreamContactsTableViewCell: UICollectionViewCell {
         self.userImageView.layer.cornerRadius = self.userImageView.frame.size.width / 2
         self.userImageView.layer.borderColor = UIColor.clear.cgColor
         self.userImageView.layer.borderWidth = 3
+        
+        if Display.pad {
+            self.infoButton.isHidden = true
+        }
         
 //        let accessoryImage = UIImage(named: "info", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)
 //        self.accessoryButton.setImage(accessoryImage?.withRenderingMode(.alwaysTemplate), for: .normal)
@@ -202,6 +207,10 @@ class DGStreamContactsTableViewCell: UICollectionViewCell {
     }
     
     @IBAction func accessoryButtonTapped(_ sender: Any) {
+        self.delegate.userButtonTapped(userID: self.contact.userID ?? 0)
+    }
+    
+    @IBAction func infoButtonTapped(_ sender: Any) {
         self.delegate.userButtonTapped(userID: self.contact.userID ?? 0)
     }
     

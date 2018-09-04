@@ -8,6 +8,12 @@
 
 import UIKit
 
+enum MMMediaType:String {
+    case photo = "Photo"
+    case video = "Video"
+    case document = "Document"
+}
+
 class DGStreamRecording: NSObject {
     
     var documentNumber: String?
@@ -17,6 +23,7 @@ class DGStreamRecording: NSObject {
     var url: String?
     var thumbnail: Data?
     var isPhoto:Bool = false
+    var isDocument:Bool = false
     
     class func createDGStreamRecordingsFor(protocols: [DGStreamRecordingProtocol]) -> [DGStreamRecording] {
         var recordings:[DGStreamRecording] = []
@@ -29,6 +36,7 @@ class DGStreamRecording: NSObject {
             record.title = proto.dgTitle
             record.url = proto.dgURL
             record.isPhoto = proto.dgIsPhoto
+            record.isDocument = proto.dgIsDocument
             recordings.append(record)
         }
         return recordings
@@ -37,6 +45,7 @@ class DGStreamRecording: NSObject {
 }
 
 extension DGStreamRecording: DGStreamRecordingProtocol {
+    
     var dgDocumentNumber: String {
         get {
             return self.documentNumber ?? ""
@@ -97,6 +106,15 @@ extension DGStreamRecording: DGStreamRecordingProtocol {
         }
         set {
             self.createdBy = self.dgCreatedBy
+        }
+    }
+    
+    var dgIsDocument: Bool {
+        get {
+            return self.isDocument
+        }
+        set {
+            self.isDocument = self.dgIsDocument
         }
     }
     

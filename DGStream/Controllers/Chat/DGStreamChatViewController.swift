@@ -218,7 +218,7 @@ class DGStreamChatViewController: UIViewController {
             delegate.chat(viewController: self, backButtonTapped: sender)
         }
         else {
-            self.navigationController?.popViewController(animated: true)
+            self.dismiss(animated: true, completion: nil)
         }
     }
     
