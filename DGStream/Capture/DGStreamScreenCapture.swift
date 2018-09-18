@@ -25,12 +25,11 @@ class DGStreamScreenCapture: QBRTCVideoCapture {
     var delegate: WhateverProtocol?
     var isIpad = false
     var didAlert = false
-    var remoteScreenSize: CGSize!
+    var isEnabled = false
 
-    init(view: UIView, remoteScreenSize: CGSize) {
+    init(view: UIView) {
         super.init()
         self.view = view
-        self.remoteScreenSize = remoteScreenSize
         if Display.pad {
             isIpad = true
         }
@@ -127,6 +126,10 @@ class DGStreamScreenCapture: QBRTCVideoCapture {
     }
     
     func sendPixelBuffer(sender: CADisplayLink) {
+        
+        if self.isEnabled == false {
+            return
+        }
         
         self.videoQueue.sync {
             

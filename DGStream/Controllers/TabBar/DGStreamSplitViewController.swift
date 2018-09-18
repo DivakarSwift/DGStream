@@ -20,8 +20,8 @@ class DGStreamSplitViewController: UISplitViewController {
 //            storyboardName = "DetailPhone"
 //        }
         
-        self.maximumPrimaryColumnWidth = 380
-        self.minimumPrimaryColumnWidth = 320
+        self.maximumPrimaryColumnWidth = 375
+        self.minimumPrimaryColumnWidth = 375
         
         self.showDetail()
         

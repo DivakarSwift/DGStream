@@ -295,7 +295,7 @@ public class DGStreamCallViewController: UIViewController {
     var remoteScreenSize:CGSize?
     
     let colors:[UIColor] = [.black, .white, .gray, .red, .blue, .green, .yellow, .brown, .purple]
-    let mergeOptionColors:[UIColor] = [.green, .blue, .red, .white, .black]
+    let mergeOptionColors:[UIColor] = [.green, .blue, .red, .yellow, .black]
     let sizes:[Int] = [8, 12, 16, 20, 24, 28, 32, 36, 40]
     
     var selectedIntensity: Float = 0.525
@@ -315,6 +315,11 @@ public class DGStreamCallViewController: UIViewController {
             //        let localVideoTap = UITapGestureRecognizer(target: self, action: #selector(localVideoTapped))
             //        localVideoTap.delegate = self
             //        self.localVideoViewContainer.addGestureRecognizer(localVideoTap)
+            
+            
+            self.localVideoCapture = DGStreamLocalVideoCapture()
+            self.screenCapture = DGStreamScreenCapture(view: self.remoteVideoViewContainer)
+            self.screenCapture?.delegate = self
             
             self.blackoutView.backgroundColor = UIColor.dgBlueDark()
             
@@ -482,45 +487,12 @@ public class DGStreamCallViewController: UIViewController {
         super.viewDidAppear(animated)
         DGStreamCore.instance.presentedViewController = self
         if shouldLoadData {
-            
-//            if !self.isInitiator, let session = self.session {
-//
-//                if let _ = self.videoViewWith(userID: self.selectedUser) {
-//                    self.videoViews.removeValue(forKey: self.selectedUser.uintValue)
-//                }
-//
-//                let qbVideoView = QBRTCRemoteVideoView(frame: self.remoteVideoViewContainer.bounds)
-//                qbVideoView.setVideoTrack(session.remoteVideoTrack(withUserID: self.selectedUser))
-//                qbVideoView.videoGravity = AVLayerVideoGravityResizeAspect
-//
-//                self.videoViews[self.selectedUser.uintValue] = qbVideoView
-//
-//                if selectedUser.uintValue == self.selectedUser.uintValue {
-//                    let exists = self.remoteVideoViewContainer.subviews.filter({ (subview) -> Bool in
-//                        return subview is QBRTCRemoteVideoView
-//                    }).first
-//                    if exists == nil {
-//                        qbVideoView.boundInside(container: self.remoteVideoViewContainer)
-//                    }
-//                }
-//
-//                qbVideoView.setSize(self.remoteVideoViewContainer.bounds.size)
-//            }
-            
             self.remoteVideoViewContainer.bringSubview(toFront: self.hangUpButton)
             self.remoteVideoViewContainer.bringSubview(toFront: self.mergeButton)
             self.remoteVideoViewContainer.bringSubview(toFront: self.drawButton)
             self.remoteVideoViewContainer.bringSubview(toFront: self.statusBar)
-            
-            
-            //self.setUpLocalVideoViewIn(container: self.localVideoViewContainer, isFront: true, isChromaKey: false)
-            
-            print("VIEW WILL APPEAR")
-            
         }
-        
         self.shouldLoadData = false
-        
     }
     
     override public func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -529,20 +501,7 @@ public class DGStreamCallViewController: UIViewController {
             vc.isShare = true
             vc.delegate = self
         }
-        
-//        if segue.identifier == "Recording", let nav = segue.destination as? UINavigationController, let recordingsVC = nav.viewControllers[0] as? DGStreamRecordingCollectionsViewController {
-//            recordingsVC.delegate = self
-//            nav.preferredContentSize = CGSize(width: 280, height: 300)
-//            nav.modalPresentationStyle = .popover
-//            nav.popoverPresentationController?.delegate = self
-//            nav.isModalInPopover = false
-//            if sender != nil {
-//                recordingsVC.isPhotos = true
-//            }
-//            self.popover = nav
-//        }
-        
-        if segue.identifier == "documents", let documentsVC = segue.destination as? DGStreamDocumentsViewController {
+        else if segue.identifier == "documents", let documentsVC = segue.destination as? DGStreamDocumentsViewController {
             documentsVC.delegate = self
             documentsVC.preferredContentSize = CGSize(width: 200, height: 150)
             documentsVC.modalPresentationStyle = .popover
@@ -550,8 +509,7 @@ public class DGStreamCallViewController: UIViewController {
             documentsVC.isModalInPopover = false
             self.popover = documentsVC
         }
-        
-        if segue.identifier == "shareSelect", let shareSelect = segue.destination as? DGStreamCallShareSelectViewController {
+        else if segue.identifier == "shareSelect", let shareSelect = segue.destination as? DGStreamCallShareSelectViewController {
             shareSelect.delegate = self
             shareSelect.preferredContentSize = CGSize(width: 200, height: 150)
             shareSelect.modalPresentationStyle = .popover
@@ -559,8 +517,7 @@ public class DGStreamCallViewController: UIViewController {
             shareSelect.isModalInPopover = false
             self.popover = shareSelect
         }
-        
-        if segue.identifier == "stamps", let stampsVC = segue.destination as? DGStreamCallStampsViewController {
+        else if segue.identifier == "stamps", let stampsVC = segue.destination as? DGStreamCallStampsViewController {
             stampsVC.preferredContentSize = CGSize(width: 280, height: 244)
             stampsVC.delegate = self
             stampsVC.selectedColor = self.drawColor
@@ -569,8 +526,7 @@ public class DGStreamCallViewController: UIViewController {
             stampsVC.isModalInPopover = false
             self.popover = stampsVC
         }
-        
-        if segue.identifier == "mergeColor", let colorVC = segue.destination as? DGStreamCallColorViewController {
+        else if segue.identifier == "mergeColor", let colorVC = segue.destination as? DGStreamCallColorViewController {
             colorVC.preferredContentSize = CGSize(width: 280, height: 44)
             colorVC.selectedColor = self.mergeOptionColor
             colorVC.selectedIntensity = self.mergeOptionIntensity
@@ -580,8 +536,7 @@ public class DGStreamCallViewController: UIViewController {
             colorVC.delegate = self
             self.popover = colorVC
         }
-        
-        if segue.identifier == "mergeIntensity", let intensityVC = segue.destination as? DGStreamMergeIntensityViewController {
+        else if segue.identifier == "mergeIntensity", let intensityVC = segue.destination as? DGStreamMergeIntensityViewController {
             intensityVC.preferredContentSize = CGSize(width: 280, height: 44)
             intensityVC.mergeColor = self.mergeOptionColor
             intensityVC.intensity = self.mergeOptionIntensity
@@ -591,8 +546,7 @@ public class DGStreamCallViewController: UIViewController {
             intensityVC.delegate = self
             self.popover = intensityVC
         }
-        
-        if segue.identifier == "image", let image = sender as? UIImage, let imageVC = segue.destination as? DGStreamCallImageViewController {
+        else if segue.identifier == "image", let image = sender as? UIImage, let imageVC = segue.destination as? DGStreamCallImageViewController {
             imageVC.image = image
         }
     }
@@ -641,7 +595,6 @@ public class DGStreamCallViewController: UIViewController {
                 lv.adjust(orientation: UIDevice.current.orientation, newSize: self.remoteVideoViewContainer.bounds.size)
             }
         }
-        
     }
     
     func setUpDrawView() {
@@ -676,19 +629,20 @@ public class DGStreamCallViewController: UIViewController {
     }
     
     func setUpLocalVideoViewIn(container: UIView, isFront: Bool, isChromaKey: Bool) {
-        if let lv = self.localBroadcastView {
-            lv.deconfigure()
-            lv.removeFromSuperview()
-            self.localBroadcastView = nil
+
+        if self.localBroadcastView == nil {
+            self.localBroadcastView = DGStreamLocalVideoView(frame: self.remoteVideoViewContainer.frame)
         }
-        self.localBroadcastView = DGStreamLocalVideoView(frame: self.remoteVideoViewContainer.frame)
-        self.localBroadcastView!.configureWith(orientation: UIDevice.current.orientation, isFront: isFront, isChromaKey: isChromaKey, removeColor: self.mergeOptionColor, removeIntensity: self.getTrue(intensity: self.mergeOptionIntensity, for: self.mergeOptionColor), delegate: self)
+        self.localBroadcastView?.tag = 222
+        self.localBroadcastView?.configureWith(orientation: UIDevice.current.orientation, isFront: isFront, isChromaKey: isChromaKey, removeColor: self.mergeOptionColor, removeIntensity: self.getTrue(intensity: self.mergeOptionIntensity, for: self.mergeOptionColor), delegate: self)
+
         self.localBroadcastView?.boundInside(container: container)
         self.localBroadcastView?.alpha = 1.0
         if isChromaKey {
-            self.localVideoCapture = nil
-            self.screenCapture = DGStreamScreenCapture(view: self.remoteVideoViewContainer, remoteScreenSize: self.remoteScreenSize!)
-            self.screenCapture?.delegate = self
+//            self.localVideoCapture = nil
+            self.localVideoCapture?.isEnabled = false
+            self.screenCapture?.isEnabled = true
+            self.screenCapture?.view = self.remoteVideoViewContainer
             self.session?.localMediaStream.videoTrack.videoCapture = self.screenCapture
             if self.mergeOptionColor == .black {
                 self.localBroadcastView?.alpha = 0.5
@@ -698,8 +652,8 @@ public class DGStreamCallViewController: UIViewController {
             }
         }
         else {
-            self.screenCapture = nil
-            self.localVideoCapture = DGStreamLocalVideoCapture(view: container)
+            self.screenCapture?.isEnabled = false
+            self.localVideoCapture?.isEnabled = true
             self.session?.localMediaStream.videoTrack.videoCapture = self.localVideoCapture
             self.localBroadcastView?.stopChromaKey()
         }
@@ -1317,6 +1271,7 @@ public class DGStreamCallViewController: UIViewController {
             if let remoteVideoTrack = session?.remoteVideoTrack(withUserID: userID) {
                 if result == nil {
                     remoteVideoView = QBRTCRemoteVideoView(frame: CGRect(x: 2, y: 2, width: 2, height: 2))
+                    remoteVideoView?.tag = 998
                     remoteVideoView?.videoGravity = AVLayerVideoGravityResizeAspect
                     self.videoViews[userID.uintValue] = remoteVideoView
                     result = remoteVideoView
@@ -1999,43 +1954,24 @@ public class DGStreamCallViewController: UIViewController {
         }
     }
     
-    @IBAction func colorBlackButtonTapped(_ sender: Any) {
-    }
-    
-    @IBAction func colorWhiteButtonTapped(_ sender: Any) {
-    }
-    
-    @IBAction func colorRedButtonTapped(_ sender: Any) {
-    }
-    
-    @IBAction func sizeSmallButtonTapped(_ sender: Any) {
-    }
-    
-    @IBAction func sizeMediumButtonTapped(_ sender: Any) {
-    }
-    
-    @IBAction func sizeLargeButtonTapped(_ sender: Any) {
-    }
-    
     @IBAction func stampsButtonTapped(_ sender: Any) {
         self.performSegue(withIdentifier: "stamps", sender: nil)
     }
     
     @IBAction func undoButtonTapped(_ sender: Any) {
         self.getLastUndo()
-//        let undoMessage = QBChatMessage()
-//        undoMessage.text = "undo"
-//        undoMessage.senderID = DGStreamCore.instance.currentUser?.userID?.uintValue ?? 0
-//        undoMessage.recipientID = self.selectedUser.uintValue
-//        undoMessage.customParameters = ["undoID":"\(undoID)"]
-//        QBChat.instance.sendSystemMessage(undoMessage, completion: { (error) in
-//            print("Sent Undo Message With \(error?.localizedDescription ?? "No Error")")
-//        })
     }
     
     @IBAction func clearAllButtonTapped(_ sender: Any) {
+        
         self.clearDrawings()
         self.clearRemoteDrawings()
+        
+        self.undoImage1 = nil
+        self.undoImage2 = nil
+        
+        self.undoButton.isEnabled = false
+        self.clearAllButton.isEnabled = false
         
         self.drawOperationQueue.increment += 1
         let clearID = self.drawOperationQueue.increment
@@ -2172,6 +2108,7 @@ public class DGStreamCallViewController: UIViewController {
     }
     
     func startRecordingTimer() {
+        // This seems like it should not be so, but this is what was requested...
         self.showControls()
         if let timer = self.controlTimer {
             timer.invalidate()
@@ -2273,6 +2210,8 @@ public class DGStreamCallViewController: UIViewController {
     func perspectiveAccepted() {
         // As accepted by other user
         //self.returnToStreamMode(hideModeButtons: false)
+        self.alertView?.dismiss()
+        self.alertView = nil
         self.isCurrentUserPerspective = true
         self.start(mode: .perspective)
     }
@@ -2413,7 +2352,6 @@ public class DGStreamCallViewController: UIViewController {
     
     @IBAction func hangUpButtonTapped(_ sender: Any) {
         self.session?.hangUp(["hangup" : "hang up"])
-        self.session = nil
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.20) {
             self.closeOut()
         }
@@ -2448,9 +2386,13 @@ public class DGStreamCallViewController: UIViewController {
             self.isRecording = false
         }
         if self.session?.state == .closed {
-//            self.session?.hangUp(["hangup" : "hang up"])
-//            self.session = nil
+            self.session?.hangUp(["hangup" : "hang up"])
+            self.session = nil
         }
+        
+        self.screenCapture = nil
+        self.localVideoCapture = nil
+        
         if let tab = self.navigationController?.viewControllers.first {
             DGStreamCore.instance.presentedViewController = nil
             DGStreamCore.instance.presentedViewController = tab
@@ -2815,7 +2757,6 @@ public class DGStreamCallViewController: UIViewController {
         DispatchQueue.main.async {
             
             self.dismissPopover()
-            
             if self.drawingUsers.contains(DGStreamCore.instance.currentUser?.userID ?? 0) {
                 self.drawEndWith(userID: DGStreamCore.instance.currentUser?.userID ?? 0)
             }
@@ -2833,9 +2774,9 @@ public class DGStreamCallViewController: UIViewController {
                     self.enableMergeButtons()
                     self.showOptions()
                 }
-            }
-            else if let recordingView = self.recordingView {
-                recordingView.alpha = 0
+                else if let recordingView = self.recordingView {
+                    recordingView.alpha = 0
+                }
             }
             
             if self.isFrozen {
@@ -2852,7 +2793,7 @@ public class DGStreamCallViewController: UIViewController {
                 self.alertRequestWaitingView = nil
             }
             
-            print("\n\nStart Merge For Helper\n\n")
+            print("\n\nStart Merge\n\n")
                         
             self.statusBarBackButton.setTitle(NSLocalizedString("Cancel", comment: "Stop action"), for: .normal)
             
@@ -2948,7 +2889,7 @@ public class DGStreamCallViewController: UIViewController {
     
     func endMerge(forPerspective: Bool) {
         self.localBroadcastView?.stopChromaKey()
-        self.screenCapture = nil
+        self.screenCapture?.isEnabled = false
         if self.isMergeHelper {
             self.localBroadcastView?.boundInside(container: self.localVideoViewContainer)
         }
@@ -2959,6 +2900,7 @@ public class DGStreamCallViewController: UIViewController {
         if forPerspective {
             if self.isCurrentUserPerspective {
                 self.setUpLocalVideoViewIn(container: self.remoteVideoViewContainer, isFront: false, isChromaKey: false)
+                self.localBroadcastView?.alpha = 1
                 self.localBroadcastView?.isHidden = false
             }
             else {
@@ -2968,6 +2910,8 @@ public class DGStreamCallViewController: UIViewController {
         }
         else {
             self.setUpLocalVideoViewIn(container: self.localVideoViewContainer, isFront: true, isChromaKey: false)
+            self.localBroadcastView?.alpha = 1
+            self.localBroadcastView?.isHidden = false
         }
         
         if !self.isSharing || !self.isSharingVideo || !self.isBeingSharedWith || !self.isBeingSharedWithVideo {
@@ -2983,10 +2927,9 @@ public class DGStreamCallViewController: UIViewController {
     
     func returnToStreamMode(hideModeButtons: Bool) {
         
-        if self.screenCapture != nil {
-            self.screenCapture = nil
-            self.session?.localMediaStream.videoTrack.videoCapture = self.localVideoCapture
-        }
+        self.screenCapture?.isEnabled = false
+        self.localVideoCapture?.isEnabled = true
+        self.session?.localMediaStream.videoTrack.videoCapture = self.localVideoCapture
         
         DGStreamCore.instance.audioPlayer.stopAllSounds()
         
@@ -3002,6 +2945,9 @@ public class DGStreamCallViewController: UIViewController {
         if self.drawingUsers.contains(self.selectedUser) {
             self.drawEndWith(userID: self.selectedUser)
         }
+        
+        self.localBroadcastView?.alpha = 1
+        self.localBroadcastView?.isHidden = false
         
         self.hideOptions(animated: false)
         
@@ -3928,7 +3874,8 @@ extension DGStreamCallViewController {
             }
             
             // Update Buttons
-            self.freezeButton.isEnabled = true
+            self.freezeButton.isEnabled = false
+            self.drawButton.isEnabled = false
             UIView.animate(withDuration: 0.18) {
                 self.whiteBoardButton.tintColor = UIColor.dgBlueDark()
                 self.whiteBoardButtonLabel.textColor = UIColor.dgBlueDark()
@@ -4058,6 +4005,9 @@ extension DGStreamCallViewController: QBRTCClientDelegate {
     }
     
     public func session(_ session: QBRTCBaseSession, receivedRemoteVideoTrack videoTrack: QBRTCVideoTrack, fromUser userID: NSNumber) {
+        
+        print("\n\nReceived Remote Video Track")
+        
         if session == self.session {
             if let _ = self.videoViewWith(userID: userID) {
                 self.videoViews.removeValue(forKey: userID.uintValue)
@@ -4065,6 +4015,7 @@ extension DGStreamCallViewController: QBRTCClientDelegate {
             let qbVideoView = QBRTCRemoteVideoView(frame: self.remoteVideoViewContainer.bounds)
             qbVideoView.setVideoTrack(videoTrack)
             qbVideoView.videoGravity = AVLayerVideoGravityResizeAspect
+            qbVideoView.tag = 999
             self.videoViews[userID.uintValue] = qbVideoView
             if selectedUser.uintValue == userID.uintValue {
                 let exists = self.remoteVideoViewContainer.subviews.filter({ (subview) -> Bool in
@@ -4240,7 +4191,8 @@ extension DGStreamCallViewController: DGStreamCallColorViewControllerDelegate, D
     func mergeColorSelected(color: UIColor) {
         self.mergeOptionColor = color
         self.mergeColorButton.tintColor = color
-        self.setUpLocalVideoViewIn(container: self.remoteVideoViewContainer, isFront: false, isChromaKey: true)
+        //self.setUpLocalVideoViewIn(container: self.remoteVideoViewContainer, isFront: false, isChromaKey: true)
+        self.localBroadcastView?.adjust(color: color)
     }
     
     func colorSelected(color: UIColor) {
@@ -4601,6 +4553,9 @@ extension DGStreamCallViewController: DGStreamCallShareSelectViewControllerDeleg
         self.shareButton.setTitleColor(UIColor.dgMergeMode(), for: .normal)
         self.shareButtonLabel.textColor = UIColor.dgMergeMode()
         self.statusBar.backgroundColor = UIColor.dgMergeMode()
+        
+        self.drawButton.isEnabled = true
+        self.freezeButton.isEnabled = true
 
         self.orderDrawViews()
         
@@ -4617,7 +4572,14 @@ extension DGStreamCallViewController: DGStreamCallShareSelectViewControllerDeleg
         }
         
         if self.callMode == .stream {
-
+            
+            self.drawButton.isEnabled = false
+            self.drawButton.backgroundColor = .clear
+            self.drawButton.tintColor = .white
+            
+            self.freezeButton.isEnabled = false
+            self.freezeButton.backgroundColor = .clear
+            self.freezeButton.tintColor = .white
         }
         
         self.shareButtonContainer.layer.borderColor = UIColor.dgBlueDark().cgColor

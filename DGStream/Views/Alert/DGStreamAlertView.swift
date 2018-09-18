@@ -224,7 +224,7 @@ class DGStreamAlertView: UIView {
                 self.cancelButton.isHidden = true
             }
             
-            let acceptImage = UIImage(named: "scratchpad", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate)
+            let acceptImage = UIImage(named: "eye", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate)
             let declineImage = UIImage(named: "hangup", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate)
             
             self.acceptButton.setImage(acceptImage, for: .normal)

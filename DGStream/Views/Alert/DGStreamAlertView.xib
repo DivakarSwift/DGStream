@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="13771" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="14113" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina4_7" orientation="portrait">
         <adaptation id="fullscreen"/>
     </device>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="13772"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="14088"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
@@ -99,7 +99,7 @@
                             </constraints>
                         </view>
                         <imageView hidden="YES" clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="8fH-Tg-VKj">
-                            <rect key="frame" x="12" y="32" width="40" height="40"/>
+                            <rect key="frame" x="92" y="32" width="40" height="40"/>
                             <color key="backgroundColor" red="1" green="1" blue="1" alpha="0.0" colorSpace="calibratedRGB"/>
                             <constraints>
                                 <constraint firstAttribute="width" constant="40" id="pcm-uD-1Lc"/>
@@ -107,9 +107,9 @@
                             </constraints>
                         </imageView>
                         <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="R1V-fh-kln">
-                            <rect key="frame" x="64" y="41" width="152" height="22"/>
+                            <rect key="frame" x="140" y="41" width="0.0" height="22"/>
                             <constraints>
-                                <constraint firstAttribute="width" constant="152" id="HWr-eZ-4Ue"/>
+                                <constraint firstAttribute="width" relation="lessThanOrEqual" constant="174" id="1Vm-Ns-aDV"/>
                                 <constraint firstAttribute="height" constant="22" id="HhO-eZ-v9V"/>
                             </constraints>
                             <fontDescription key="fontDescription" name="HelveticaNeue-Bold" family="Helvetica Neue" pointSize="20"/>
@@ -133,8 +133,8 @@
                         <constraint firstAttribute="trailing" secondItem="BPx-wy-oRp" secondAttribute="trailing" id="5ks-iR-izP"/>
                         <constraint firstItem="e3K-R4-yjr" firstAttribute="top" secondItem="R1V-fh-kln" secondAttribute="bottom" constant="8" id="5q1-zF-pRU"/>
                         <constraint firstItem="8fH-Tg-VKj" firstAttribute="top" secondItem="BPx-wy-oRp" secondAttribute="bottom" constant="12" id="CNS-vd-ezr"/>
-                        <constraint firstItem="8fH-Tg-VKj" firstAttribute="leading" secondItem="HGb-0Y-tW2" secondAttribute="leading" constant="12" id="Fyx-Tx-efz"/>
                         <constraint firstItem="R1V-fh-kln" firstAttribute="top" secondItem="BPx-wy-oRp" secondAttribute="bottom" constant="21" id="QZQ-7x-L4O"/>
+                        <constraint firstItem="R1V-fh-kln" firstAttribute="leading" secondItem="8fH-Tg-VKj" secondAttribute="trailing" constant="8" id="UmL-vP-qvu"/>
                         <constraint firstItem="R1V-fh-kln" firstAttribute="centerX" secondItem="HGb-0Y-tW2" secondAttribute="centerX" id="Xcb-st-AzN"/>
                         <constraint firstItem="ZI2-S1-ihe" firstAttribute="centerX" secondItem="HGb-0Y-tW2" secondAttribute="centerX" id="hm2-x6-Y1E"/>
                         <constraint firstAttribute="bottom" secondItem="ZI2-S1-ihe" secondAttribute="bottom" constant="12" id="qKP-I4-kjc"/>

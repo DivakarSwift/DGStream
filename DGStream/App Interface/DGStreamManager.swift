@@ -217,7 +217,7 @@ extension DGStreamManager {
 
 extension DGStreamManager: DGStreamMediaCollectionViewControllerDelegate {
     public func didLoadAnd(hasNoData: Bool) {
-        if let mediaViewController = DGStreamCore.instance.presentedViewController as? DGStreamMediaViewController{
+        if let mediaViewController = DGStreamCore.instance.mediaViewController as? DGStreamMediaViewController{
             if hasNoData {
                 mediaViewController.collectionViewContainer.isHidden = true
                 mediaViewController.selectButton.isEnabled = false
@@ -230,7 +230,7 @@ extension DGStreamManager: DGStreamMediaCollectionViewControllerDelegate {
     }
     
     public func didSelect(recording: DGStreamRecordingProtocol) {
-        if let mediaViewController = DGStreamCore.instance.presentedViewController as? DGStreamMediaViewController{
+        if let mediaViewController = DGStreamCore.instance.mediaViewController as? DGStreamMediaViewController{
             //mediaViewController.
             if let rec = DGStreamRecording.createDGStreamRecordingsFor(protocols: [recording]).first {
                 mediaViewController.didSelect(recording: rec)
@@ -238,7 +238,7 @@ extension DGStreamManager: DGStreamMediaCollectionViewControllerDelegate {
         }
     }
     public func didMakeSelection() {
-        if let mediaViewController = DGStreamCore.instance.presentedViewController as? DGStreamMediaViewController{
+        if let mediaViewController = DGStreamCore.instance.mediaViewController as? DGStreamMediaViewController{
             mediaViewController.deleteButtonItem.isEnabled = true
         }
     }

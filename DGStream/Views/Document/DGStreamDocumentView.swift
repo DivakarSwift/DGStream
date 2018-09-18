@@ -76,29 +76,29 @@ class DGStreamDocumentView: UIView {
                 
             }
             
-            NotificationCenter.default.addObserver(forName: Notification.Name.PDFViewSelectionChanged, object: nil, queue: .main) { (notification) in
-
-                if !self.shouldBroadcastPageSelection {
-                    return
-                }
-
-                guard let docView = notification.object as? PDFView, let currentSelection = docView.currentSelection, let string = currentSelection.string else {
-                    return
-                }
-
-                self.increment += 1
+//            NotificationCenter.default.addObserver(forName: Notification.Name.PDFViewSelectionChanged, object: nil, queue: .main) { (notification) in
 //
-//                print("Broadcast - Current Page Number \(currentPageNumber)")
-                let pageMessage = QBChatMessage()
-                pageMessage.text = "pageSelection"
-                pageMessage.senderID = DGStreamCore.instance.currentUser?.userID?.uintValue ?? 0
-                pageMessage.recipientID = self.recipientID.uintValue
-                pageMessage.customParameters = ["string": string, "increment": self.increment]
-                QBChat.instance.sendSystemMessage(pageMessage, completion: { (error) in
-
-                })
-                
-            }
+//                if !self.shouldBroadcastPageSelection {
+//                    return
+//                }
+//
+//                guard let docView = notification.object as? PDFView, let currentSelection = docView.currentSelection, let string = currentSelection.string else {
+//                    return
+//                }
+//
+//                self.increment += 1
+////
+////                print("Broadcast - Current Page Number \(currentPageNumber)")
+//                let pageMessage = QBChatMessage()
+//                pageMessage.text = "pageSelection"
+//                pageMessage.senderID = DGStreamCore.instance.currentUser?.userID?.uintValue ?? 0
+//                pageMessage.recipientID = self.recipientID.uintValue
+//                pageMessage.customParameters = ["string": string, "increment": self.increment]
+//                QBChat.instance.sendSystemMessage(pageMessage, completion: { (error) in
+//
+//                })
+//                
+//            }
         }
     }
     

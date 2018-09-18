@@ -47,6 +47,7 @@ class DGStreamCore: NSObject {
     var allUsers: [DGStreamUser] = []
     var lastRecent: DGStreamRecent?
     var presentedViewController: UIViewController?
+    var mediaViewController: UIViewController?
     var chatViewController: DGStreamChatViewController?
     var alertView: DGStreamAlertView?
     
@@ -873,6 +874,10 @@ extension DGStreamCore: QBChatDelegate {
                     callVC.alertView = recordingRequestView
                     
                     recordingRequestView.presentWithin(viewController: callVC, block: { (accepted) in
+                        
+                        callVC.alertView?.dismiss()
+                        callVC.alertView = nil
+                        
                         if accepted {
                             
                             // Send Merge Accepted System Message
@@ -1163,8 +1168,11 @@ extension DGStreamCore: QBChatDelegate {
                             
                             if callVC.isSharingVideo == false {
                                 callVC.isMergeHelper = true
+                                callVC.localBroadcastView?.isHidden = false
                             }
+                            
                             callVC.start(mode: .merge)
+                            callVC.alertView?.dismiss()
                             callVC.alertView = nil
                             
                             // Send Merge Accepted System Message
@@ -1212,6 +1220,8 @@ extension DGStreamCore: QBChatDelegate {
                 if callVC.isBeingSharedWithVideo {
                     callVC.isMergeHelper = true
                 }
+                callVC.alertView?.dismiss()
+                callVC.alertView = nil
                 callVC.start(mode: .merge)
             }
                 // MERGE DECLINED
@@ -1265,6 +1275,10 @@ extension DGStreamCore: QBChatDelegate {
                     callVC.alertView = perspectiveRequestView
                     
                     perspectiveRequestView.presentWithin(viewController: callVC, block: { (accepted) in
+                        
+                        callVC.alertView?.dismiss()
+                        callVC.alertView = nil
+                        
                         if accepted {
                             
                             callVC.acceptedPerspective()
@@ -1338,6 +1352,10 @@ extension DGStreamCore: QBChatDelegate {
                     callVC.alertView = whiteboardRequestView
                     
                     whiteboardRequestView.presentWithin(viewController: callVC, block: { (accepted) in
+                        
+                        callVC.alertView?.dismiss()
+                        callVC.alertView = nil
+                        
                         if accepted {
                             
                             callVC.startWhiteBoard()
@@ -1484,6 +1502,7 @@ extension DGStreamCore: QBChatDelegate {
             // 2)
             else if let alert = callVC.alertView, alert.isWaiting {
                 alert.dismiss()
+                callVC.alertView = nil
             }
         }
         return true

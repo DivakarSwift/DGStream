@@ -35,8 +35,6 @@ class DGStreamMediaViewController: UIViewController {
     @IBOutlet weak var deleteButtonItem: UIBarButtonItem!
     @IBOutlet weak var emptyLabel: UILabel!
     
-    @IBOutlet weak var collectionView: UICollectionView!
-    
     @IBOutlet weak var collectionViewContainer: UIView!
     
     var shouldLoad = true
@@ -60,12 +58,19 @@ class DGStreamMediaViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        DGStreamCore.instance.presentedViewController = self
+        if let image = UIImage(named: "ipad-BG-pattern") {
+            view.backgroundColor = UIColor(patternImage: image)
+        }
+        else {
+            view.backgroundColor = .lightGray
+        }
+        
+        self.collectionViewContainer.isHidden = true
+        
+        DGStreamCore.instance.mediaViewController = self
         
         self.navBarView.backgroundColor = UIColor.dgBlueDark()
-        
-        self.view.backgroundColor = UIColor.dgBG()
-        
+                
         self.collectionViewContainer.layer.borderColor = UIColor.dgBlack().cgColor
         self.collectionViewContainer.layer.borderWidth = 0.5
         
@@ -94,6 +99,11 @@ class DGStreamMediaViewController: UIViewController {
             }
         }
         shouldLoad = false
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        DGStreamCore.instance.mediaViewController = nil
     }
     
     func setUpButtons() {
@@ -186,6 +196,7 @@ class DGStreamMediaViewController: UIViewController {
     }
     
     @IBAction func backButtonTapped(_ sender: Any) {
+        DGStreamCore.instance.mediaViewController = nil
         self.dismiss(animated: true, completion: nil)
     }
     
@@ -275,10 +286,10 @@ class DGStreamMediaViewController: UIViewController {
     
     func didSelect(recording: DGStreamRecording) {
         
-        if self.isSelecting {
-            self.deleteButtonItem.isEnabled = true
-            self.uploadButtonItem.isEnabled = true
-        }
+//        if self.isSelecting {
+//            self.deleteButtonItem.isEnabled = true
+//            self.uploadButtonItem.isEnabled = true
+//        }
         
         if recording.isPhoto {
             guard let recordingUrl = recording.url else {
@@ -299,6 +310,7 @@ class DGStreamMediaViewController: UIViewController {
             }
             
             if self.isShare {
+                DGStreamCore.instance.mediaViewController = nil
                 self.dismiss(animated: true) {
                     self.delegate?.didSelect(photo: image)
                 }
@@ -321,6 +333,7 @@ class DGStreamMediaViewController: UIViewController {
             }
             let url = DGStreamFileManager.createPathFor(mediaType: .document, fileName: recordingUrl)!
             if self.isShare {
+                DGStreamCore.instance.mediaViewController = nil
                 self.dismiss(animated: true) {
                     self.delegate?.didSelect(pdf: url)
                 }
@@ -333,6 +346,7 @@ class DGStreamMediaViewController: UIViewController {
             }
             let url = DGStreamFileManager.createPathFor(mediaType: .video, fileName: recordingUrl)!
             if self.isShare {
+                DGStreamCore.instance.mediaViewController = nil
                 self.dismiss(animated: true) {
                     self.delegate?.didSelect(video: url)
                 }

@@ -2,15 +2,17 @@
   "images" : [
     {
       "idiom" : "universal",
-      "filename" : "Screen Shot 2017-09-18 at 10.59.54 AM.png",
+      "filename" : "RF_orange_button_background.png",
       "scale" : "1x"
     },
     {
       "idiom" : "universal",
+      "filename" : "RF_orange_button_background@2x.png",
       "scale" : "2x"
     },
     {
       "idiom" : "universal",
+      "filename" : "RF_orange_button_background@3x.png",
       "scale" : "3x"
     }
   ],

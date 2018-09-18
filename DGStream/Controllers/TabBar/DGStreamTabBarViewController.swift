@@ -113,7 +113,13 @@ class DGStreamTabBarViewController: CustomTransitionViewController {
         
         self.navBarView.backgroundColor = UIColor.dgBlueDark()
         
-        self.view.backgroundColor = UIColor.dgBG()
+        if let image = UIImage(named: "ipad-BG-pattern") {
+            view.backgroundColor = UIColor(patternImage: image)
+        }
+        else {
+            view.backgroundColor = .lightGray
+        }
+
                 
         // Data
         loadRecents(searchText: self.searchBar.text)

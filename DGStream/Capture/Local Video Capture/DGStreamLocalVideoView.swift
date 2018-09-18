@@ -23,16 +23,7 @@ class DGStreamLocalVideoView: UIView {
     var camera: Camera!
     var delegate: DGStreamLocalVideoViewDelegate!
     
-    var filterOperation: FilterOperationInterface = FilterOperation(
-        filter:{ChromaKeyBlendGreen()},
-        listName:"Chroma key blend (green)",
-        titleName:"Chroma Key (Green)",
-        sliderConfiguration:.enabled(minimumValue:0.0, maximumValue:1.0, initialValue:0.6),
-        sliderUpdateCallback: {(filter, sliderValue) in
-            filter.thresholdSensitivity = sliderValue
-    },
-        filterOperationType:.blend
-    )
+    var filterOperation: FilterOperationInterface?
     
     var blendImage: PictureInput?
     var backgroundImage: UIImage!
@@ -43,7 +34,10 @@ class DGStreamLocalVideoView: UIView {
     var removeIntensity: Float = 0.6
     var removeColor: UIColor = .green
     
+    let whiteMultiplier = Float(0.05)
+    
     func configureWith(orientation: UIDeviceOrientation, isFront: Bool, isChromaKey: Bool, removeColor: UIColor, removeIntensity: Float, delegate: DGStreamLocalVideoViewDelegate) {
+        print("Configure View Called \(Date())")
         self.backgroundColor = .clear
         self.isChromaKey = isChromaKey
         self.removeColor = removeColor
@@ -57,15 +51,26 @@ class DGStreamLocalVideoView: UIView {
     }
     
     func deconfigure() {
+        self.delegate = nil
+//        if let videoCamera = camera {
+//            videoCamera.stopCapture()
+//            videoCamera.removeAllTargets()
+//            blendImage?.removeAllTargets()
+//        }
+        
         if let rv = self.renderView {
             rv.removeFromSuperview()
             self.renderView = nil
         }
+        if let blendImage = self.blendImage {
+            blendImage.removeAllTargets()
+            self.blendImage = nil
+        }
         if let videoCamera = self.camera {
-            self.delegate = nil
             videoCamera.stopCapture()
+            videoCamera.delegate = nil
             videoCamera.removeAllTargets()
-            blendImage?.removeAllTargets()
+            self.camera = nil
         }
     }
     
@@ -129,21 +134,42 @@ class DGStreamLocalVideoView: UIView {
             imageOrientation = portraitOrientation
         }
         self.renderView.orientation = imageOrientation
-        self.blendImage = PictureInput(image: UIImage(color: .clear, size: self.bounds.size)!, smoothlyScaleOutput: true, orientation: imageOrientation)
-        self.blendImage?.addTarget(self.filterOperation.filter)
-        self.blendImage?.processImage()
+        if let filter = self.filterOperation {
+            self.blendImage = PictureInput(image: UIImage(color: .clear, size: self.bounds.size)!, smoothlyScaleOutput: true, orientation: imageOrientation)
+            self.blendImage?.addTarget(filter.filter)
+            self.blendImage?.processImage()
+        }
     }
     
     func adjust(intensity: Float) {
-        if self.isChromaKey {
-            switch (self.filterOperation.sliderConfiguration) {
-            case .enabled(_, _, _): self.filterOperation.updateBasedOnSliderValue(intensity)
+        if self.isChromaKey, let filter = self.filterOperation {
+            var trueIntentsity = intensity
+            if self.removeColor == .white {
+                trueIntentsity = self.whiteOffset(originalIntensity: intensity)
+            }
+            switch (filter.sliderConfiguration) {
+            case .enabled(_, _, _): filter.updateBasedOnSliderValue(trueIntentsity)
+            case .disabled: break
+            }
+            self.removeIntensity = intensity
+        }
+    }
+    
+    func adjust(color: UIColor) {
+        if self.isChromaKey, let filter = self.filterOperation {
+            self.removeColor = color
+            switch (filter.sliderConfiguration) {
+            case .enabled(_, _, _): filter.updateBasedOnSliderValue(self.removeIntensity)
             case .disabled: break
             }
         }
     }
     
     func addRenderView() {
+        if let rv = self.renderView {
+            rv.removeFromSuperview()
+            self.renderView = nil
+        }
         self.renderView = RenderView(frame: UIScreen.main.bounds)
         self.renderView.backgroundRenderColor = .transparent
         self.renderView.backgroundColor = .clear
@@ -158,8 +184,12 @@ class DGStreamLocalVideoView: UIView {
         }
     }
     
+    func whiteOffset(originalIntensity: Float) -> Float {
+        return originalIntensity - (originalIntensity * whiteMultiplier)
+    }
+    
     func setUpFilter() {
-        
+        print("Set Up Filter Called \(Date())")
         var maxValue:Float = 1.0
         var initialValue:Float = self.removeIntensity
         
@@ -167,108 +197,69 @@ class DGStreamLocalVideoView: UIView {
             maxValue = 0.0
             initialValue = 0.0
         }
-        else if !self.isChromaKey {
-            self.filterOperation = FilterOperation(
-                filter:{Sharpen()},
-                listName:"Chroma key blend (green)",
-                titleName:"Chroma Key (Green)",
-                sliderConfiguration:.enabled(minimumValue:0.0, maximumValue:maxValue, initialValue:initialValue),
-                sliderUpdateCallback: {(filter, sliderValue) in
-                    filter.sharpness = 0.50
-            },
-                filterOperationType:.blend
-            )
-            return
-        }
         
-        if self.removeColor == .green {
-            self.filterOperation = FilterOperation(
-                filter:{ChromaKeyBlendGreen()},
-                listName:"Chroma key blend (green)",
-                titleName:"Chroma Key (Green)",
-                sliderConfiguration:.enabled(minimumValue:0.0, maximumValue:maxValue, initialValue:initialValue),
-                sliderUpdateCallback: {(filter, sliderValue) in
+        self.filterOperation = FilterOperation(
+            filter:{ChromaKeyBlendGreen()},
+            listName:"Chroma key blend (green)",
+            titleName:"Chroma Key (Green)",
+            sliderConfiguration:.enabled(minimumValue:0.0, maximumValue:maxValue, initialValue:initialValue),
+            sliderUpdateCallback: {(filter, sliderValue) in
+                if self.isChromaKey {
                     filter.thresholdSensitivity = sliderValue
-            },
-                filterOperationType:.blend
-            )
-        }
-        else if self.removeColor == .blue {
-            self.filterOperation = FilterOperation(
-                filter:{ChromaKeyBlendBlue()},
-                listName:"Chroma key blend (green)",
-                titleName:"Chroma Key (Green)",
-                sliderConfiguration:.enabled(minimumValue:0.0, maximumValue:maxValue, initialValue:initialValue),
-                sliderUpdateCallback: {(filter, sliderValue) in
-                    filter.thresholdSensitivity = sliderValue
-                    filter.colorToReplace = .blue
-            },
-                filterOperationType:.blend
-            )
-        }
-        else if self.removeColor == .red {
-            self.filterOperation = FilterOperation(
-                filter:{ChromaKeyBlendRed()},
-                listName:"Chroma key blend (green)",
-                titleName:"Chroma Key (Green)",
-                sliderConfiguration:.enabled(minimumValue:0.0, maximumValue:maxValue, initialValue:initialValue),
-                sliderUpdateCallback: {(filter, sliderValue) in
-                    filter.thresholdSensitivity = sliderValue
-                    filter.colorToReplace = .red
-            },
-                filterOperationType:.blend
-            )
-        }
-        else if self.removeColor == .white {
-            self.filterOperation = FilterOperation(
-                filter:{ChromaKeyBlendWhite()},
-                listName:"Chroma key blend (green)",
-                titleName:"Chroma Key (Green)",
-                sliderConfiguration:.enabled(minimumValue:0.0, maximumValue:maxValue, initialValue:initialValue),
-                sliderUpdateCallback: {(filter, sliderValue) in
-                    filter.thresholdSensitivity = sliderValue
-                    filter.colorToReplace = .white
-            },
-                filterOperationType:.blend
-            )
-        }
-        else if self.removeColor == .black {
-            self.filterOperation = FilterOperation(
-                filter:{Sharpen()},
-                listName:"Chroma key blend (green)",
-                titleName:"Chroma Key (Green)",
-                sliderConfiguration:.enabled(minimumValue:0.0, maximumValue:maxValue, initialValue:initialValue),
-                sliderUpdateCallback: {(filter, sliderValue) in
-                    filter.sharpness = 0.50
-            },
-                filterOperationType:.blend
-            )
-        }
+                    if self.removeColor == .green {
+                        filter.colorToReplace = .green
+                        print("Color Set To Green")
+                        self.alpha = 1.0
+                    }
+                    else if self.removeColor == .red {
+                        filter.colorToReplace = .red
+                        print("Color Set To Red")
+                        self.alpha = 1.0
+                    }
+                    else if self.removeColor == .blue {
+                        filter.colorToReplace = .blue
+                        print("Color Set To Blue")
+                        self.alpha = 1.0
+                    }
+                    else if self.removeColor == .white {
+                        filter.colorToReplace = .white
+                        filter.thresholdSensitivity = self.whiteOffset(originalIntensity: sliderValue)
+                        print("Color Set To Blue")
+                        self.alpha = 1.0
+                    }
+                    else {
+                        print("NO COLOR")
+                        filter.thresholdSensitivity = 0.0
+                        self.alpha = 0.5
+                    }
+                }
+                else {
+                    filter.thresholdSensitivity = 0.0
+                    self.alpha = 1.0
+                }
+        },
+            filterOperationType:.blend
+        )
     }
     
     func setUpCamera() {
+        print("Set Up Camera Called \(Date())")
+        var location: PhysicalCameraLocation
         if self.isFront {
-            do {
-                camera = try Camera(sessionPreset:AVCaptureSessionPresetMedium, location: .frontFacing)
-                camera!.runBenchmark = true
-                camera.delegate = self
-            } catch {
-                camera = nil
-                print("Couldn't initialize camera with error: \(error)")
-                self.delegate.localVideo(errorMessage: "Could not set up camera.\n\(error.localizedDescription)")
-            }
+            location = .frontFacing
         }
         else {
-            
-            do {
-                camera = try Camera(sessionPreset:AVCaptureSessionPresetMedium, location: .backFacing)
-                camera!.runBenchmark = true
-                camera.delegate = self
-            } catch {
-                camera = nil
-                print("Couldn't initialize camera with error: \(error)")
-                self.delegate.localVideo(errorMessage: "Could not set up camera.\n\(error.localizedDescription)")
-            }
+            location = .backFacing
+        }
+        
+        do {
+            camera = try Camera(sessionPreset:AVCaptureSessionPresetMedium, location: location)
+            camera!.runBenchmark = true
+            camera.delegate = self
+        } catch {
+            camera = nil
+            print("Couldn't initialize camera with error: \(error)")
+            self.delegate.localVideo(errorMessage: "Could not set up camera.\n\(error.localizedDescription)")
         }
     }
     
@@ -277,8 +268,25 @@ class DGStreamLocalVideoView: UIView {
         if front {
             location = .frontFacing
         }
-        camera.location = location
+
         self.renderView.orientation = self.getOrientation()
+        
+        do {
+            camera = try Camera(sessionPreset:AVCaptureSessionPresetMedium, location: location)
+            camera!.runBenchmark = true
+            camera.delegate = self
+        } catch {
+            camera = nil
+            print("Couldn't initialize camera with error: \(error)")
+            self.delegate.localVideo(errorMessage: "Could not set up camera.\n\(error.localizedDescription)")
+        }
+        
+        if front {
+            // mirror
+            self.renderView.transform = CGAffineTransform(scaleX: -1, y: 1)
+        }
+        
+        self.isFront = front
     }
     
     func beginChromaKey() {
@@ -290,6 +298,7 @@ class DGStreamLocalVideoView: UIView {
     }
     
     func setUpRenderView() {
+        print("Set Up Render Called \(Date())")
         guard let videoCamera = self.camera else {
             print("Couldn't initialize camera!")
             return
@@ -298,20 +307,20 @@ class DGStreamLocalVideoView: UIView {
         videoCamera.stopCapture()
         
         // Configure the filter chain, ending with the view
-        if let view = self.renderView {
+        if let view = self.renderView, let filter = self.filterOperation {
             
-            switch self.filterOperation.filterOperationType {
+            switch filter.filterOperationType {
             case .singleInput:
-                self.camera.addTarget(self.filterOperation.filter)
-                self.filterOperation.filter.addTarget(view)
+                self.camera.addTarget(filter.filter)
+                filter.filter.addTarget(view)
             case .blend:
-                self.camera.addTarget(self.filterOperation.filter)
+                self.camera.addTarget(filter.filter)
                 self.blendImage = PictureInput(image: UIImage(color: .clear, size: self.bounds.size)!, smoothlyScaleOutput: true, orientation: self.getOrientation())
-                self.blendImage?.addTarget(self.filterOperation.filter)
+                self.blendImage?.addTarget(filter.filter)
                 self.blendImage?.processImage()
-                self.filterOperation.filter.addTarget(view)
+                filter.filter.addTarget(view)
             case let .custom(filterSetupFunction:setupFunction):
-                self.filterOperation.configureCustomFilter(setupFunction(videoCamera, self.filterOperation.filter, view))
+                filter.configureCustomFilter(setupFunction(videoCamera, filter.filter, view))
             }
             
             videoCamera.startCapture()
@@ -321,7 +330,7 @@ class DGStreamLocalVideoView: UIView {
         
         if self.isFront {
             // mirror
-            self.transform = CGAffineTransform(scaleX: -1, y: 1)
+            self.renderView.transform = CGAffineTransform(scaleX: -1, y: 1)
         }
     }
     
@@ -330,9 +339,17 @@ class DGStreamLocalVideoView: UIView {
         if callMode == .merge {
             value = self.removeIntensity
         }
-        switch (self.filterOperation.sliderConfiguration) {
-        case .enabled(_, _, _): self.filterOperation.updateBasedOnSliderValue(value)
-        case .disabled: break
+        if let filter = self.filterOperation {
+            switch (filter.sliderConfiguration) {
+            case .enabled(_, _, _): filter.updateBasedOnSliderValue(value)
+            case .disabled: break
+            }
+        }
+    }
+    
+    func updateWith(color: UIColor) {
+        if let filter = self.filterOperation {
+            
         }
     }
 
@@ -381,18 +398,16 @@ extension DGStreamLocalVideoView: CameraDelegate {
             //                print("AVCaptureAudioDataOutput!")
             //                return
             //            }
-            DispatchQueue.main.async {
-                let orientation = self.getOrientationForVideo()
-                
-                // SEND VIDEO FRAME
-                if let pixelBuffer : CVPixelBuffer = CMSampleBufferGetImageBuffer(copy), let videoFrame = QBRTCVideoFrame(pixelBuffer: pixelBuffer, videoRotation: orientation) {
-                    if self.delegate != nil {
-                        self.delegate.localVideo(frameToBroadcast: videoFrame)
-                    }
+            let orientation = self.getOrientationForVideo()
+            
+            // SEND VIDEO FRAME
+            if let pixelBuffer : CVPixelBuffer = CMSampleBufferGetImageBuffer(copy), let videoFrame = QBRTCVideoFrame(pixelBuffer: pixelBuffer, videoRotation: orientation) {
+                if self.delegate != nil {
+                    self.delegate.localVideo(frameToBroadcast: videoFrame)
                 }
-                else {
-                    print("No Pixel Buffer")
-                }
+            }
+            else {
+                print("No Pixel Buffer")
             }
         }
         else {

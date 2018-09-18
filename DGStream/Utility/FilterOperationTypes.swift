@@ -27,6 +27,7 @@ protocol FilterOperationInterface {
 }
 
 class FilterOperation<FilterClass: ImageProcessingOperation>: FilterOperationInterface {
+    
     lazy var internalFilter:FilterClass = {
         return self.filterCreationFunction()
     }()

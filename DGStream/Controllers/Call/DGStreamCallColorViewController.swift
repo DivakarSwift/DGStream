@@ -80,6 +80,15 @@ class DGStreamCallColorViewController: UIViewController {
         else if self.selectedColor == .white {
             color = "white"
         }
+        else if self.selectedColor == .yellow {
+            color = "yellow"
+        }
+        else if self.selectedColor == .purple {
+            color = "purple"
+        }
+        else if self.selectedColor == .orange {
+            color = "orange"
+        }
         else {
             color = "black"
         }
@@ -138,6 +147,7 @@ extension DGStreamCallColorViewController: UICollectionViewDataSource, UICollect
     
         let color = self.colors[indexPath.item]
         self.selectedColor = color
+        self.storeValues()
         self.delegate.mergeColorSelected(color: color)
         
 //        let oldSelectedIndex = self.selectedIndex

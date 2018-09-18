@@ -12,13 +12,11 @@ import QuickbloxWebRTC
 
 class DGStreamLocalVideoCapture: QBRTCVideoCapture {
     
-    var view: UIView!
     var displayLink: CADisplayLink!
     var int:Int = 0
-    
-    init(view: UIView) {
+    var isEnabled = true
+    override init() {
         super.init()
-        self.view = view
     }
     
     func willEnterForeground(notification: Notification) {
@@ -39,8 +37,10 @@ class DGStreamLocalVideoCapture: QBRTCVideoCapture {
     }
     
     func send(videoFrame: QBRTCVideoFrame) {
-        self.videoQueue.sync {
-            super.send(videoFrame)
+        if isEnabled {
+            self.videoQueue.sync {
+                super.send(videoFrame)
+            }
         }
     }
     
@@ -51,10 +51,10 @@ class DGStreamLocalVideoCapture: QBRTCVideoCapture {
 //        displayLink = CADisplayLink(target: self, selector: #selector(sendPixelBuffer(sender:)))
 //        displayLink.add(to: .main, forMode: .defaultRunLoopMode)
 //        displayLink.preferredFramesPerSecond = 30
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(willEnterForeground(notification:)), name: Notification.Name.UIApplicationWillEnterForeground, object: nil)
-        
-        NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackground(notification:)), name: Notification.Name.UIApplicationDidEnterBackground, object: nil)
+//
+//        NotificationCenter.default.addObserver(self, selector: #selector(willEnterForeground(notification:)), name: Notification.Name.UIApplicationWillEnterForeground, object: nil)
+//
+//        NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackground(notification:)), name: Notification.Name.UIApplicationDidEnterBackground, object: nil)
         
     }
     
@@ -65,8 +65,8 @@ class DGStreamLocalVideoCapture: QBRTCVideoCapture {
 //        displayLink.remove(from: .main, forMode: .defaultRunLoopMode)
 //        displayLink = nil
         
-        NotificationCenter.default.removeObserver(self, name: Notification.Name.UIApplicationWillEnterForeground, object: nil)
-        
-        NotificationCenter.default.removeObserver(self, name: Notification.Name.UIApplicationDidEnterBackground, object: nil)
+//        NotificationCenter.default.removeObserver(self, name: Notification.Name.UIApplicationWillEnterForeground, object: nil)
+//        
+//        NotificationCenter.default.removeObserver(self, name: Notification.Name.UIApplicationDidEnterBackground, object: nil)
     }
 }

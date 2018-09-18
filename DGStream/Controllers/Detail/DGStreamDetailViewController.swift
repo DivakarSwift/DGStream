@@ -83,17 +83,26 @@ class DGStreamDetailViewController: UIViewController {
     var user: DGStreamUser?
     
     let itemHeight:CGFloat = {
-        if Display.pad {
-            return CGFloat(50)
-        }
-        else {
-            return CGFloat(40)
-        }
+//        if Display.pad {
+//            return CGFloat(50)
+//        }
+//        else {
+//            return CGFloat(40)
+//        }
+        return CGFloat(38)
     }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         print("Detail Loaded")
+        
+        if let image = UIImage(named: "ipad-BG-pattern") {
+            view.backgroundColor = UIColor(patternImage: image)
+        }
+        else {
+            view.backgroundColor = .lightGray
+        }
+
         
         var items:[UITabBarItem] = []
         
@@ -234,9 +243,7 @@ class DGStreamDetailViewController: UIViewController {
     }
     
     func setUpViews() {
-        
-        self.view.backgroundColor = UIColor.dgBG()
-        
+                
         self.navBarView.backgroundColor = UIColor.dgBlueDark()
         
         self.userImage.clipsToBounds = true
@@ -268,10 +275,15 @@ class DGStreamDetailViewController: UIViewController {
         self.favoriteButton.setImage(self.favoriteButton.currentImage?.withRenderingMode(.alwaysTemplate), for: .normal)
         self.favoriteButton.tintColor = .white
         
+        var buttonBackgroundColor: UIColor = .orange
+        if let pattern = UIImage.init(named: "RF_orange_button_background", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil) {
+            buttonBackgroundColor = UIColor(patternImage: pattern)
+        }
+        
         let videoCallButton = UIButton(frame: self.videoCallButtonContainer.bounds)
         videoCallButton.boundInside(container: self.videoCallButtonContainer)
         videoCallButton.setImage(UIImage(named: "video", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
-        videoCallButton.backgroundColor = .orange
+        videoCallButton.backgroundColor = buttonBackgroundColor
         videoCallButton.tintColor = UIColor.dgBlack()
         videoCallButton.addTarget(self, action: #selector(videoCallButtonTapped), for: .touchUpInside)
         self.videoCallButtonContainer.clipsToBounds = true
@@ -280,7 +292,7 @@ class DGStreamDetailViewController: UIViewController {
         self.videoCallButtonContainer.layer.cornerRadius = self.videoCallButtonContainer.bounds.size.width / 2
         
         videoCallButton2.setImage(UIImage(named: "video", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
-        videoCallButton2.backgroundColor = .orange
+        videoCallButton2.backgroundColor = buttonBackgroundColor
         videoCallButton2.tintColor = UIColor.dgBlack()
         videoCallButton2.addTarget(self, action: #selector(videoCallButtonTapped), for: .touchUpInside)
         videoCallButton2.clipsToBounds = true
@@ -292,7 +304,7 @@ class DGStreamDetailViewController: UIViewController {
         let audioCallButton = UIButton(frame: self.audioCallButtonContainer.bounds)
         audioCallButton.boundInside(container: self.audioCallButtonContainer)
         audioCallButton.setImage(UIImage(named: "audio", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
-        audioCallButton.backgroundColor = .orange
+        audioCallButton.backgroundColor = buttonBackgroundColor
         audioCallButton.tintColor = UIColor.dgBlack()
         audioCallButton.addTarget(self, action: #selector(audioCallButtonTapped), for: .touchUpInside)
         self.audioCallButtonContainer.clipsToBounds = true
@@ -301,7 +313,7 @@ class DGStreamDetailViewController: UIViewController {
         self.audioCallButtonContainer.layer.cornerRadius = self.audioCallButtonContainer.bounds.size.width / 2
         
         audioCallButton2.setImage(UIImage(named: "audio", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
-        audioCallButton2.backgroundColor = .orange
+        audioCallButton2.backgroundColor = buttonBackgroundColor
         audioCallButton2.tintColor = UIColor.dgBlack()
         audioCallButton2.addTarget(self, action: #selector(audioCallButtonTapped), for: .touchUpInside)
         audioCallButton2.clipsToBounds = true
@@ -313,7 +325,7 @@ class DGStreamDetailViewController: UIViewController {
         let messageButton = UIButton(frame: self.messageButtonContainer.bounds)
         messageButton.boundInside(container: self.messageButtonContainer)
         messageButton.setImage(UIImage(named: "message", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
-        messageButton.backgroundColor = .orange
+        messageButton.backgroundColor = buttonBackgroundColor
         messageButton.tintColor = UIColor.dgBlack()
         messageButton.addTarget(self, action: #selector(messageButtonTapped), for: .touchUpInside)
         self.messageButtonContainer.clipsToBounds = true
@@ -322,7 +334,7 @@ class DGStreamDetailViewController: UIViewController {
         self.messageButtonContainer.layer.cornerRadius = self.messageButtonContainer.bounds.size.width / 2
         
         messageButton2.setImage(UIImage(named: "message", in: Bundle(identifier: "com.dataglance.DGStream"), compatibleWith: nil)?.withRenderingMode(.alwaysTemplate), for: .normal)
-        messageButton2.backgroundColor = .orange
+        messageButton2.backgroundColor = buttonBackgroundColor
         messageButton2.tintColor = UIColor.dgBlack()
         messageButton2.addTarget(self, action: #selector(messageButtonTapped), for: .touchUpInside)
         messageButton2.clipsToBounds = true
