@@ -758,13 +758,6 @@ extension DGStreamCore: QBChatDelegate {
                             
                             callVC.beingSharedWith(imageData: data)
                             
-                            if let user = DGStreamCore.instance.getOtherUserWith(userID: callVC.selectedUser), let username = user.username {
-                                let message = DGStreamMessage()
-                                message.message = "\(username) shared an image."
-                                message.isSystem = true
-                                callVC.chatPeekView.addCellWith(message: message)
-                            }
-                            
                         }, statusBlock: { (request, status) in
                             
                         }, errorBlock: { (response) in

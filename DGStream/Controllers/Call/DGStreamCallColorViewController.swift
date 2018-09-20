@@ -24,7 +24,7 @@ class DGStreamCallColorViewController: UIViewController {
     
     var delegate: DGStreamCallColorViewControllerDelegate!
     
-    let colors:[UIColor] = [.green, .blue, .red, .white, .black]
+    let colors:[UIColor] = [.green, .blue, .red, .black]
     
     override func viewDidLoad() {
         super.viewDidLoad()

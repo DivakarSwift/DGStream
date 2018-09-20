@@ -36,9 +36,12 @@ class DGStreamLocalVideoView: UIView {
     
     let whiteMultiplier = Float(0.05)
     
+    var orientation:UIDeviceOrientation = .portrait
+    
     func configureWith(orientation: UIDeviceOrientation, isFront: Bool, isChromaKey: Bool, removeColor: UIColor, removeIntensity: Float, delegate: DGStreamLocalVideoViewDelegate) {
         print("Configure View Called \(Date())")
         self.backgroundColor = .clear
+        self.orientation = orientation
         self.isChromaKey = isChromaKey
         self.removeColor = removeColor
         self.removeIntensity = removeIntensity
@@ -116,6 +119,7 @@ class DGStreamLocalVideoView: UIView {
     }
     
     func adjust(orientation: UIDeviceOrientation, newSize: CGSize) {
+        self.orientation = orientation
         var imageOrientation: ImageOrientation = .portraitUpsideDown
         var portraitOrientation:ImageOrientation = .portraitUpsideDown
         if self.camera.location == .backFacing {
@@ -358,10 +362,10 @@ class DGStreamLocalVideoView: UIView {
 extension DGStreamLocalVideoView: CameraDelegate {
     func getOrientationForVideo() -> QBRTCVideoRotation {
         var orientation:QBRTCVideoRotation = ._90
-        let deviceOrientation = UIApplication.shared.statusBarOrientation
-        var adjustForPerspective = false
+        let deviceOrientation = self.orientation
+        var adjustForPerspective = true
         if let callVC = self.delegate as? DGStreamCallViewController, callVC.callMode == .merge || (callVC.callMode == .perspective && callVC.isCurrentUserPerspective) {
-            adjustForPerspective = true
+            adjustForPerspective = false
         }
         if deviceOrientation == .portrait {
             orientation = ._90

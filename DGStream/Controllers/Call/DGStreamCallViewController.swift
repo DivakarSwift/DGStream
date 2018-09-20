@@ -295,7 +295,7 @@ public class DGStreamCallViewController: UIViewController {
     var remoteScreenSize:CGSize?
     
     let colors:[UIColor] = [.black, .white, .gray, .red, .blue, .green, .yellow, .brown, .purple]
-    let mergeOptionColors:[UIColor] = [.green, .blue, .red, .yellow, .black]
+    let mergeOptionColors:[UIColor] = [.green, .blue, .red, .black]
     let sizes:[Int] = [8, 12, 16, 20, 24, 28, 32, 36, 40]
     
     var selectedIntensity: Float = 0.525
@@ -1239,17 +1239,17 @@ public class DGStreamCallViewController: UIViewController {
         }
         // In-Call Screen
         else {
-//            if Display.pad {
-//                wh = 160
-//                y = 70
-//            }
-//            else {
-//                wh = 100
-//                y = UIScreen.main.bounds.height - (wh + 40)
-//            }
-            wh = 100
-            y = UIScreen.main.bounds.height - (wh + 40)
-            x = 10
+            var padding:CGFloat = 0.0
+            if Display.pad {
+                padding = 40
+                wh = 120
+            }
+            else {
+                padding = 10
+                wh = 88
+            }
+            y = UIScreen.main.bounds.height - (wh + padding)
+            x = padding
         }
         return CGRect(x: x, y: y, width: wh, height: wh)
     }
@@ -1343,7 +1343,6 @@ public class DGStreamCallViewController: UIViewController {
         self.whiteBoardButtonContainer.alpha = 0
         //self.hideDropDown(animated: false)
         let newFrame = self.frameForLocalVideo(isCenter: true)
-        self.localBroadcastView?.frame = CGRect(x: 0, y: 0, width: newFrame.size.width, height: newFrame.size.height)
         self.localBroadcastView?.layoutIfNeeded()
         self.localBroadcastView?.stopChromaKey()
         self.localVideoViewContainer.frame = newFrame
@@ -2767,15 +2766,28 @@ public class DGStreamCallViewController: UIViewController {
             
             self.endWhiteBoard(sendNotification: false)
             
+            var shareImage: UIImage?
             if mode == .merge {
                 if self.isMergeHelper {
-                    self.stopSharing()
+                    if self.isBeingSharedWith, let freeze = self.freezeImageView, let image = freeze.image {
+                        shareImage = image
+                    }
+                    if self.isSharing || self.isSharingDocument || self.isSharingVideo {
+                        //self.stopSharing()
+                    }
                     self.disableDrawButtons()
                     self.enableMergeButtons()
                     self.showOptions()
                 }
-                else if let recordingView = self.recordingView {
-                    recordingView.alpha = 0
+                else  {
+                    if let recordingView = self.recordingView {
+                        recordingView.alpha = 0
+                        
+                    }
+                    if let freezeView = self.freezeImageView, self.isSharing {
+                        freezeView.removeFromSuperview()
+                        self.freezeImageView = nil
+                    }
                 }
             }
             
@@ -2869,7 +2881,8 @@ public class DGStreamCallViewController: UIViewController {
             }
             
             if let freezeImageView = self.freezeImageView {
-                self.remoteVideoViewContainer.insertSubview(freezeImageView, aboveSubview: self.remoteVideoViewContainer)
+                freezeImageView.boundInside(container: self.remoteVideoViewContainer)
+                self.remoteVideoViewContainer.sendSubview(toBack: freezeImageView)
             }
             
             if let remoteVideo = self.videoViewWith(userID: self.selectedUser) as? QBRTCRemoteVideoView {
@@ -2881,6 +2894,26 @@ public class DGStreamCallViewController: UIViewController {
             self.freezeButton.isEnabled = true
             
             self.orderDrawViews()
+            
+            if let image = shareImage {
+                if let freeze = self.freezeImageView {
+                    freeze.removeFromSuperview()
+                    self.freezeImageView = nil
+                }
+                self.freezeImageView = UIImageView(frame: self.remoteVideoViewContainer.bounds)
+                self.freezeImageView?.contentMode = .scaleAspectFill
+                self.freezeImageView?.image = image
+                self.freezeImageView?.boundInside(container: self.remoteVideoViewContainer)
+                self.freezeImageView?.tag = 888
+                self.freezeImageView?.backgroundColor = .white
+                if let lb = self.localBroadcastView {
+                    self.remoteVideoViewContainer.bringSubview(toFront: lb)
+                }
+                else {
+                    self.remoteVideoViewContainer.sendSubview(toBack: self.freezeImageView!)
+                }
+                    
+            }
             
             self.callMode = mode
         }
@@ -2914,13 +2947,13 @@ public class DGStreamCallViewController: UIViewController {
             self.localBroadcastView?.isHidden = false
         }
         
-        if !self.isSharing || !self.isSharingVideo || !self.isBeingSharedWith || !self.isBeingSharedWithVideo {
-            self.shareButton.isEnabled = true
-            self.shareButton.tintColor = UIColor.dgBlueDark()
-            self.shareButtonContainer.layer.borderColor = UIColor.dgBlueDark().cgColor
-            self.shareButton.setTitleColor(UIColor.dgBlueDark(), for: .normal)
-            self.shareButtonLabel.textColor = UIColor.dgBlueDark()
-        }
+        self.stopSharing()
+        self.shareButton.isEnabled = true
+        self.shareButton.tintColor = UIColor.dgBlueDark()
+        self.shareButtonContainer.layer.borderColor = UIColor.dgBlueDark().cgColor
+        self.shareButton.setTitleColor(UIColor.dgBlueDark(), for: .normal)
+        self.shareButtonLabel.textColor = UIColor.dgBlueDark()
+        
         self.freezeImageView?.removeFromSuperview()
         self.freezeImageView = nil
     }
@@ -3314,7 +3347,7 @@ public class DGStreamCallViewController: UIViewController {
                 self.drawButton.tintColor = .white
                 self.drawButton.backgroundColor = .clear
                 self.disableDrawButtons()
-                if self.callMode == .stream {
+                if !(self.callMode == .merge && self.isMergeHelper) {
                     self.hideOptions(animated: false)
                 }
             }
@@ -4776,6 +4809,12 @@ extension DGStreamCallViewController: UICollectionViewDataSource, UICollectionVi
     }
     
     func showOptions() {
+        if self.isMergeHelper {
+            self.enableMergeButtons()
+        }
+        else {
+            self.disableMergeButtons()
+        }
         if self.optionsContainerContainer.alpha == 1 {
             return
         }
